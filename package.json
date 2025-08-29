@@ -9,17 +9,22 @@
     "test": "tsx src/test-true-orchestration.ts",
     "test:logging": "tsx src/test-with-logging.ts",
     "test:structure": "tsx src/test-structure.ts",
+    "test:caching": "tsx test-ai-sdk-caching.ts",
+    "test:parallel": "tsx test-parallel-execution.ts",
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "openai": "^4.29.2",
+    "@ai-sdk/anthropic": "^2.0.9",
+    "@ai-sdk/openai": "^2.0.23",
+    "ai": "^5.0.28",
+    "dotenv": "^16.4.5",
     "gray-matter": "^4.0.3",
-    "zod": "^3.22.4",
-    "dotenv": "^16.4.5"
+    "openai": "^4.29.2",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@types/node": "^20.11.30",
-    "typescript": "^5.4.2",
-    "tsx": "^4.7.1"
+    "tsx": "^4.7.1",
+    "typescript": "^5.4.2"
   }
 }
