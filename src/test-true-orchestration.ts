@@ -2,8 +2,7 @@ import * as path from 'path';
 import * as dotenv from 'dotenv';
 import { AgentLoader } from './core/agent-loader';
 import { ToolRegistry } from './core/tool-registry';
-import { AgentExecutor } from './core/agent-executor';
-import { OpenAIProvider } from './llm/provider';
+import { AgentExecutorAnthropic } from './core/agent-executor-anthropic';
 import { LoggerFactory } from './core/conversation-logger';
 import { createTaskTool } from './tools/task-tool';
 import { createReadTool, createWriteTool, createListTool } from './tools/file-tools';
@@ -18,10 +17,11 @@ dotenv.config();
  * not just sequential function calls.
  */
 async function testTrueOrchestration() {
-  const apiKey = process.env.OPENAI_API_KEY;
+  const apiKey = process.env.ANTHROPIC_API_KEY;
   
   if (!apiKey) {
-    console.error('Please set OPENAI_API_KEY environment variable');
+    console.error('Please set ANTHROPIC_API_KEY environment variable');
+    console.error('This system requires Anthropic Claude models for caching support');
     process.exit(1);
   }
 
@@ -29,8 +29,8 @@ async function testTrueOrchestration() {
   const agentLoader = new AgentLoader(path.join(__dirname, '../agents'));
   const toolRegistry = new ToolRegistry();
   const logger = LoggerFactory.createCombinedLogger('true-orchestration-demo');
-  const llmProvider = new OpenAIProvider(apiKey, toolRegistry);
-  const executor = new AgentExecutor(agentLoader, toolRegistry, llmProvider, logger);
+  const modelName = process.env.MODEL || 'claude-3-5-haiku-20241022';
+  const executor = new AgentExecutorAnthropic(agentLoader, toolRegistry, modelName, logger);
 
   // Register tools
   toolRegistry.register(createReadTool());

@@ -48,4 +48,5 @@ export interface ExecutionContext {
   startTime: number;
   maxDepth: number;
   isSidechain?: boolean;
+  parentMessages?: Message[];
 }

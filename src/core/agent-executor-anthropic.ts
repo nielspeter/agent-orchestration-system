@@ -1,21 +1,21 @@
 import { AgentLoader } from './agent-loader';
 import { ToolRegistry } from './tool-registry';
-import { UnifiedAIProvider } from '../llm/ai-sdk-provider';
+import { AnthropicProvider } from '../llm/anthropic-provider';
 import { Message, ExecutionContext, ToolResult, ToolCall } from '../types';
 import { ConversationLogger, LoggerFactory } from './conversation-logger';
 
-export class AgentExecutorAISDK {
+export class AgentExecutorAnthropic {
   private readonly logger: ConversationLogger;
-  private readonly provider: UnifiedAIProvider;
+  private readonly provider: AnthropicProvider;
   
   constructor(
     private readonly agentLoader: AgentLoader,
     private readonly toolRegistry: ToolRegistry,
-    modelName: string,
+    modelName: string = 'claude-3-5-haiku-20241022',
     logger?: ConversationLogger
   ) {
     this.logger = logger || LoggerFactory.createCombinedLogger();
-    this.provider = new UnifiedAIProvider(modelName);
+    this.provider = new AnthropicProvider(modelName);
   }
 
   async execute(
@@ -31,10 +31,11 @@ export class AgentExecutorAISDK {
       parentAgent: undefined,
       startTime: Date.now(),
       maxDepth: 10,
-      isSidechain: false
+      isSidechain: false,
+      parentMessages: undefined
     };
 
-    // Log the execution start with model info
+    // Log the execution start
     this.logger.log({
       timestamp: new Date().toISOString(),
       agentName,
@@ -45,7 +46,8 @@ export class AgentExecutorAISDK {
         parentAgent: execContext.parentAgent,
         isSidechain: execContext.isSidechain,
         model: this.provider.getModelName(),
-        cacheEnabled: this.provider.isAnthropicModel()
+        hasParentContext: !!execContext.parentMessages,
+        parentMessageCount: execContext.parentMessages?.length || 0
       }
     });
 
@@ -71,19 +73,38 @@ export class AgentExecutorAISDK {
       type: 'system',
       content: `Agent loaded: ${agent.name}`,
       metadata: { 
-        toolCount: Array.isArray(agent.tools) ? agent.tools.length : 'all',
-        cacheEnabled: this.provider.isAnthropicModel() ? 'Yes (Anthropic)' : 'No'
+        toolCount: Array.isArray(agent.tools) ? agent.tools.length : 'all'
       }
     });
     
     // Get tools available to this agent
     const tools = this.toolRegistry.filterForAgent(agent);
     
-    // Initialize conversation
-    const messages: Message[] = [
+    // Initialize conversation with parent context if available
+    const messages: Message[] = [];
+    
+    // CRITICAL: Include parent messages for context inheritance
+    if (execContext.parentMessages) {
+      // Add all parent messages (they will be cached)
+      messages.push(...execContext.parentMessages);
+      
+      this.logger.log({
+        timestamp: new Date().toISOString(),
+        agentName,
+        depth: execContext.depth,
+        type: 'system',
+        content: `Inheriting ${execContext.parentMessages.length} messages from parent context`,
+        metadata: { 
+          parentMessageTypes: execContext.parentMessages.map(m => m.role).join(', ')
+        }
+      });
+    }
+    
+    // Add this agent's system prompt and the new user prompt
+    messages.push(
       { role: 'system', content: agent.description },
       { role: 'user', content: prompt }
-    ];
+    );
     
     // Log user prompt
     this.logger.log({
@@ -109,13 +130,16 @@ export class AgentExecutorAISDK {
         metadata: { 
           messageCount: messages.length, 
           toolCount: tools.length,
-          cacheEligible: this.provider.isAnthropicModel() && messages.length > 2
+          willCacheCount: messages.length - 1, // All but last message
+          parentContext: !!execContext.parentMessages
         }
       });
       
-      // Enable caching for Anthropic models when we have conversation history
-      const enableCache = this.provider.isAnthropicModel() && messages.length > 2;
-      const response = await this.provider.complete(messages, tools, enableCache);
+      // Call provider with complete message history (parent + current)
+      const response = await this.provider.complete(
+        messages, 
+        tools
+      );
       
       // Log assistant response
       this.logger.log({
@@ -155,8 +179,8 @@ export class AgentExecutorAISDK {
         // Execute tool groups
         for (const group of toolGroups) {
           const toolResults = group.isConcurrencySafe 
-            ? await this.executeToolsConcurrently(group.tools, agentName, execContext)
-            : await this.executeToolsSequentially(group.tools, agentName, execContext);
+            ? await this.executeToolsConcurrently(group.tools, agentName, execContext, messages)
+            : await this.executeToolsSequentially(group.tools, agentName, execContext, messages);
           
           // Add all results to messages
           for (const result of toolResults) {
@@ -180,7 +204,8 @@ export class AgentExecutorAISDK {
           executionTime: totalTime,
           iterations: iterationCount,
           model: this.provider.getModelName(),
-          cacheUsed: this.provider.isAnthropicModel() && messages.length > 2
+          totalMessages: messages.length,
+          cachedMessages: execContext.parentMessages?.length || 0
         }
       });
       
@@ -223,7 +248,8 @@ export class AgentExecutorAISDK {
   private async executeToolsSequentially(
     toolCalls: ToolCall[], 
     agentName: string, 
-    execContext: ExecutionContext
+    execContext: ExecutionContext,
+    currentMessages: Message[]
   ): Promise<Message[]> {
     const results: Message[] = [];
     
@@ -237,7 +263,7 @@ export class AgentExecutorAISDK {
     });
     
     for (const toolCall of toolCalls) {
-      const result = await this.executeSingleTool(toolCall, agentName, execContext);
+      const result = await this.executeSingleTool(toolCall, agentName, execContext, currentMessages);
       results.push(result);
     }
     
@@ -250,7 +276,8 @@ export class AgentExecutorAISDK {
   private async executeToolsConcurrently(
     toolCalls: ToolCall[], 
     agentName: string, 
-    execContext: ExecutionContext
+    execContext: ExecutionContext,
+    currentMessages: Message[]
   ): Promise<Message[]> {
     const MAX_CONCURRENT = 10;
     
@@ -269,7 +296,7 @@ export class AgentExecutorAISDK {
     for (let i = 0; i < toolCalls.length; i += MAX_CONCURRENT) {
       const batch = toolCalls.slice(i, i + MAX_CONCURRENT);
       const batchPromises = batch.map(toolCall => 
-        this.executeSingleTool(toolCall, agentName, execContext)
+        this.executeSingleTool(toolCall, agentName, execContext, currentMessages)
       );
       
       const batchResults = await Promise.all(batchPromises);
@@ -285,7 +312,8 @@ export class AgentExecutorAISDK {
   private async executeSingleTool(
     toolCall: ToolCall,
     agentName: string,
-    execContext: ExecutionContext
+    execContext: ExecutionContext,
+    currentMessages: Message[]
   ): Promise<Message> {
     const tool = this.toolRegistry.get(toolCall.function.name);
     
@@ -314,22 +342,25 @@ export class AgentExecutorAISDK {
       // Special handling for Task tool (delegation)
       let result: ToolResult;
       if (tool.name === 'Task') {
-        // Log delegation as sidechain
+        // CRITICAL: Pass the full conversation context to the subagent
+        const parentMessages = currentMessages.slice(); // All current messages
+        
         this.logger.log({
           timestamp: new Date().toISOString(),
           agentName,
           depth: execContext.depth,
           type: 'delegation',
-          content: `[SIDECHAIN] Delegating to ${args.subagent_type}`,
+          content: `[SIDECHAIN] Delegating to ${args.subagent_type} with full context`,
           metadata: { 
             subAgent: args.subagent_type,
             toolName: 'Task',
             prompt: args.prompt,
-            cacheWillBeUsed: this.provider.isAnthropicModel()
+            parentContextSize: parentMessages.length,
+            contextWillBeCached: true
           }
         });
         
-        // Recursive call with increased depth and sidechain flag
+        // Recursive call with increased depth and FULL PARENT CONTEXT
         const subAgentResult = await this.execute(
           args.subagent_type,
           args.prompt,
@@ -337,7 +368,8 @@ export class AgentExecutorAISDK {
             ...execContext,
             depth: execContext.depth + 1,
             parentAgent: agentName,
-            isSidechain: true
+            isSidechain: true,
+            parentMessages // Pass full conversation history!
           }
         );
         result = { content: subAgentResult };

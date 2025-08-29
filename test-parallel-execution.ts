@@ -1,8 +1,7 @@
 import { config } from 'dotenv';
-import { AgentExecutor } from './src/core/agent-executor';
+import { AgentExecutorAnthropic } from './src/core/agent-executor-anthropic';
 import { AgentLoader } from './src/core/agent-loader';
 import { ToolRegistry } from './src/core/tool-registry';
-import { OpenAIProvider } from './src/llm/provider';
 import { ConversationLogger, LoggerFactory } from './src/core/conversation-logger';
 import { createReadTool, createWriteTool, createListTool } from './src/tools/file-tools';
 import { createTaskTool } from './src/tools/task-tool';
@@ -60,15 +59,11 @@ async function runParallelExecutionTest() {
   toolRegistry.register(createListTool());
   toolRegistry.register(createTaskTool());
   
-  const llmProvider = new OpenAIProvider(
-    process.env.OPENAI_API_KEY!,
-    toolRegistry
-  );
-  
-  const executor = new AgentExecutor(
+  const modelName = process.env.MODEL || 'claude-3-5-haiku-20241022';
+  const executor = new AgentExecutorAnthropic(
     agentLoader,
     toolRegistry,
-    llmProvider,
+    modelName,
     logger
   );
   

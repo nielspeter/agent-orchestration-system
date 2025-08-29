@@ -10,22 +10,17 @@ dotenv.config();
  * Test with beautiful logging to see the orchestration flow
  */
 async function testWithLogging() {
-  const apiKey = process.env.OPENAI_API_KEY || process.env.OPENROUTER_API_KEY;
+  const apiKey = process.env.ANTHROPIC_API_KEY;
   
   if (!apiKey) {
-    console.error('Please set OPENAI_API_KEY or OPENROUTER_API_KEY environment variable');
+    console.error('Please set ANTHROPIC_API_KEY environment variable');
+    console.error('This system requires Anthropic Claude models for caching support');
     process.exit(1);
-  }
-
-  // Set OpenRouter base URL if using OpenRouter
-  if (process.env.OPENROUTER_API_KEY) {
-    process.env.OPENAI_BASE_URL = 'https://openrouter.ai/api/v1';
-    process.env.MODEL = process.env.MODEL || 'openai/gpt-4';
   }
 
   const system = new AgentOrchestrationSystem({
     agentsDir: path.join(__dirname, '../agents'),
-    apiKey
+    modelName: process.env.MODEL || 'claude-3-5-haiku-20241022'
   });
 
   console.log('🚀 Agent Orchestration System - With Full Audit Logging\n');

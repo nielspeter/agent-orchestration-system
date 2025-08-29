@@ -6,10 +6,13 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsx src/index.ts",
-    "test": "tsx src/test-true-orchestration.ts",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:demo": "tsx src/test-true-orchestration.ts",
     "test:logging": "tsx src/test-with-logging.ts",
     "test:structure": "tsx src/test-structure.ts",
-    "test:caching": "tsx test-ai-sdk-caching.ts",
+    "test:claude-code": "tsx test-claude-code-caching.ts",
     "test:parallel": "tsx test-parallel-execution.ts",
     "clean": "rm -rf dist"
   },
@@ -23,7 +26,10 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "@types/node": "^20.11.30",
+    "jest": "^30.1.1",
+    "ts-jest": "^29.4.1",
     "tsx": "^4.7.1",
     "typescript": "^5.4.2"
   }
