@@ -1,0 +1,25 @@
+{
+  "name": "agent-orchestration-poc",
+  "version": "1.0.0",
+  "description": "Agent orchestration system where everything is an agent",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
+    "test": "tsx src/test-true-orchestration.ts",
+    "test:logging": "tsx src/test-with-logging.ts",
+    "test:structure": "tsx src/test-structure.ts",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "openai": "^4.29.2",
+    "gray-matter": "^4.0.3",
+    "zod": "^3.22.4",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.30",
+    "typescript": "^5.4.2",
+    "tsx": "^4.7.1"
+  }
+}
