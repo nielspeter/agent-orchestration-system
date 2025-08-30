@@ -1,9 +1,9 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { Tool, ToolResult } from '../types';
+import { BaseTool, ToolResult } from '../types';
 
-export const createReadTool = (): Tool => ({
-  name: 'read',
+export const createReadTool = (): BaseTool => ({
+  name: 'Read',
   description: 'Read the contents of a file',
   parameters: {
     type: 'object',
@@ -15,9 +15,9 @@ export const createReadTool = (): Tool => ({
     },
     required: ['path'],
   },
-  execute: async (args: { path: string }): Promise<ToolResult> => {
+  execute: async (args): Promise<ToolResult> => {
     try {
-      const content = await fs.readFile(args.path, 'utf-8');
+      const content = await fs.readFile((args as any).path, 'utf-8');
       return { content };
     } catch (error) {
       return {
@@ -29,8 +29,8 @@ export const createReadTool = (): Tool => ({
   isConcurrencySafe: () => true, // Read operations are safe to run in parallel
 });
 
-export const createWriteTool = (): Tool => ({
-  name: 'write',
+export const createWriteTool = (): BaseTool => ({
+  name: 'Write',
   description: 'Write content to a file',
   parameters: {
     type: 'object',
@@ -46,11 +46,12 @@ export const createWriteTool = (): Tool => ({
     },
     required: ['path', 'content'],
   },
-  execute: async (args: { path: string; content: string }): Promise<ToolResult> => {
+  execute: async (args): Promise<ToolResult> => {
     try {
-      await fs.mkdir(path.dirname(args.path), { recursive: true });
-      await fs.writeFile(args.path, args.content, 'utf-8');
-      return { content: `File written successfully to ${args.path}` };
+      const typedArgs = args as any;
+      await fs.mkdir(path.dirname(typedArgs.path), { recursive: true });
+      await fs.writeFile(typedArgs.path, typedArgs.content, 'utf-8');
+      return { content: `File written successfully to ${typedArgs.path}` };
     } catch (error) {
       return {
         content: null,
@@ -58,25 +59,25 @@ export const createWriteTool = (): Tool => ({
       };
     }
   },
-  isConcurrencySafe: () => false, // Write operations must be sequential
+  isConcurrencySafe: () => false, // Write operations should be sequential
 });
 
-export const createListTool = (): Tool => ({
-  name: 'list',
-  description: 'List files in a directory',
+export const createListTool = (): BaseTool => ({
+  name: 'List',
+  description: 'List files and directories in a given path',
   parameters: {
     type: 'object',
     properties: {
       path: {
         type: 'string',
-        description: 'Path to the directory',
+        description: 'Path to the directory to list',
       },
     },
     required: ['path'],
   },
-  execute: async (args: { path: string }): Promise<ToolResult> => {
+  execute: async (args): Promise<ToolResult> => {
     try {
-      const files = await fs.readdir(args.path);
+      const files = await fs.readdir((args as any).path);
       return { content: files };
     } catch (error) {
       return {
@@ -85,5 +86,5 @@ export const createListTool = (): Tool => ({
       };
     }
   },
-  isConcurrencySafe: () => true, // Listing is a read-only operation
+  isConcurrencySafe: () => true, // List operations are safe to run in parallel
 });

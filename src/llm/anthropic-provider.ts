@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
-import {Message, Tool, ToolCall} from '../types';
-import {ConversationLogger} from '../core/conversation-logger';
+import { Message, BaseTool, ToolCall } from '../types';
+import { ConversationLogger } from '../core/conversation-logger';
+import { CacheMetricsCollector } from '../core/cache-metrics-collector';
 
 export interface CacheMetrics {
   inputTokens: number;
@@ -14,6 +15,7 @@ export class AnthropicProvider {
   private readonly client: Anthropic;
   private readonly modelName: string;
   private readonly logger?: ConversationLogger;
+  private readonly metricsCollector: CacheMetricsCollector;
 
   constructor(modelName: string = 'claude-3-5-haiku-20241022', logger?: ConversationLogger) {
     if (!modelName.startsWith('claude')) {
@@ -22,6 +24,7 @@ export class AnthropicProvider {
 
     this.modelName = modelName;
     this.logger = logger;
+    this.metricsCollector = new CacheMetricsCollector(logger);
 
     if (!process.env.ANTHROPIC_API_KEY) {
       throw new Error('ANTHROPIC_API_KEY is required for AnthropicProvider');
@@ -32,7 +35,9 @@ export class AnthropicProvider {
     });
   }
 
-  async complete(messages: Message[], tools?: Tool[]): Promise<Message> {
+  async complete(messages: Message[], tools?: BaseTool[]): Promise<Message> {
+    const startTime = Date.now();
+
     // Separate system messages from conversation messages
     const systemMessages = messages.filter((m) => m.role === 'system');
     const conversationMessages = messages.filter((m) => m.role !== 'system');
@@ -45,6 +50,9 @@ export class AnthropicProvider {
 
     // Convert tools to Anthropic format
     const formattedTools = tools ? this.formatTools(tools) : undefined;
+
+    // Count cache blocks for metrics
+    const totalCachedBlocks = this.countCacheBlocks(formattedSystem, formattedMessages);
 
     try {
       // Create the request params with proper typing
@@ -64,9 +72,15 @@ export class AnthropicProvider {
         },
       });
 
-      // Log cache metrics
-      if (response.usage && this.logger) {
-        this.logCacheMetrics(response.usage);
+      // Record detailed cache metrics
+      if (response.usage) {
+        const responseTime = Date.now() - startTime;
+        this.recordDetailedMetrics(response.usage, totalCachedBlocks, responseTime);
+
+        // Also log traditional metrics for backward compatibility
+        if (this.logger) {
+          this.logCacheMetrics(response.usage);
+        }
       }
 
       // Convert response back to our Message format
@@ -223,7 +237,7 @@ export class AnthropicProvider {
     return formatted;
   }
 
-  private formatTools(tools: Tool[]): Anthropic.Tool[] {
+  private formatTools(tools: BaseTool[]): Anthropic.Tool[] {
     return tools.map((tool) => ({
       name: tool.name,
       description: tool.description,
@@ -316,5 +330,70 @@ export class AnthropicProvider {
 
   getModelName(): string {
     return this.modelName;
+  }
+
+  /**
+   * Count total cached blocks in the request
+   */
+  private countCacheBlocks(
+    formattedSystem: string | Array<Anthropic.TextBlockParam>,
+    formattedMessages: Anthropic.MessageParam[]
+  ): number {
+    let count = 0;
+
+    // Count system cache blocks
+    if (Array.isArray(formattedSystem)) {
+      count += formattedSystem.filter(
+        (block) => 'cache_control' in block && block.cache_control?.type === 'ephemeral'
+      ).length;
+    }
+
+    // Count message cache blocks
+    for (const msg of formattedMessages) {
+      if (Array.isArray(msg.content)) {
+        count += msg.content.filter(
+          (block) =>
+            block.type === 'text' &&
+            'cache_control' in block &&
+            (block as any).cache_control?.type === 'ephemeral'
+        ).length;
+      }
+    }
+
+    return count;
+  }
+
+  /**
+   * Record detailed cache metrics
+   */
+  private recordDetailedMetrics(
+    usage: any,
+    totalCachedBlocks: number,
+    responseTimeMs: number
+  ): void {
+    this.metricsCollector.recordMetrics({
+      modelName: this.modelName,
+      inputTokens: usage.input_tokens || 0,
+      outputTokens: usage.output_tokens || 0,
+      cacheCreationTokens: usage.cache_creation_input_tokens || 0,
+      cacheReadTokens: usage.cache_read_input_tokens || 0,
+      totalCachedBlocks: totalCachedBlocks,
+      newCacheBlocks: usage.cache_creation_input_tokens ? 1 : 0, // Simplified
+      responseTimeMs: responseTimeMs,
+    });
+  }
+
+  /**
+   * Get cache metrics summary
+   */
+  getCacheMetricsSummary() {
+    return this.metricsCollector.getSessionSummary();
+  }
+
+  /**
+   * Log periodic cache summary
+   */
+  logCacheSummary() {
+    this.metricsCollector.logPeriodicSummary();
   }
 }

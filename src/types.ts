@@ -9,20 +9,42 @@ export interface AgentDefinition {
   model?: string;
 }
 
-export interface Tool {
+export interface ToolParameter {
+  type: string;
+  description: string;
+  items?: ToolParameter;
+  enum?: string[];
+  properties?: Record<string, ToolParameter>;
+  required?: string[];
+  minimum?: number;
+  maximum?: number;
+  minLength?: number;
+  maxLength?: number;
+  format?: string;
+}
+
+export interface ToolSchema {
+  type: 'object';
+  properties: Record<string, ToolParameter>;
+  required?: string[];
+}
+
+// Base tool interface - backward compatible
+export interface BaseTool {
   name: string;
   description: string;
-  parameters: {
-    type: 'object';
-    properties: Record<string, any>;
-    required?: string[];
-  };
-  execute: (args: any) => Promise<ToolResult>;
+  parameters: ToolSchema;
+  execute: (args: Record<string, unknown>) => Promise<ToolResult>;
   isConcurrencySafe: () => boolean;
 }
 
+// Generic tool interface for typed implementations
+export interface Tool<T = Record<string, unknown>> extends Omit<BaseTool, 'execute'> {
+  execute: (args: T) => Promise<ToolResult>;
+}
+
 export interface ToolResult {
-  content: any;
+  content: unknown;
   error?: string;
 }
 

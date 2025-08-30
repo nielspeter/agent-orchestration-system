@@ -6,7 +6,7 @@ export interface LogEntry {
   agentName: string;
   depth: number;
   type: 'system' | 'user' | 'assistant' | 'tool' | 'delegation' | 'result' | 'error';
-  content: any;
+  content: string;
   metadata?: {
     toolName?: string;
     subAgent?: string;
@@ -17,7 +17,18 @@ export interface LogEntry {
     messageCount?: number;
     toolCallCount?: number;
     iterations?: number;
-    [key: string]: any; // Allow additional properties
+    model?: string;
+    hasParentContext?: boolean;
+    parentMessageCount?: number;
+    isSidechain?: boolean;
+    willCacheCount?: number;
+    parentContext?: boolean;
+    groups?: Array<{
+      isConcurrent: boolean;
+      tools: string[];
+    }>;
+    result?: { error?: string; success?: boolean };
+    [key: string]: unknown; // Allow additional properties with unknown type
   };
 }
 

@@ -1,29 +1,27 @@
 import { AgentLoader } from './agent-loader';
 import { ToolRegistry } from './tool-registry';
 import { AnthropicProvider } from '../llm/anthropic-provider';
-import { ExecutionContext, Message, ToolCall, ToolResult } from '../types';
+import { ExecutionContext, Message, ToolCall, ToolResult, BaseTool } from '../types';
 import { ConversationLogger, LoggerFactory } from './conversation-logger';
-
-// POC Safety Limits
-const SAFETY_LIMITS = {
-  MAX_ITERATIONS: 20, // Prevent infinite loops
-  WARN_AT_ITERATION: 10, // Warning threshold
-  MAX_TOKENS_ESTIMATE: 50000, // ~$0.05 max per run
-  MAX_DEPTH: 5, // Maximum delegation depth
-};
+import { MessageValidator } from './message-validator';
+import { ConfigManager } from '../config/config-manager';
 
 export class AgentExecutor {
   private readonly logger: ConversationLogger;
   private readonly provider: AnthropicProvider;
+  private readonly messageValidator: MessageValidator;
+  private readonly config = ConfigManager.getInstance();
 
   constructor(
     private readonly agentLoader: AgentLoader,
     private readonly toolRegistry: ToolRegistry,
-    modelName: string = 'claude-3-5-haiku-20241022',
+    modelName?: string,
     logger?: ConversationLogger
   ) {
     this.logger = logger || LoggerFactory.createCombinedLogger();
-    this.provider = new AnthropicProvider(modelName, this.logger);
+    const finalModelName = modelName || this.config.getModels().defaultModel;
+    this.provider = new AnthropicProvider(finalModelName, this.logger);
+    this.messageValidator = new MessageValidator(this.logger);
   }
 
   async execute(agentName: string, prompt: string, context?: ExecutionContext): Promise<string> {
@@ -56,7 +54,8 @@ export class AgentExecutor {
     });
 
     // Check recursion depth with helpful message
-    const effectiveMaxDepth = Math.min(execContext.maxDepth, SAFETY_LIMITS.MAX_DEPTH);
+    const safetyLimits = this.config.getSafety();
+    const effectiveMaxDepth = Math.min(execContext.maxDepth, safetyLimits.maxDepth);
     if (execContext.depth >= effectiveMaxDepth) {
       const msg =
         `Max delegation depth (${effectiveMaxDepth}) reached. ` +
@@ -134,17 +133,17 @@ export class AgentExecutor {
 
     // Execution loop with safety limits
     let iterationCount = 0;
-    while (iterationCount < SAFETY_LIMITS.MAX_ITERATIONS) {
+    while (iterationCount < safetyLimits.maxIterations) {
       iterationCount++;
 
       // Warn at high iteration count
-      if (iterationCount === SAFETY_LIMITS.WARN_AT_ITERATION) {
+      if (iterationCount === safetyLimits.warnAtIteration) {
         console.warn(`⚠️ High iteration count: ${iterationCount} - possible complex task`);
       }
 
       // Estimate tokens and check limit
       const estimatedTokens = JSON.stringify(messages).length / 4;
-      if (estimatedTokens > SAFETY_LIMITS.MAX_TOKENS_ESTIMATE) {
+      if (estimatedTokens > safetyLimits.maxTokensEstimate) {
         const msg = `Token limit estimate exceeded: ~${Math.round(estimatedTokens)} tokens`;
         console.warn(`⚠️ ${msg}`);
         this.logger.log({
@@ -172,8 +171,11 @@ export class AgentExecutor {
         },
       });
 
-      // Call provider with complete message history (parent + current)
-      const response = await this.provider.complete(messages, tools);
+      // Validate and fix message history before calling provider
+      const validatedMessages = this.messageValidator.validateAndFixMessages(messages, agentName);
+
+      // Call provider with validated message history
+      const response = await this.provider.complete(validatedMessages, tools);
 
       // Log assistant response
       this.logger.log({
@@ -189,6 +191,9 @@ export class AgentExecutor {
 
       // Check for tool calls
       if (response.tool_calls && response.tool_calls.length > 0) {
+        // Validate tool call IDs are unique
+        this.messageValidator.validateToolCallIds(response.tool_calls, agentName);
+
         // Add assistant's response with tool calls
         messages.push(response);
 
@@ -250,7 +255,7 @@ export class AgentExecutor {
     }
 
     // Handle max iterations reached
-    const msg = `Stopped at ${SAFETY_LIMITS.MAX_ITERATIONS} iterations (safety limit). Task may be too complex.`;
+    const msg = `Stopped at ${safetyLimits.maxIterations} iterations (safety limit). Task may be too complex.`;
     console.error(`🛑 ${msg}`);
     this.logger.log({
       timestamp: new Date().toISOString(),

@@ -2,9 +2,13 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import matter from 'gray-matter';
 import { AgentDefinition } from '../types';
+import { ConversationLogger } from './conversation-logger';
 
 export class AgentLoader {
-  constructor(private readonly agentsDir: string) {}
+  constructor(
+    private readonly agentsDir: string,
+    private readonly logger?: ConversationLogger
+  ) {}
 
   async loadAgent(name: string): Promise<AgentDefinition> {
     const agentPath = path.join(this.agentsDir, `${name}.md`);
@@ -33,7 +37,18 @@ export class AgentLoader {
       const files = await fs.readdir(this.agentsDir);
       return files.filter((f) => f.endsWith('.md')).map((f) => f.replace('.md', ''));
     } catch (error) {
-      console.error(`Failed to list agents: ${error}`);
+      const errorMsg = `Failed to list agents: ${error}`;
+      if (this.logger) {
+        this.logger.log({
+          timestamp: new Date().toISOString(),
+          agentName: 'AgentLoader',
+          depth: 0,
+          type: 'error',
+          content: errorMsg,
+        });
+      } else {
+        console.error(errorMsg);
+      }
       return [];
     }
   }

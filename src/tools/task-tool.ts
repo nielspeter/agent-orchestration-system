@@ -1,34 +1,57 @@
 import { Tool, ToolResult } from '../types';
+import { AgentLoader } from '../core/agent-loader';
 
 /**
  * The Task tool - enables delegation to other agents
  * Note: This tool doesn't execute anything itself, the AgentExecutor
  * handles it specially to make the recursive call
  */
-export const createTaskTool = (): Tool => ({
-  name: 'Task',
-  description: 'Delegate a task to another specialized agent',
-  parameters: {
-    type: 'object',
-    properties: {
-      subagent_type: {
-        type: 'string',
-        description: 'Name of the agent to delegate to',
+export const createTaskTool = async (agentLoader: AgentLoader): Promise<Tool> => {
+  const availableAgents = await agentLoader.listAgents();
+  const agentList =
+    availableAgents.length > 0
+      ? `\n\nAvailable agents: ${availableAgents.join(', ')}`
+      : '\n\nNo agents available in the agents directory.';
+
+  return {
+    name: 'Task',
+    description: `Launch a specialized agent to handle complex, multi-step tasks autonomously. 
+
+Use this tool proactively when:
+- The task requires specialized domain expertise beyond general assistance
+- You need deep analysis or investigation that would benefit from focused attention  
+- The user's request involves code review, architecture analysis, or technical writing
+- You've completed significant work that should be reviewed or documented
+- The task involves complex multi-step coordination${agentList}
+
+The subagent will receive full conversation context and return comprehensive results.`,
+    parameters: {
+      type: 'object',
+      properties: {
+        subagent_type: {
+          type: 'string',
+          description:
+            availableAgents.length > 0
+              ? `The type of specialized agent to use for this task. Must match one of: ${availableAgents.join(', ')}`
+              : 'The type of specialized agent to use for this task',
+        },
+        prompt: {
+          type: 'string',
+          description:
+            'The task for the agent to perform. Should be clear, specific, and include all necessary context for the specialized agent to work autonomously',
+        },
+        description: {
+          type: 'string',
+          description:
+            'A short (3-5 word) description of the task for logging and tracking purposes',
+        },
       },
-      prompt: {
-        type: 'string',
-        description: 'The task or question for the agent to handle',
-      },
-      description: {
-        type: 'string',
-        description: 'Optional brief description of the task',
-      },
+      required: ['subagent_type', 'prompt'],
     },
-    required: ['subagent_type', 'prompt'],
-  },
-  // This is a placeholder - the actual execution is handled by AgentExecutor
-  execute: async (args: any): Promise<ToolResult> => {
-    throw new Error('Task tool should be handled by AgentExecutor');
-  },
-  isConcurrencySafe: () => false, // Task delegation must be sequential to maintain context
-});
+    // This is a placeholder - the actual execution is handled by AgentExecutor
+    execute: async (args: Record<string, unknown>): Promise<ToolResult> => {
+      throw new Error('Task tool should be handled by AgentExecutor');
+    },
+    isConcurrencySafe: () => false, // Task delegation must be sequential to maintain context
+  };
+};

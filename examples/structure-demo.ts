@@ -3,6 +3,8 @@ import * as path from 'path';
 import { AgentLoader, ToolRegistry } from '../src';
 import { createTaskTool } from '../src/tools/task-tool';
 import { createListTool, createReadTool, createWriteTool } from '../src/tools/file-tools';
+import { createTodoWriteTool } from '../src/tools/todowrite-tool';
+import { TodoManager } from '../src/core/todo-manager';
 
 /**
  * Test the structure without making API calls
@@ -32,12 +34,15 @@ async function testStructure() {
   // Test 2: Tool Registry
   console.log('\n🔧 Test 2: Tool Registry');
   const toolRegistry = new ToolRegistry();
+  const todoManager = new TodoManager();
+  await todoManager.initialize();
 
   // Register tools
   toolRegistry.register(createReadTool());
   toolRegistry.register(createWriteTool());
   toolRegistry.register(createListTool());
-  toolRegistry.register(createTaskTool());
+  toolRegistry.register(createTodoWriteTool(todoManager));
+  toolRegistry.register(createTaskTool(agentLoader));
 
   console.log(
     '✅ Registered tools:',
