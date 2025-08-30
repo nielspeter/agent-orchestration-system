@@ -5,7 +5,7 @@
 export interface AgentDefinition {
   name: string;
   description: string;
-  tools: string[] | "*";
+  tools: string[] | '*';
   model?: string;
 }
 
@@ -13,7 +13,7 @@ export interface Tool {
   name: string;
   description: string;
   parameters: {
-    type: "object";
+    type: 'object';
     properties: Record<string, any>;
     required?: string[];
   };
@@ -27,7 +27,7 @@ export interface ToolResult {
 }
 
 export interface Message {
-  role: "system" | "user" | "assistant" | "tool";
+  role: 'system' | 'user' | 'assistant' | 'tool';
   content?: string;
   tool_calls?: ToolCall[];
   tool_call_id?: string;
@@ -35,7 +35,7 @@ export interface Message {
 
 export interface ToolCall {
   id: string;
-  type: "function";
+  type: 'function';
   function: {
     name: string;
     arguments: string;

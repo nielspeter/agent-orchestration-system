@@ -13,22 +13,22 @@ export const createTaskTool = (): Tool => ({
     properties: {
       subagent_type: {
         type: 'string',
-        description: 'Name of the agent to delegate to'
+        description: 'Name of the agent to delegate to',
       },
       prompt: {
         type: 'string',
-        description: 'The task or question for the agent to handle'
+        description: 'The task or question for the agent to handle',
       },
       description: {
         type: 'string',
-        description: 'Optional brief description of the task'
-      }
+        description: 'Optional brief description of the task',
+      },
     },
-    required: ['subagent_type', 'prompt']
+    required: ['subagent_type', 'prompt'],
   },
   // This is a placeholder - the actual execution is handled by AgentExecutor
   execute: async (args: any): Promise<ToolResult> => {
     throw new Error('Task tool should be handled by AgentExecutor');
   },
-  isConcurrencySafe: () => false  // Task delegation must be sequential to maintain context
+  isConcurrencySafe: () => false, // Task delegation must be sequential to maintain context
 });

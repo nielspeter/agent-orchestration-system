@@ -1,24 +1,23 @@
+import { getDirname } from '../src/utils/esm-helpers';
 import * as path from 'path';
 import * as dotenv from 'dotenv';
-import { AgentLoader } from './core/agent-loader';
-import { ToolRegistry } from './core/tool-registry';
-import { AgentExecutorAnthropic } from './core/agent-executor-anthropic';
-import { LoggerFactory } from './core/conversation-logger';
-import { createTaskTool } from './tools/task-tool';
-import { createReadTool, createWriteTool, createListTool } from './tools/file-tools';
+import { AgentExecutor, AgentLoader, ToolRegistry } from '../src';
+import { LoggerFactory } from '../src/core/conversation-logger';
+import { createTaskTool } from '../src/tools/task-tool';
+import { createListTool, createReadTool, createWriteTool } from '../src/tools/file-tools';
 
 // Load environment variables
 dotenv.config();
 
 /**
  * Test that demonstrates TRUE agent orchestration
- * 
+ *
  * This shows how agents autonomously decide to delegate work,
  * not just sequential function calls.
  */
 async function testTrueOrchestration() {
   const apiKey = process.env.ANTHROPIC_API_KEY;
-  
+
   if (!apiKey) {
     console.error('Please set ANTHROPIC_API_KEY environment variable');
     console.error('This system requires Anthropic Claude models for caching support');
@@ -26,11 +25,11 @@ async function testTrueOrchestration() {
   }
 
   // Set up the system components
-  const agentLoader = new AgentLoader(path.join(__dirname, '../agents'));
+  const agentLoader = new AgentLoader(path.join(getDirname(import.meta.url), '../agents'));
   const toolRegistry = new ToolRegistry();
   const logger = LoggerFactory.createCombinedLogger('true-orchestration-demo');
   const modelName = process.env.MODEL || 'claude-3-5-haiku-20241022';
-  const executor = new AgentExecutorAnthropic(agentLoader, toolRegistry, modelName, logger);
+  const executor = new AgentExecutor(agentLoader, toolRegistry, modelName, logger);
 
   // Register tools
   toolRegistry.register(createReadTool());
@@ -39,13 +38,13 @@ async function testTrueOrchestration() {
   toolRegistry.register(createTaskTool()); // The magic tool that enables delegation!
 
   console.log('🎭 TRUE Agent Orchestration Demonstration');
-  console.log('=' .repeat(70));
+  console.log('='.repeat(70));
   console.log('This demonstrates how agents AUTONOMOUSLY decide to delegate.');
   console.log('The orchestrator will analyze the task and decide whether to:');
   console.log('  1. Handle it directly (simple tasks)');
   console.log('  2. Delegate to specialists (complex tasks)');
   console.log('  3. Coordinate multiple agents (multi-step tasks)');
-  console.log('=' .repeat(70));
+  console.log('='.repeat(70));
   console.log();
 
   // Single complex request that will trigger autonomous orchestration
@@ -68,12 +67,12 @@ async function testTrueOrchestration() {
   try {
     // ONE call to the orchestrator - it will handle all the delegation autonomously
     const result = await executor.execute('orchestrator', complexRequest);
-    
-    console.log('\n' + '=' .repeat(70));
+
+    console.log('\n' + '='.repeat(70));
     console.log('✨ Final Orchestrated Result:');
-    console.log('=' .repeat(70));
+    console.log('='.repeat(70));
     console.log(result);
-    
+
     console.log('\n📊 What just happened:');
     console.log('-'.repeat(70));
     console.log('1. Orchestrator received the complex request');
@@ -83,15 +82,14 @@ async function testTrueOrchestration() {
     console.log('5. It delegated to writer for documentation');
     console.log('6. It coordinated all results into a cohesive response');
     console.log('\nAll from a SINGLE request! This is TRUE orchestration.');
-    
   } catch (error) {
     console.error('Error:', error);
   }
 
-  console.log('\n' + '=' .repeat(70));
+  console.log('\n' + '='.repeat(70));
   console.log('📁 Check conversations/true-orchestration-demo-*.json for the full audit trail');
   console.log('\nNotice how the delegation decisions were made by the LLM,');
-  console.log('not by our code. The orchestration emerged from the agent\'s reasoning!');
+  console.log("not by our code. The orchestration emerged from the agent's reasoning!");
 }
 
 // Run the demonstration

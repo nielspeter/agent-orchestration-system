@@ -1,10 +1,9 @@
+import { getDirname } from '../src/utils/esm-helpers';
 import { config } from 'dotenv';
-import { AgentExecutorAnthropic } from './src/core/agent-executor-anthropic';
-import { AgentLoader } from './src/core/agent-loader';
-import { ToolRegistry } from './src/core/tool-registry';
-import { LoggerFactory } from './src/core/conversation-logger';
-import { createReadTool, createWriteTool, createListTool } from './src/tools/file-tools';
-import { createTaskTool } from './src/tools/task-tool';
+import { AgentExecutor, AgentLoader, ToolRegistry } from '../src';
+import { LoggerFactory } from '../src/core/conversation-logger';
+import { createListTool, createReadTool, createWriteTool } from '../src/tools/file-tools';
+import { createTaskTool } from '../src/tools/task-tool';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
@@ -13,9 +12,9 @@ config();
 
 async function setupTestEnvironment() {
   // Create agents directory and test agents
-  const agentsDir = path.join(__dirname, 'agents');
+  const agentsDir = path.join(getDirname(import.meta.url), 'agents');
   await fs.mkdir(agentsDir, { recursive: true });
-  
+
   // Create orchestrator agent (has Task tool for delegation)
   const orchestratorAgent = `---
 name: orchestrator
@@ -35,7 +34,7 @@ When you receive a request, analyze it and decide whether to:
 - Delegate to a specialist agent via the Task tool
 
 Always provide clear, helpful responses to the user.`;
-  
+
   // Create analyzer agent (specialist)
   const analyzerAgent = `---
 name: analyzer
@@ -51,7 +50,7 @@ You are a specialized analysis agent. Your role is to:
 
 You have access to file reading tools to examine content.
 Focus on thorough analysis and clear explanations.`;
-  
+
   // Create summarizer agent (specialist)
   const summarizerAgent = `---
 name: summarizer
@@ -66,15 +65,15 @@ You are a specialized summarization agent. Your role is to:
 3. Organize information clearly
 
 Focus on clarity and brevity in your summaries.`;
-  
+
   await fs.writeFile(path.join(agentsDir, 'orchestrator.md'), orchestratorAgent);
   await fs.writeFile(path.join(agentsDir, 'analyzer.md'), analyzerAgent);
   await fs.writeFile(path.join(agentsDir, 'summarizer.md'), summarizerAgent);
-  
+
   // Create test context file (large document to demonstrate caching)
-  const testDir = path.join(__dirname, 'test-context');
+  const testDir = path.join(getDirname(import.meta.url), 'test-context');
   await fs.mkdir(testDir, { recursive: true });
-  
+
   // Create a substantial document that will benefit from caching
   const largeDocument = `# Claude Code Architecture Documentation
 
@@ -174,58 +173,50 @@ an agent" creates emergent orchestration capabilities without special coordinati
 
 ${Array(100).fill('This additional content simulates a large document that benefits from caching.').join('\n')}
 `;
-  
-  await fs.writeFile(
-    path.join(testDir, 'architecture.md'),
-    largeDocument
-  );
-  
+
+  await fs.writeFile(path.join(testDir, 'architecture.md'), largeDocument);
+
   return { agentsDir, testDir };
 }
 
 async function runClaudeCodeCachingTest() {
   console.log('🚀 Claude Code Caching Architecture Test');
   console.log('Demonstrating context inheritance and caching efficiency\n');
-  
+
   // Check for Anthropic API key
   if (!process.env.ANTHROPIC_API_KEY) {
     console.error('❌ ANTHROPIC_API_KEY not found in environment!');
     console.error('   Please set your Anthropic API key in .env file');
     process.exit(1);
   }
-  
+
   // Setup test environment
   const { agentsDir, testDir } = await setupTestEnvironment();
   console.log('✅ Test environment created');
-  
+
   // Initialize components
   const agentLoader = new AgentLoader(agentsDir);
   const toolRegistry = new ToolRegistry();
   const logger = LoggerFactory.createCombinedLogger();
-  
+
   // Register tools
   toolRegistry.register(createReadTool());
   toolRegistry.register(createWriteTool());
   toolRegistry.register(createListTool());
   toolRegistry.register(createTaskTool());
-  
+
   // Create executor with Anthropic provider
   const modelName = process.env.MODEL || 'claude-3-5-haiku-20241022';
-  const executor = new AgentExecutorAnthropic(
-    agentLoader,
-    toolRegistry,
-    modelName,
-    logger
-  );
-  
+  const executor = new AgentExecutor(agentLoader, toolRegistry, modelName, logger);
+
   console.log(`\n📊 Using model: ${modelName}`);
   console.log('✅ Ephemeral caching ENABLED (5-minute TTL)\n');
-  
+
   // Test Case 1: Parent reads large context, then delegates
   console.log('=' * 60);
   console.log('Test Case 1: Context Inheritance with Caching');
   console.log('=' * 60);
-  
+
   const startTime1 = Date.now();
   try {
     const result1 = await executor.execute(
@@ -236,7 +227,7 @@ async function runClaudeCodeCachingTest() {
       
       Make sure to pass the full context you've read to each specialist agent so they can work with the complete document.`
     );
-    
+
     const duration1 = Date.now() - startTime1;
     console.log(`\n✅ Multi-agent workflow completed in ${duration1}ms`);
     console.log('\nKey observations:');
@@ -244,17 +235,17 @@ async function runClaudeCodeCachingTest() {
     console.log('2. First delegation (analyzer) - reuses cached context (90% savings)');
     console.log('3. Second delegation (summarizer) - also reuses cache');
     console.log('4. Total token usage dramatically reduced through caching\n');
-    
+
     console.log('Result preview:', result1.substring(0, 300) + '...\n');
   } catch (error) {
     console.error('❌ Test Case 1 failed:', error);
   }
-  
+
   // Test Case 2: Parallel delegations sharing cached context
   console.log('=' * 60);
   console.log('Test Case 2: Parallel Delegations with Shared Cache');
   console.log('=' * 60);
-  
+
   const startTime2 = Date.now();
   try {
     const result2 = await executor.execute(
@@ -266,7 +257,7 @@ async function runClaudeCodeCachingTest() {
       
       Both agents should work with the full document context.`
     );
-    
+
     const duration2 = Date.now() - startTime2;
     console.log(`\n✅ Parallel delegation completed in ${duration2}ms`);
     console.log('\nCache efficiency demonstrated:');
@@ -274,12 +265,12 @@ async function runClaudeCodeCachingTest() {
     console.log('2. Both child agents reuse the same cached context');
     console.log('3. Parallel execution with minimal token overhead');
     console.log('4. Cache metrics show high cache hit rate\n');
-    
+
     console.log('Result preview:', result2.substring(0, 300) + '...\n');
   } catch (error) {
     console.error('❌ Test Case 2 failed:', error);
   }
-  
+
   // Summary
   console.log('=' * 60);
   console.log('📊 CACHING ARCHITECTURE SUMMARY');
@@ -290,13 +281,13 @@ async function runClaudeCodeCachingTest() {
   console.log('  3. Anthropic caching eliminates redundant token usage');
   console.log('  4. 90% cost reduction on repeated context');
   console.log('  5. Enables complex multi-agent workflows at scale');
-  
+
   console.log('\n🎯 Key Insight:');
   console.log('The "isolated agents + context passing" architecture that could be');
-  console.log('seen as inefficient becomes incredibly powerful with Anthropic\'s');
-  console.log('ephemeral caching. The parent\'s work becomes the child\'s cached');
+  console.log("seen as inefficient becomes incredibly powerful with Anthropic's");
+  console.log("ephemeral caching. The parent's work becomes the child's cached");
   console.log('foundation, creating a 2000x efficiency gain!');
-  
+
   // Cleanup
   try {
     await fs.rm(testDir, { recursive: true, force: true });

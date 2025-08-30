@@ -57,7 +57,7 @@ When agent A delegates to agent B:
 poc-typescript/
 ├── src/
 │   ├── core/
-│   │   ├── agent-executor-anthropic.ts  # Main execution with caching
+│   │   ├── agent-executor.ts  # Main execution with caching
 │   │   ├── agent-loader.ts              # Loads agents from markdown
 │   │   └── tool-registry.ts             # Manages available tools
 │   ├── tools/

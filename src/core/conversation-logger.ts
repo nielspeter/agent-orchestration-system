@@ -1,6 +1,5 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { Message } from '../types';
 
 export interface LogEntry {
   timestamp: string;
@@ -31,25 +30,25 @@ export interface ConversationLogger {
  * Console logger with colored, hierarchical output
  */
 export class ConsoleLogger implements ConversationLogger {
-  private colors = {
-    system: '\x1b[90m',      // gray
-    user: '\x1b[36m',        // cyan
-    assistant: '\x1b[32m',   // green
-    tool: '\x1b[33m',        // yellow
-    delegation: '\x1b[35m',  // magenta
-    result: '\x1b[34m',      // blue
-    error: '\x1b[31m',       // red
-    reset: '\x1b[0m'
+  private readonly colors = {
+    system: '\x1b[90m', // gray
+    user: '\x1b[36m', // cyan
+    assistant: '\x1b[32m', // green
+    tool: '\x1b[33m', // yellow
+    delegation: '\x1b[35m', // magenta
+    result: '\x1b[34m', // blue
+    error: '\x1b[31m', // red
+    reset: '\x1b[0m',
   };
 
-  private icons = {
+  private readonly icons = {
     system: '⚙️ ',
     user: '👤',
     assistant: '🤖',
     tool: '🔧',
     delegation: '📋',
     result: '✅',
-    error: '❌'
+    error: '❌',
   };
 
   log(entry: LogEntry): void {
@@ -57,15 +56,15 @@ export class ConsoleLogger implements ConversationLogger {
     const color = this.colors[entry.type];
     const icon = this.icons[entry.type];
     const timestamp = new Date(entry.timestamp).toLocaleTimeString();
-    
+
     // Build the log line
     let logLine = `${indent}${color}[${timestamp}] ${icon} `;
-    
+
     // Add agent name for context
     if (entry.agentName) {
       logLine += `[${entry.agentName}] `;
     }
-    
+
     // Add type-specific formatting
     switch (entry.type) {
       case 'delegation':
@@ -80,25 +79,25 @@ export class ConsoleLogger implements ConversationLogger {
       default:
         logLine += `${entry.type.toUpperCase()}: `;
     }
-    
+
     // Add content (truncate if too long)
-    const content = typeof entry.content === 'string' 
-      ? entry.content 
-      : JSON.stringify(entry.content, null, 2);
-    
+    const content =
+      typeof entry.content === 'string' ? entry.content : JSON.stringify(entry.content, null, 2);
+
     const maxLength = 200;
-    const displayContent = content.length > maxLength 
-      ? content.substring(0, maxLength) + '...' 
-      : content;
-    
+    const displayContent =
+      content.length > maxLength ? content.substring(0, maxLength) + '...' : content;
+
     logLine += displayContent;
     logLine += this.colors.reset;
-    
+
     console.log(logLine);
-    
+
     // Add execution time if available
     if (entry.metadata?.executionTime) {
-      console.log(`${indent}  ${this.colors.system}⏱️  Execution time: ${entry.metadata.executionTime}ms${this.colors.reset}`);
+      console.log(
+        `${indent}  ${this.colors.system}⏱️  Execution time: ${entry.metadata.executionTime}ms${this.colors.reset}`
+      );
     }
   }
 
@@ -112,28 +111,24 @@ export class ConsoleLogger implements ConversationLogger {
  */
 export class FileLogger implements ConversationLogger {
   private buffer: LogEntry[] = [];
-  private filePath: string;
-  
+  private readonly filePath: string;
+
   constructor(conversationId?: string) {
     const id = conversationId || new Date().toISOString().replace(/[:.]/g, '-');
-    this.filePath = path.join(
-      process.cwd(),
-      'conversations',
-      `${id}.json`
-    );
+    this.filePath = path.join(process.cwd(), 'conversations', `${id}.json`);
   }
-  
+
   log(entry: LogEntry): void {
     this.buffer.push(entry);
   }
-  
+
   async flush(): Promise<void> {
     if (this.buffer.length === 0) return;
-    
+
     // Ensure directory exists
     const dir = path.dirname(this.filePath);
     await fs.mkdir(dir, { recursive: true });
-    
+
     // Read existing data if file exists
     let existingData: LogEntry[] = [];
     try {
@@ -142,17 +137,13 @@ export class FileLogger implements ConversationLogger {
     } catch {
       // File doesn't exist yet
     }
-    
+
     // Append new entries
     const allData = [...existingData, ...this.buffer];
-    
+
     // Write to file
-    await fs.writeFile(
-      this.filePath,
-      JSON.stringify(allData, null, 2),
-      'utf-8'
-    );
-    
+    await fs.writeFile(this.filePath, JSON.stringify(allData, null, 2), 'utf-8');
+
     // Clear buffer
     this.buffer = [];
   }
@@ -162,18 +153,18 @@ export class FileLogger implements ConversationLogger {
  * Combined logger that logs to both console and file
  */
 export class CombinedLogger implements ConversationLogger {
-  private loggers: ConversationLogger[];
-  
+  private readonly loggers: ConversationLogger[];
+
   constructor(loggers: ConversationLogger[]) {
     this.loggers = loggers;
   }
-  
+
   log(entry: LogEntry): void {
-    this.loggers.forEach(logger => logger.log(entry));
+    this.loggers.forEach((logger) => logger.log(entry));
   }
-  
+
   async flush(): Promise<void> {
-    await Promise.all(this.loggers.map(logger => logger.flush()));
+    await Promise.all(this.loggers.map((logger) => logger.flush()));
   }
 }
 
@@ -184,27 +175,8 @@ export class LoggerFactory {
   static createConsoleLogger(): ConversationLogger {
     return new ConsoleLogger();
   }
-  
-  static createFileLogger(conversationId?: string): ConversationLogger {
-    return new FileLogger(conversationId);
-  }
-  
+
   static createCombinedLogger(conversationId?: string): ConversationLogger {
-    return new CombinedLogger([
-      new ConsoleLogger(),
-      new FileLogger(conversationId)
-    ]);
-  }
-  
-  static createLogger(type: 'console' | 'file' | 'combined' = 'combined', conversationId?: string): ConversationLogger {
-    switch (type) {
-      case 'console':
-        return this.createConsoleLogger();
-      case 'file':
-        return this.createFileLogger(conversationId);
-      case 'combined':
-      default:
-        return this.createCombinedLogger(conversationId);
-    }
+    return new CombinedLogger([new ConsoleLogger(), new FileLogger(conversationId)]);
   }
 }
