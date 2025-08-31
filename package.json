@@ -23,6 +23,7 @@
     "example:configuration": "tsx examples/03-configuration.ts",
     "example:logging": "tsx examples/04-logging.ts",
     "example:mcp": "tsx examples/05-mcp-integration.ts",
+    "example:werewolf": "tsx examples/06-werewolf-game.ts",
     "clean": "rm -rf dist"
   },
   "dependencies": {
