@@ -25,7 +25,8 @@ name: child
 tools: ["read"]
 ---
 
-You are the child agent. You inherit context from your parent.`;
+You are the child agent. With pull architecture, you don't inherit parent's context.
+You must use your Read tool to get any files you need to analyze.`;
 
   await fs.writeFile(path.join(agentsDir, 'parent.md'), parentAgent);
   await fs.writeFile(path.join(agentsDir, 'child.md'), childAgent);
@@ -80,21 +81,23 @@ async function verifyCaching() {
   try {
     await executor.execute(
       'parent',
-      `Read the file test-data/test.md and understand its content.
-      Then delegate to the child agent to summarize what you've read.
-      Pass your complete understanding to the child.`
+      `Read the file examples/test-data/test.md and understand its content.
+      Then delegate to the child agent to analyze the same file.
+      
+      IMPORTANT: Due to pull architecture, tell the child agent the exact file path 
+      so it can read it itself: examples/test-data/test.md`
     );
     console.log('\n' + '='.repeat(60));
-    console.log('Cache Analysis:');
+    console.log('Cache Analysis with Pull Architecture:');
     console.log('='.repeat(60));
     console.log('1. Parent read file → Created cache blocks');
-    console.log('2. Parents messages cached with ephemeral TTL');
-    console.log("3. Child inherited parent's cached conversation");
-    console.log('4. Only new prompt was uncached');
-    console.log('\nCheck the cache metrics above to verify:');
-    console.log('- Cache creation on first read');
-    console.log('- Cache hits when child processes parent context');
-    console.log('- 90% token savings on delegation');
+    console.log('2. Child does NOT inherit parent messages (pull architecture)');
+    console.log("3. Child reads same file → CACHE HIT!");
+    console.log('4. Both have the content with minimal token cost');
+    console.log('\nCheck the logs above to verify:');
+    console.log('- Parent uses Read tool');
+    console.log('- Child also uses Read tool (pull architecture)');
+    console.log('- Cache provides efficiency despite "redundant" reads');
   } catch (error) {
     console.error('Test failed:', error);
   }
