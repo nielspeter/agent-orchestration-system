@@ -9,6 +9,10 @@
  */
 
 import { AgentSystemBuilder } from '../src/config/system-builder';
+import * as dotenv from 'dotenv';
+
+// Load environment variables from .env file
+dotenv.config();
 
 // Game state to track players and their status
 interface GameState {
@@ -31,6 +35,14 @@ async function main() {
   console.log('🌙 Welcome to Werewolf Village Game!');
   console.log('=====================================\n');
 
+  // Check for API key
+  if (!process.env.ANTHROPIC_API_KEY) {
+    console.error('❌ Error: ANTHROPIC_API_KEY environment variable is required');
+    console.error('   Set it with: export ANTHROPIC_API_KEY=your-key-here');
+    console.error('   Or create a .env file with ANTHROPIC_API_KEY=your-key-here');
+    process.exit(1);
+  }
+
   // Initialize the game state
   const gameState: GameState = {
     players: [
@@ -50,7 +62,7 @@ async function main() {
 
   // Build the agent system with custom agents directory
   const builder = AgentSystemBuilder.default()
-    .withAgentDirectories(['examples/06-werewolf-game/agents'])
+    .withAgentsFrom('examples/06-werewolf-game/agents')
     .withBuiltinTools([]); // No tools needed for this game
 
   const system = await builder.build();
