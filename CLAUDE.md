@@ -88,6 +88,11 @@ When agent A delegates to agent B:
 - **Keep it DRY** - This is an MVP/POC, avoid unnecessary abstractions
 - **Prefer explicit types** - Don't rely on inference for public APIs
 
+**Documentation Best Practices**:
+- **Use Mermaid diagrams** - Prefer Mermaid diagrams over ASCII art in markdown files
+- Mermaid is more maintainable, visually appealing, and renders properly on GitHub
+- Example: Use `graph LR` or `sequenceDiagram` instead of ASCII boxes and arrows
+
 Example of good type guard usage:
 ```typescript
 // Good - type guard
