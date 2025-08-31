@@ -1,4 +1,4 @@
-import { describe, test, expect, vi } from 'vitest';
+import { describe, expect, test } from 'vitest';
 import { AgentSystemBuilder } from '@/config/system-builder';
 
 describe('Core Safety - Essential Tests Only', () => {
@@ -9,10 +9,10 @@ describe('Core Safety - Essential Tests Only', () => {
         maxIterations: 2,
         maxDepth: 5,
         warnAtIteration: 1,
-        maxTokensEstimate: 10000
-      }
+        maxTokensEstimate: 10000,
+      },
     });
-    
+
     const system = await builder.build();
     // In real implementation, would test that execution stops after 2 iterations
     expect(system.config.safety.maxIterations).toBe(2);
@@ -25,10 +25,10 @@ describe('Core Safety - Essential Tests Only', () => {
         maxIterations: 10,
         maxDepth: 2,
         warnAtIteration: 5,
-        maxTokensEstimate: 10000
-      }
+        maxTokensEstimate: 10000,
+      },
     });
-    
+
     const system = await builder.build();
     expect(system.config.safety.maxDepth).toBe(2);
   });
@@ -38,7 +38,7 @@ describe('Core Safety - Essential Tests Only', () => {
     // For POC, just verify the config exists
     const builder = AgentSystemBuilder.default();
     const system = await builder.build();
-    
+
     expect(system.config.tools).toBeDefined();
     expect(system.config.tools.maxConcurrentTools).toBeLessThanOrEqual(5);
   });
@@ -47,7 +47,7 @@ describe('Core Safety - Essential Tests Only', () => {
     // Verify error handling config exists
     const builder = AgentSystemBuilder.default();
     const system = await builder.build();
-    
+
     expect(system.executor).toBeDefined();
     // In real test, would verify error doesn't crash system
   });
@@ -59,10 +59,10 @@ describe('Core Safety - Essential Tests Only', () => {
         maxIterations: 5,
         maxDepth: 3,
         warnAtIteration: 3,
-        maxTokensEstimate: 1000
-      }
+        maxTokensEstimate: 1000,
+      },
     });
-    
+
     const system = await builder.build();
     expect(system.config.safety.warnAtIteration).toBe(3);
     expect(system.config.safety.warnAtIteration).toBeLessThan(system.config.safety.maxIterations);

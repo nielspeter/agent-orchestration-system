@@ -1,4 +1,4 @@
-import { describe, test, expect, vi } from 'vitest';
+import { describe, expect, test } from 'vitest';
 import { AgentSystemBuilder } from '@/config/system-builder';
 
 describe('Tool Execution - Essential Tests', () => {
@@ -7,7 +7,7 @@ describe('Tool Execution - Essential Tests', () => {
     // For POC, just verify the config exists
     const builder = AgentSystemBuilder.default();
     const system = await builder.build();
-    
+
     // The system should have concurrency limits
     expect(system.config.tools?.maxConcurrentTools).toBeDefined();
     expect(system.config.tools?.maxConcurrentTools).toBeLessThanOrEqual(5);
@@ -16,7 +16,7 @@ describe('Tool Execution - Essential Tests', () => {
   test('enforces tool timeout to prevent hanging', async () => {
     const builder = AgentSystemBuilder.default();
     const system = await builder.build();
-    
+
     // Verify timeout config exists
     expect(system.config.tools?.defaultTimeoutMs).toBeDefined();
     expect(system.config.tools?.defaultTimeoutMs).toBeGreaterThan(0);
@@ -26,7 +26,7 @@ describe('Tool Execution - Essential Tests', () => {
   test('handles tool not found gracefully', async () => {
     const builder = AgentSystemBuilder.minimal();
     const system = await builder.build();
-    
+
     // Tool registry should exist and handle missing tools
     expect(system.toolRegistry).toBeDefined();
     const tool = system.toolRegistry.get('non-existent-tool');
@@ -37,7 +37,7 @@ describe('Tool Execution - Essential Tests', () => {
     // This verifies error handling exists in config
     const builder = AgentSystemBuilder.default();
     const system = await builder.build();
-    
+
     // System should continue after tool errors
     expect(system.executor).toBeDefined();
     expect(system.config.safety).toBeDefined();
@@ -47,10 +47,10 @@ describe('Tool Execution - Essential Tests', () => {
     const builder = AgentSystemBuilder.forTest({
       model: 'claude-3-5-haiku-latest',
       tools: {
-        maxConcurrentTools: 2
-      }
+        maxConcurrentTools: 2,
+      },
     });
-    
+
     const system = await builder.build();
     expect(system.config.tools?.maxConcurrentTools).toBe(2);
   });

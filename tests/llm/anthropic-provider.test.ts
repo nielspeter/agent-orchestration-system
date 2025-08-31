@@ -1,4 +1,4 @@
-import { describe, expect, test, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, test } from 'vitest';
 import { AnthropicProvider } from '../../src/llm/anthropic-provider';
 
 describe('AnthropicProvider Caching Strategy', () => {

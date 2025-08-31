@@ -11,23 +11,23 @@ export class ToolRegistry {
     if (!tool || !tool.name || !tool.description || !tool.execute || !tool.parameters) {
       throw new Error('Invalid tool: missing required properties');
     }
-    
+
     if (typeof tool.execute !== 'function') {
       throw new Error('Tool execute must be a function');
     }
-    
+
     if (!/^[a-z0-9-]+$/.test(tool.name)) {
       throw new Error('Invalid tool name format');
     }
-    
+
     if (!tool.parameters.type) {
       throw new Error('Invalid parameters schema');
     }
-    
+
     if (this.tools.has(tool.name)) {
       throw new Error(`Tool ${tool.name} is already registered`);
     }
-    
+
     this.tools.set(tool.name, tool);
   }
 
@@ -76,7 +76,7 @@ export class ToolRegistry {
 
   getToolsForAgent(agentConfig: TestAgentConfig): Tool[] {
     const result: Tool[] = [];
-    
+
     for (const permission of agentConfig.tools) {
       if (permission === '*') {
         // Add all non-restricted tools
@@ -102,20 +102,18 @@ export class ToolRegistry {
         }
       }
     }
-    
+
     return result;
   }
 
   getConcurrentSafeTools(): Tool[] {
     return Array.from(this.tools.values()).filter(
-      tool => tool.isConcurrencySafe && tool.isConcurrencySafe()
+      (tool) => tool.isConcurrencySafe && tool.isConcurrencySafe()
     );
   }
 
   getToolsByCategory(category: string): Tool[] {
-    return Array.from(this.tools.values()).filter(
-      tool => tool.category === category
-    );
+    return Array.from(this.tools.values()).filter((tool) => tool.category === category);
   }
 
   getCategories(): string[] {
@@ -130,7 +128,7 @@ export class ToolRegistry {
 
   getToolsByTag(tag: string): Tool[] {
     return Array.from(this.tools.values()).filter(
-      tool => tool.metadata?.tags && (tool.metadata.tags as string[]).includes(tag)
+      (tool) => tool.metadata?.tags && (tool.metadata.tags as string[]).includes(tag)
     );
   }
 }

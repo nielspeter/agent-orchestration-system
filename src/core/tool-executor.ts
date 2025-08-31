@@ -16,14 +16,14 @@ export class ToolExecutor {
 
   async executeTools(toolUses: ToolUse[]): Promise<ToolOutput[]> {
     const results: ToolOutput[] = [];
-    
+
     for (const toolUse of toolUses) {
       const tool = this.registry.getTool(toolUse.name);
-      
+
       if (!tool) {
         results.push({
           content: [{ type: 'text', text: `Tool not found: ${toolUse.name}` }],
-          isError: true
+          isError: true,
         });
         continue;
       }
@@ -31,13 +31,13 @@ export class ToolExecutor {
       try {
         const result = await this.executeWithTimeout(
           () => tool.execute(toolUse.input),
-          toolUse.input.timeout as number || this.config.defaultTimeout || 5000
+          (toolUse.input.timeout as number) || this.config.defaultTimeout || 5000
         );
-        
+
         if (!result || !result.content) {
           results.push({
             content: [{ type: 'text', text: 'Invalid tool output' }],
-            isError: true
+            isError: true,
           });
         } else {
           results.push(result);
@@ -45,23 +45,20 @@ export class ToolExecutor {
       } catch (error) {
         results.push({
           content: [{ type: 'text', text: (error as Error).message }],
-          isError: true
+          isError: true,
         });
       }
     }
-    
+
     return results;
   }
 
-  private async executeWithTimeout<T>(
-    fn: () => Promise<T>,
-    timeout: number
-  ): Promise<T> {
+  private async executeWithTimeout<T>(fn: () => Promise<T>, timeout: number): Promise<T> {
     return Promise.race([
       fn(),
       new Promise<T>((_, reject) =>
         setTimeout(() => reject(new Error('Tool execution timed out')), timeout)
-      )
+      ),
     ]);
   }
 }
