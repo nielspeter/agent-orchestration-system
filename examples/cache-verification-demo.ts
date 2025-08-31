@@ -1,9 +1,6 @@
 import { getDirname } from '../src/utils/esm-helpers';
 import { config } from 'dotenv';
-import { AgentExecutor, AgentLoader, ToolRegistry } from '../src';
-import { LoggerFactory } from '../src/core/conversation-logger';
-import { createListTool, createReadTool, createWriteTool } from '../src/tools/file-tools';
-import { createTaskTool } from '../src/tools/task-tool';
+import { setupFromConfig } from '../src/config/mcp-config-loader';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
@@ -61,23 +58,20 @@ async function verifyCaching() {
 
   const { agentsDir, testDir } = await setupTestEnvironment();
 
-  // Initialize components
-  const agentLoader = new AgentLoader(agentsDir);
-  const toolRegistry = new ToolRegistry();
-  const logger = LoggerFactory.createConsoleLogger();
-
-  // Register tools
-  toolRegistry.register(createReadTool());
-  toolRegistry.register(createWriteTool());
-  toolRegistry.register(createListTool());
-  toolRegistry.register(createTaskTool());
-
-  const executor = new AgentExecutor(
-    agentLoader,
-    toolRegistry,
-    'claude-3-5-haiku-20241022',
-    logger
-  );
+  // Use configuration-based setup with custom agent directory
+  const setup = await setupFromConfig({
+    sessionId: 'cache-verification',
+    configOverrides: {
+      agents: {
+        directory: agentsDir
+      },
+      execution: {
+        defaultModel: 'claude-3-5-haiku-20241022'
+      }
+    }
+  });
+  
+  const { executor } = setup;
 
   console.log('='.repeat(60));
   console.log('Test: Parent → Child Delegation with Caching');
@@ -112,6 +106,9 @@ async function verifyCaching() {
   } catch (error) {
     // Ignore
   }
+  
+  // Clean up MCP connections
+  await setup.cleanup();
 }
 
 // Run the test

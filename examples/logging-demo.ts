@@ -1,7 +1,5 @@
-import { getDirname } from '../src/utils/esm-helpers';
-import * as path from 'path';
 import * as dotenv from 'dotenv';
-import { AgentOrchestrationSystem } from '../src';
+import { setupFromConfig } from '../src/config/mcp-config-loader';
 
 // Load environment variables
 dotenv.config();
@@ -18,10 +16,17 @@ async function testWithLogging() {
     process.exit(1);
   }
 
-  const system = new AgentOrchestrationSystem({
-    agentsDir: path.join(getDirname(import.meta.url), '../agents'),
-    modelName: process.env.MODEL || 'claude-3-5-haiku-20241022',
+  // Use configuration-based setup
+  const setup = await setupFromConfig({
+    sessionId: 'logging-demo',
+    configOverrides: {
+      execution: {
+        defaultModel: process.env.MODEL || 'claude-3-5-haiku-20241022'
+      }
+    }
   });
+  
+  const { executor } = setup;
 
   console.log('🚀 Agent Orchestration System - With Full Audit Logging\n');
   console.log('='.repeat(60));
@@ -35,7 +40,7 @@ async function testWithLogging() {
   console.log('Request: "List the files in the src directory"\n');
 
   try {
-    const result1 = await system.execute('orchestrator', 'List the files in the src directory');
+    const result1 = await executor.execute('orchestrator', 'List the files in the src directory');
     console.log('\n' + '='.repeat(60));
     console.log('📊 Final Result:');
     console.log(result1);
@@ -51,7 +56,7 @@ async function testWithLogging() {
   console.log('Request: "Analyze the agent-executor.ts file and summarize its purpose"\n');
 
   try {
-    const result2 = await system.execute(
+    const result2 = await executor.execute(
       'orchestrator',
       'Analyze the agent-executor.ts file in src/core and summarize its purpose in 2-3 sentences'
     );
@@ -72,7 +77,7 @@ async function testWithLogging() {
   );
 
   try {
-    const result3 = await system.execute(
+    const result3 = await executor.execute(
       'orchestrator',
       'Analyze the conversation-logger.ts file in src/core, understand its architecture, and write a brief documentation file explaining its purpose and how to use it. Save it as conversation-logger-docs.md'
     );
@@ -86,6 +91,9 @@ async function testWithLogging() {
   console.log('\n' + '='.repeat(60));
   console.log('✅ All tests completed!');
   console.log('\n📁 Check the "conversations" directory for the full audit log in JSON format.');
+  
+  // Clean up MCP connections
+  await setup.cleanup();
 }
 
 // Run the test

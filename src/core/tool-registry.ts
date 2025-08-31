@@ -67,6 +67,12 @@ export class ToolRegistry {
         }
       }
 
+      // Always include TodoWrite for iteration control (like Claude Code)
+      const todoWriteTool = this.tools.get('todowrite');
+      if (todoWriteTool) {
+        allowedTools.add(todoWriteTool);
+      }
+
       return Array.from(allowedTools);
     }
 

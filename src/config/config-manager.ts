@@ -113,13 +113,6 @@ export class ConfigManager {
   }
 
   /**
-   * Get the complete configuration
-   */
-  public getConfig(): SystemConfig {
-    return JSON.parse(JSON.stringify(this.config));
-  }
-
-  /**
    * Get safety configuration
    */
   public getSafety() {
@@ -131,40 +124,5 @@ export class ConfigManager {
    */
   public getModels() {
     return this.config.models;
-  }
-
-  /**
-   * Get caching configuration
-   */
-  public getCaching() {
-    return this.config.caching;
-  }
-
-  /**
-   * Get logging configuration
-   */
-  public getLogging() {
-    return this.config.logging;
-  }
-
-  /**
-   * Get tools configuration
-   */
-  public getTools() {
-    return this.config.tools;
-  }
-
-  /**
-   * Get todos configuration
-   */
-  public getTodos() {
-    return this.config.todos;
-  }
-
-  /**
-   * Check if caching is enabled
-   */
-  public isCachingEnabled(): boolean {
-    return this.config.caching.enabledByDefault;
   }
 }

@@ -1,10 +1,5 @@
-import { getDirname } from '../src/utils/esm-helpers';
-import * as path from 'path';
 import * as dotenv from 'dotenv';
-import { AgentExecutor, AgentLoader, ToolRegistry } from '../src';
-import { LoggerFactory } from '../src/core/conversation-logger';
-import { createTaskTool } from '../src/tools/task-tool';
-import { createListTool, createReadTool, createWriteTool } from '../src/tools/file-tools';
+import { setupFromConfig } from '../src/config/mcp-config-loader';
 
 // Load environment variables
 dotenv.config();
@@ -24,18 +19,17 @@ async function testTrueOrchestration() {
     process.exit(1);
   }
 
-  // Set up the system components
-  const agentLoader = new AgentLoader(path.join(getDirname(import.meta.url), '../agents'));
-  const toolRegistry = new ToolRegistry();
-  const logger = LoggerFactory.createCombinedLogger('true-orchestration-demo');
-  const modelName = process.env.MODEL || 'claude-3-5-haiku-20241022';
-  const executor = new AgentExecutor(agentLoader, toolRegistry, modelName, logger);
-
-  // Register tools
-  toolRegistry.register(createReadTool());
-  toolRegistry.register(createWriteTool());
-  toolRegistry.register(createListTool());
-  toolRegistry.register(createTaskTool()); // The magic tool that enables delegation!
+  // Use configuration-based setup
+  const setup = await setupFromConfig({
+    sessionId: 'true-orchestration-demo',
+    configOverrides: {
+      execution: {
+        defaultModel: process.env.MODEL || 'claude-3-5-haiku-20241022'
+      }
+    }
+  });
+  
+  const { executor } = setup;
 
   console.log('🎭 TRUE Agent Orchestration Demonstration');
   console.log('='.repeat(70));
@@ -90,6 +84,9 @@ async function testTrueOrchestration() {
   console.log('📁 Check conversations/true-orchestration-demo-*.json for the full audit trail');
   console.log('\nNotice how the delegation decisions were made by the LLM,');
   console.log("not by our code. The orchestration emerged from the agent's reasoning!");
+  
+  // Clean up MCP connections
+  await setup.cleanup();
 }
 
 // Run the demonstration

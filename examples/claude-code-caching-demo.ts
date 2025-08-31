@@ -203,7 +203,7 @@ async function runClaudeCodeCachingTest() {
   toolRegistry.register(createReadTool());
   toolRegistry.register(createWriteTool());
   toolRegistry.register(createListTool());
-  toolRegistry.register(createTaskTool());
+  toolRegistry.register(await createTaskTool(agentLoader));
 
   // Create executor with Anthropic provider
   const modelName = process.env.MODEL || 'claude-3-5-haiku-20241022';
@@ -213,9 +213,9 @@ async function runClaudeCodeCachingTest() {
   console.log('✅ Ephemeral caching ENABLED (5-minute TTL)\n');
 
   // Test Case 1: Parent reads large context, then delegates
-  console.log('=' * 60);
+  console.log('='.repeat(60));
   console.log('Test Case 1: Context Inheritance with Caching');
-  console.log('=' * 60);
+  console.log('='.repeat(60));
 
   const startTime1 = Date.now();
   try {
@@ -242,9 +242,9 @@ async function runClaudeCodeCachingTest() {
   }
 
   // Test Case 2: Parallel delegations sharing cached context
-  console.log('=' * 60);
+  console.log('='.repeat(60));
   console.log('Test Case 2: Parallel Delegations with Shared Cache');
-  console.log('=' * 60);
+  console.log('='.repeat(60));
 
   const startTime2 = Date.now();
   try {
@@ -272,9 +272,9 @@ async function runClaudeCodeCachingTest() {
   }
 
   // Summary
-  console.log('=' * 60);
+  console.log('='.repeat(60));
   console.log('📊 CACHING ARCHITECTURE SUMMARY');
-  console.log('=' * 60);
+  console.log('='.repeat(60));
   console.log('\n✅ Claude Code Architecture Benefits:');
   console.log('  1. Isolated agents with clean separation of concerns');
   console.log('  2. Full context inheritance through delegation');

@@ -1,10 +1,9 @@
-import { getDirname } from '../src/utils/esm-helpers';
-import * as path from 'path';
-import { AgentLoader, ToolRegistry } from '../src';
-import { createTaskTool } from '../src/tools/task-tool';
-import { createListTool, createReadTool, createWriteTool } from '../src/tools/file-tools';
-import { createTodoWriteTool } from '../src/tools/todowrite-tool';
-import { TodoManager } from '../src/core/todo-manager';
+import * as dotenv from 'dotenv';
+import { setupFromConfig } from '../src/config/mcp-config-loader';
+import { createListTool } from '../src/tools/file-tools';
+
+// Load environment variables
+dotenv.config();
 
 /**
  * Test the structure without making API calls
@@ -13,10 +12,16 @@ async function testStructure() {
   console.log('🏗️  Testing Agent Orchestration System Structure\n');
   console.log('='.repeat(50));
 
+  // Setup using configuration
+  const setup = await setupFromConfig({
+    sessionId: 'structure-demo'
+  });
+  
+  const { agentLoader, toolRegistry } = setup;
+  
   // Test 1: Agent Loader
   console.log('\n📁 Test 1: Agent Loader');
-  const agentLoader = new AgentLoader(path.join(getDirname(import.meta.url), '../agents'));
-
+  
   try {
     const agents = await agentLoader.listAgents();
     console.log('✅ Found agents:', agents);
@@ -33,16 +38,6 @@ async function testStructure() {
 
   // Test 2: Tool Registry
   console.log('\n🔧 Test 2: Tool Registry');
-  const toolRegistry = new ToolRegistry();
-  const todoManager = new TodoManager();
-  await todoManager.initialize();
-
-  // Register tools
-  toolRegistry.register(createReadTool());
-  toolRegistry.register(createWriteTool());
-  toolRegistry.register(createListTool());
-  toolRegistry.register(createTodoWriteTool(todoManager));
-  toolRegistry.register(createTaskTool(agentLoader));
 
   console.log(
     '✅ Registered tools:',
@@ -94,6 +89,9 @@ async function testStructure() {
   console.log('\nThe system is ready. To test with real API calls:');
   console.log('1. Add your API key to .env file');
   console.log('2. Run: npm test');
+  
+  // Clean up MCP connections
+  await setup.cleanup();
 }
 
 // Run the test

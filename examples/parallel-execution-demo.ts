@@ -1,9 +1,6 @@
 import { getDirname } from '../src/utils/esm-helpers';
 import { config } from 'dotenv';
-import { AgentExecutor, AgentLoader, ToolRegistry } from '../src';
-import { LoggerFactory } from '../src/core/conversation-logger';
-import { createListTool, createReadTool, createWriteTool } from '../src/tools/file-tools';
-import { createTaskTool } from '../src/tools/task-tool';
+import { quickSetup } from '../src/config/mcp-config-loader';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
@@ -47,19 +44,9 @@ async function runParallelExecutionTest() {
   const testDir = await createTestFiles();
   console.log(`✅ Created test files in ${testDir}\n`);
 
-  // Initialize components
-  const agentLoader = new AgentLoader(path.join(getDirname(import.meta.url), 'agents'));
-  const toolRegistry = new ToolRegistry();
-  const logger = LoggerFactory.createCombinedLogger();
-
-  // Register tools
-  toolRegistry.register(createReadTool());
-  toolRegistry.register(createWriteTool());
-  toolRegistry.register(createListTool());
-  toolRegistry.register(createTaskTool());
-
-  const modelName = process.env.MODEL || 'claude-3-5-haiku-20241022';
-  const executor = new AgentExecutor(agentLoader, toolRegistry, modelName, logger);
+  // Use quick setup for simplicity
+  const setup = await quickSetup();
+  const { executor } = setup;
 
   // Create test orchestrator agent with proper frontmatter
   const agentContent = `---
@@ -171,6 +158,9 @@ Always provide a summary of what operations were performed and their execution s
   // Cleanup
   await cleanupTestFiles();
   console.log('\n✅ Test files cleaned up');
+  
+  // Clean up MCP connections
+  await setup.cleanup();
 }
 
 // Run the test
