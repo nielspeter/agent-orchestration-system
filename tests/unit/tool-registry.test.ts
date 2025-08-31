@@ -47,7 +47,7 @@ describe('Tool Registry - Essential Tests', () => {
   });
 
   test('built-in tools configuration works', async () => {
-    const builder = AgentSystemBuilder.default().withBuiltinTools(['read', 'write']);
+    const builder = AgentSystemBuilder.default().withBuiltinTools('read', 'write');
 
     const system = await builder.build();
 

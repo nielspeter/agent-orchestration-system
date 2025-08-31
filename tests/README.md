@@ -115,7 +115,7 @@ Coverage reports are generated in:
 ### Unit Tests
 
 ```typescript
-import { describe, test, expect } from '@jest/globals';
+import { describe, test, expect } from 'vitest';
 
 describe('Component', () => {
   test('should do something', () => {

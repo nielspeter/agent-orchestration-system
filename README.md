@@ -520,7 +520,7 @@ npm run example:cache
 - **@anthropic-ai/sdk**: Anthropic's official SDK with caching support
 - **@modelcontextprotocol/sdk**: MCP client for external tool servers
 - **tsx**: TypeScript execution for examples
-- **jest**: Testing framework with TypeScript support
+- **vitest**: Testing framework with TypeScript support
 - **dotenv**: Environment variable management
 
 ## 🔄 Version Requirements
