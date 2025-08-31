@@ -10,23 +10,8 @@ export function createContextSetupMiddleware(): Middleware {
       ctx.messages = [];
     }
 
-    // PULL ARCHITECTURE: Don't inherit parent messages
-    // Child agents will use tools to gather what they need
-    if (ctx.executionContext.parentMessages && ctx.executionContext.parentMessages.length > 0) {
-      ctx.logger.log({
-        timestamp: new Date().toISOString(),
-        agentName: ctx.agentName,
-        depth: ctx.executionContext.depth,
-        type: 'system',
-        content: `Pull architecture: NOT inheriting parent messages. Agent will gather context via tools.`,
-        metadata: {
-          parentMessagesAvailable: ctx.executionContext.parentMessages.length,
-          pullArchitecture: true,
-          toolsAvailable: ctx.tools?.map(t => t.name).join(', ') || 'none',
-        },
-      });
-      // Don't push parent messages - child starts fresh!
-    }
+    // Pull architecture: Child agents start fresh without parent messages
+    // They use tools to gather information they need
 
     // Add agent's system prompt and user prompt (only on first iteration)
     if (ctx.agent && ctx.iteration === 1) {
