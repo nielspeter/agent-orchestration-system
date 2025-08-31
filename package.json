@@ -7,11 +7,12 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsx src/index.ts",
-    "test": "npm run test:unit && npm run test:integration",
+    "test": "npm run test:unit",
     "test:unit": "vitest run --config vitest.config.unit.ts",
+    "test:unit:coverage": "vitest run --config vitest.config.unit.ts --coverage",
     "test:integration": "vitest run --config vitest.config.integration.ts",
-    "test:watch": "vitest watch",
-    "test:coverage": "vitest run --coverage",
+    "test:all": "npm run test:unit && npm run test:integration",
+    "test:watch": "vitest watch --config vitest.config.unit.ts",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
@@ -32,8 +33,7 @@
     "dotenv": "^16.4.5",
     "gray-matter": "^4.0.3",
     "openai": "^4.29.2",
-    "uuid": "^11.1.0",
-    "zod": "^3.25.76"
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@types/node": "^20.11.30",
