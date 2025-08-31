@@ -1,6 +1,6 @@
-# Agent Orchestration POC - Middleware Architecture
+# Agent Orchestration POC - Pull Architecture with Middleware Pipeline
 
-A TypeScript implementation of an intelligent agent orchestration system using **middleware pipeline architecture** (Chain of Responsibility pattern) with recursive delegation capabilities and Anthropic's ephemeral caching.
+A TypeScript implementation of Claude Code's agent orchestration system using **pull architecture** where child agents autonomously gather information via tools rather than inheriting parent context. Built with a **middleware pipeline architecture** (Chain of Responsibility pattern) and leverages Anthropic's ephemeral caching for efficiency.
 
 ## 🎯 Architecture Highlights
 
@@ -22,12 +22,12 @@ The monolithic 500-line `AgentExecutor` has been refactored into a clean pipelin
 - Agents are defined as markdown files with YAML frontmatter
 - Orchestration emerges through the `Task` tool for delegation
 
-### Context Inheritance with Caching
+### Pull Architecture with Caching (Claude Code Style)
 When agent A delegates to agent B:
-1. A passes its **entire conversation history** to B
-2. B inherits this as cached context (5-minute TTL)
-3. 90% token savings through Anthropic's ephemeral caching
-4. Parent's work becomes child's cached foundation
+1. B receives **minimal context** (~5-500 tokens) - just the task prompt
+2. B uses tools (Read, Grep, List) to **pull** information it needs
+3. Anthropic's cache makes "redundant" reads efficient (90% cost savings)
+4. Clean separation - each agent has independent context
 
 ## 🚀 Quick Start
 
@@ -144,6 +144,22 @@ export function createCustomMiddleware(): Middleware {
 ```
 
 ## 🎯 Key Design Decisions
+
+### Pull Architecture (Claude Code Style)
+Unlike traditional systems that pass full context to child agents, we implement Claude Code's "pull, don't push" architecture:
+
+- **Minimal Context**: Child agents receive only the task prompt (~5-500 tokens)
+- **Tool-Based Discovery**: Agents use Read, Grep, List to gather what they need
+- **No Confusion**: No mixed contexts or role confusion
+- **Cache Efficiency**: Anthropic's cache makes "redundant" reads ~90% cheaper
+
+```typescript
+// Traditional (problematic)
+parentMessages: ctx.messages.slice() // 10,000+ tokens of confusion
+
+// Our approach (Claude Code style)
+parentMessages: []  // Clean slate, agent pulls what it needs
+```
 
 ### Why Middleware?
 - **Composable**: Easy to add/remove/reorder functionality
@@ -319,7 +335,7 @@ flowchart LR
         Safe --> Parallel[Parallel Execution<br/>Up to 10 concurrent]
         Unsafe --> Sequential[Sequential Execution<br/>One at a time]
         Sequential --> Delegate{Is Task Tool?}
-        Delegate -->|Yes| Recursive[Recursive Agent Call<br/>With parent context]
+        Delegate -->|Yes| Recursive[Recursive Agent Call<br/>Minimal context only]
         Delegate -->|No| Direct[Direct Execution]
     end
     
