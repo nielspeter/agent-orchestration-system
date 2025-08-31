@@ -38,7 +38,7 @@ The subagent will work autonomously to complete the delegated task and return co
         prompt: {
           type: 'string',
           description:
-            'The task for the agent to perform. Should be clear, specific, and include all necessary context for the specialized agent to work autonomously',
+            'The task for the agent to perform. Should be clear and specific about what you want accomplished',
         },
         description: {
           type: 'string',
