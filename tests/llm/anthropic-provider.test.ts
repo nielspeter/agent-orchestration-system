@@ -10,20 +10,20 @@ describe('AnthropicProvider Caching Strategy', () => {
     provider = new AnthropicProvider('claude-3-5-haiku-latest');
   });
 
-  it('should cache only the last 2 messages plus system prompt', () => {
+  test('should cache only the last 2 messages plus system prompt', () => {
     // This is a conceptual test - the actual implementation is tested via integration
     expect(provider).toBeDefined();
     expect(provider.getModelName()).toBe('claude-3-5-haiku-latest');
   });
 
-  it('should handle caching when enabled', () => {
+  test('should handle caching when enabled', () => {
     // Test that caching is enabled by default
     delete process.env.DISABLE_PROMPT_CACHING;
     const provider = new AnthropicProvider('claude-3-5-haiku-latest');
     expect(provider).toBeDefined();
   });
 
-  it('should handle caching when disabled', () => {
+  test('should handle caching when disabled', () => {
     // Test with caching disabled
     process.env.DISABLE_PROMPT_CACHING = 'true';
     const provider = new AnthropicProvider('claude-3-5-haiku-latest');
@@ -31,13 +31,13 @@ describe('AnthropicProvider Caching Strategy', () => {
     delete process.env.DISABLE_PROMPT_CACHING;
   });
 
-  it('should require Claude models', () => {
+  test('should require Claude models', () => {
     expect(() => {
       new AnthropicProvider('gpt-4' as any);
     }).toThrow('AnthropicProvider only supports Claude models');
   });
 
-  it('should require API key', () => {
+  test('should require API key', () => {
     delete process.env.ANTHROPIC_API_KEY;
     expect(() => {
       new AnthropicProvider('claude-3-5-haiku-latest');

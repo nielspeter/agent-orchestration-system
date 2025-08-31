@@ -44,7 +44,8 @@ export function createSafetyChecksMiddleware(safetyLimits: SafetyConfig): Middle
 
     // Check token estimate
     const estimatedTokens = JSON.stringify(ctx.messages).length / 4;
-    if (estimatedTokens > safetyLimits.maxTokensEstimate) {
+    const maxTokens = safetyLimits.maxTokensEstimate || safetyLimits.maxTokens || 100000;
+    if (estimatedTokens > maxTokens) {
       const msg = `Token limit estimate exceeded: ~${Math.round(estimatedTokens)} tokens`;
       console.warn(`⚠️ ${msg}`);
       ctx.logger.log({

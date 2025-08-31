@@ -22,6 +22,18 @@ export interface AgentConfig {
 }
 
 /**
+ * Agent definition for tests
+ */
+export interface TestAgentConfig {
+  /** Agent name */
+  name: string;
+  /** Tools available to the agent */
+  tools: string[];
+  /** Agent prompt */
+  prompt: string;
+}
+
+/**
  * Tool configuration
  */
 export interface ToolConfig {
@@ -44,7 +56,9 @@ export interface SafetyConfig {
   /** Warning threshold for iterations */
   warnAtIteration: number;
   /** Maximum estimated tokens per run */
-  maxTokensEstimate: number;
+  maxTokensEstimate?: number;
+  /** Maximum tokens (alias for maxTokensEstimate) */
+  maxTokens?: number;
   /** Maximum delegation depth */
   maxDepth: number;
 }
