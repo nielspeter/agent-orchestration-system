@@ -91,18 +91,16 @@ const builder = AgentSystemBuilder.default()
 
 ### Execution Flow
 
-```
-1. Request → AgentExecutor.execute(agentName, prompt)
-                    ↓
-2. Load Agent → AgentLoader.loadAgent(agentPath)
-                    ↓
-3. Setup Pipeline → Create middleware pipeline
-                    ↓
-4. Execute → Pipeline.execute(context)
-                    ↓
-5. Iterations → Loop until complete or limits reached
-                    ↓
-6. Response → Return final result
+```mermaid
+graph TD
+    A[Request: AgentExecutor.execute] --> B[Load Agent: AgentLoader.loadAgent]
+    B --> C[Setup Pipeline: Create middleware pipeline]
+    C --> D[Execute: Pipeline.execute]
+    D --> E{Complete?}
+    E -->|No| F[Execute Tools]
+    F --> G[Next Iteration]
+    G --> E
+    E -->|Yes| H[Return Response]
 ```
 
 ### Execution Context
@@ -189,9 +187,11 @@ const result = await executor.execute('analyzer', 'Analyze this code');
 ```
 
 ### Delegation Chain
-```
-orchestrator → task → analyzer → task → summarizer
-    depth=0          depth=1          depth=2
+
+```mermaid
+graph LR
+    A[orchestrator<br/>depth=0] -->|task tool| B[analyzer<br/>depth=1]
+    B -->|task tool| C[summarizer<br/>depth=2]
 ```
 
 ## Agent Patterns

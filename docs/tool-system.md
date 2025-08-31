@@ -6,10 +6,17 @@ The tool system provides agents with capabilities to interact with the environme
 
 ## Architecture
 
-```
-Agent → LLM → Tool Calls → Tool Executor → Tool Registry → Individual Tools
-                              ↓
-                         Tool Results → Agent Context → Next Iteration
+```mermaid
+graph LR
+    A[Agent] --> B[LLM]
+    B --> C[Tool Calls]
+    C --> D[Tool Executor]
+    D --> E[Tool Registry]
+    E --> F[Individual Tools]
+    F --> G[Tool Results]
+    G --> H[Agent Context]
+    H --> I[Next Iteration]
+    I --> B
 ```
 
 ## Core Interfaces

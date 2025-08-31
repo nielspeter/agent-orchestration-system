@@ -18,11 +18,22 @@ Each middleware:
 
 ## The Pipeline
 
-```
-Request → ErrorHandler → AgentLoader → ContextSetup → SafetyChecks → LLMCall → ToolExecution → Response
-          ↓              ↓              ↓              ↓              ↓          ↓
-          └──────────────┴──────────────┴──────────────┴──────────────┴──────────┘
-                                    Error propagation path
+```mermaid
+graph LR
+    Request --> ErrorHandler
+    ErrorHandler --> AgentLoader
+    AgentLoader --> ContextSetup
+    ContextSetup --> SafetyChecks
+    SafetyChecks --> LLMCall
+    LLMCall --> ToolExecution
+    ToolExecution --> Response
+    
+    ErrorHandler -.->|Error propagation| Response
+    AgentLoader -.->|Error propagation| Response
+    ContextSetup -.->|Error propagation| Response
+    SafetyChecks -.->|Error propagation| Response
+    LLMCall -.->|Error propagation| Response
+    ToolExecution -.->|Error propagation| Response
 ```
 
 ## Middleware Components
@@ -240,24 +251,18 @@ pipeline
 
 ## Execution Flow Example
 
-```
-1. User: "Analyze this code"
-   ↓
-2. ErrorHandler: Sets up error boundary
-   ↓
-3. AgentLoader: Loads code-analyzer.md agent
-   ↓
-4. ContextSetup: Creates system prompt
-   ↓
-5. SafetyChecks: Verifies limits (iteration 1/10, depth 1/5)
-   ↓
-6. LLMCall: Sends to Claude with caching
-   ↓
-7. ToolExecution: Executes Read tool on file
-   ↓
-8. Loop back to SafetyChecks for iteration 2
-   ↓
-9. ... continues until task complete or limits reached
+```mermaid
+graph TD
+    A[User: 'Analyze this code'] --> B[ErrorHandler: Sets up error boundary]
+    B --> C[AgentLoader: Loads code-analyzer.md agent]
+    C --> D[ContextSetup: Creates system prompt]
+    D --> E[SafetyChecks: Verifies limits - iteration 1/10, depth 1/5]
+    E --> F[LLMCall: Sends to Claude with caching]
+    F --> G[ToolExecution: Executes Read tool on file]
+    G --> H{Task complete?}
+    H -->|No| I[Loop back to SafetyChecks for iteration 2]
+    I --> E
+    H -->|Yes| J[Response returned]
 ```
 
 ## Common Patterns

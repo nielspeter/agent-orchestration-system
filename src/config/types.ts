@@ -9,7 +9,23 @@
  * - Flexible: Support both programmatic and file-based config
  */
 
-import { BaseTool } from '../types';
+import { BaseTool } from '@/types';
+
+/**
+ * Agent definition
+ */
+export interface Agent {
+  /** Agent name */
+  name: string;
+  /** Agent prompt/instructions */
+  prompt: string;
+  /** Tools available to the agent */
+  tools: string[] | '*';
+  /** Optional model override */
+  model?: string;
+  /** Optional temperature */
+  temperature?: number;
+}
 
 /**
  * Agent configuration
@@ -19,6 +35,8 @@ export interface AgentConfig {
   directories: string[];
   /** Additional agent directories to scan */
   additionalDirectories?: string[];
+  /** Programmatically defined agents */
+  agents?: Agent[];
 }
 
 /**

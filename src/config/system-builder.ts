@@ -9,16 +9,17 @@
 import * as fs from 'fs/promises';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
-import { AgentLoader } from '../core/agent-loader';
-import { ToolRegistry } from '../core/tool-registry';
-import { AgentExecutor } from '../core/agent-executor';
-import { TodoManager } from '../core/todo-manager';
-import { LoggerFactory } from '../core/conversation-logger';
-import { createListTool, createReadTool, createWriteTool } from '../tools/file-tools';
-import { createTaskTool } from '../tools/task-tool';
-import { createTodoWriteTool } from '../tools/todowrite-tool';
-import { BaseTool, ToolParameter, ToolResult, ToolSchema } from '../types';
+import { AgentLoader } from '@/core/agent-loader';
+import { ToolRegistry } from '@/core/tool-registry';
+import { AgentExecutor } from '@/core/agent-executor';
+import { TodoManager } from '@/core/todo-manager';
+import { LoggerFactory } from '@/core/conversation-logger';
+import { createListTool, createReadTool, createWriteTool } from '@/tools/file-tools';
+import { createTaskTool } from '@/tools/task-tool';
+import { createTodoWriteTool } from '@/tools/todowrite-tool';
+import { BaseTool, ToolParameter, ToolResult, ToolSchema } from '@/types';
 import {
+  Agent,
   CachingConfig,
   DEFAULT_SYSTEM_CONFIG,
   LoggingConfig,
@@ -111,12 +112,25 @@ export class AgentSystemBuilder {
   /**
    * Add additional agent directories
    */
-  withAdditionalAgentsFrom(...directories: string[]): AgentSystemBuilder {
+  addAgentsFrom(...directories: string[]): AgentSystemBuilder {
     const current = this.config.agents || { directories: [] };
     return this.with({
       agents: {
         ...current,
         additionalDirectories: [...(current.additionalDirectories || []), ...directories],
+      },
+    });
+  }
+
+  /**
+   * Add programmatically defined agents
+   */
+  withAgents(...agents: Agent[]): AgentSystemBuilder {
+    const current = this.config.agents || { directories: [] };
+    return this.with({
+      agents: {
+        ...current,
+        agents: [...(current.agents || []), ...agents],
       },
     });
   }
