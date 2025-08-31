@@ -2,36 +2,44 @@
 
 ## Overview
 
-Comprehensive technical documentation for the Agent Orchestration POC - a TypeScript implementation of autonomous agent systems using middleware pipeline architecture and pull-based information gathering.
+Comprehensive technical documentation for the Agent Orchestration POC - a TypeScript implementation of autonomous agent
+systems using middleware pipeline architecture and pull-based information gathering.
 
 ## 📚 Documentation Structure
 
 ### Core Architecture
-- **[Middleware Architecture](./middleware-architecture.md)** ⭐ - The foundation: how the middleware pipeline powers everything
+
+- **[Middleware Architecture](./middleware-architecture.md)** ⭐ - The foundation: how the middleware pipeline powers
+  everything
 - **[Tool System](./tool-system.md)** ⭐ - How agents interact with the environment through tools
 - **[Agent System](./agent-system.md)** ⭐ - Understanding agents from markdown to execution
 
 ### Configuration & Setup
+
 - **[Unified Configuration](./unified-configuration.md)** - System configuration using the builder pattern
 - **[Execution Flow Diagram](./execution-flow-diagram.md)** - Visual representation of system flow
 
 ### Developer Resources
+
 - **[Developer Guides](./developer-guides.md)** ⭐ - Practical guides for creating agents, tools, and middleware
 - **[Documentation Plan](./DOCUMENTATION_PLAN.md)** - Roadmap for documentation development
 
 ## 🚀 Quick Navigation
 
 ### For New Users
+
 1. Start with [Developer Guides](./developer-guides.md) - Quick start and basic concepts
 2. Review [Agent System](./agent-system.md) - Understand how agents work
 3. Explore [Tool System](./tool-system.md) - Learn about agent capabilities
 
 ### For Developers
+
 1. Study [Middleware Architecture](./middleware-architecture.md) - Core system design
 2. Read [Unified Configuration](./unified-configuration.md) - System setup options
 3. Follow [Developer Guides](./developer-guides.md) - Create custom components
 
 ### For Contributors
+
 1. Review [Documentation Plan](./DOCUMENTATION_PLAN.md) - Areas needing documentation
 2. Understand [Execution Flow](./execution-flow-diagram.md) - System internals
 3. Study all architecture docs for deep understanding
@@ -39,38 +47,47 @@ Comprehensive technical documentation for the Agent Orchestration POC - a TypeSc
 ## 🎯 Key Concepts
 
 ### Pull Architecture
+
 Agents don't receive full context from parents. Instead, they:
+
 - Receive minimal task description (5-500 tokens)
 - Use tools (Read, Grep, List) to gather needed information
 - Maintain independent conversation context
 - Benefit from Anthropic's cache efficiency (90% cost savings)
 
 ### Everything is an Agent
+
 - No special orchestrator class
 - All agents use the same middleware pipeline
 - Agents can delegate to other agents via Task tool
 - Agents are defined as markdown files with YAML frontmatter
 
 ### Middleware Pipeline Pattern
+
 ```
 Request → ErrorHandler → AgentLoader → ContextSetup → SafetyChecks → LLMCall → ToolExecution → Response
 ```
+
 Each middleware handles one concern, making the system modular and testable.
 
 ## 📖 Documentation Standards
 
 ### Code Examples
+
 All documentation includes real code from the system, not simplified examples.
 
 ### File References
+
 Each document references actual source files for deeper exploration.
 
 ### Practical Focus
+
 This is MVP/POC documentation - pragmatic and focused on understanding and extending the system.
 
 ## 🔄 Living Documentation
 
 This documentation evolves with the codebase. When making changes:
+
 1. Update relevant documentation
 2. Add examples for new features
 3. Document breaking changes
@@ -78,21 +95,22 @@ This documentation evolves with the codebase. When making changes:
 
 ## 📝 Document Status
 
-| Document | Status | Priority | Description |
-|----------|--------|----------|-------------|
-| Middleware Architecture | ✅ Complete | HIGH | Core system design |
-| Tool System | ✅ Complete | HIGH | Agent capabilities |
-| Agent System | ✅ Complete | HIGH | Agent lifecycle and patterns |
-| Developer Guides | ✅ Complete | HIGH | Practical tutorials |
-| Unified Configuration | ✅ Complete | MEDIUM | System setup |
-| Execution Flow | ✅ Complete | MEDIUM | Visual system flow |
-| Safety Mechanisms | 🔄 Planned | MEDIUM | Resource management |
-| Logging & Debugging | 🔄 Planned | MEDIUM | System observability |
-| LLM Integration | 🔄 Planned | LOW | Provider details |
+| Document                | Status     | Priority | Description                  |
+|-------------------------|------------|----------|------------------------------|
+| Middleware Architecture | ✅ Complete | HIGH     | Core system design           |
+| Tool System             | ✅ Complete | HIGH     | Agent capabilities           |
+| Agent System            | ✅ Complete | HIGH     | Agent lifecycle and patterns |
+| Developer Guides        | ✅ Complete | HIGH     | Practical tutorials          |
+| Unified Configuration   | ✅ Complete | MEDIUM   | System setup                 |
+| Execution Flow          | ✅ Complete | MEDIUM   | Visual system flow           |
+| Safety Mechanisms       | 🔄 Planned | MEDIUM   | Resource management          |
+| Logging & Debugging     | 🔄 Planned | MEDIUM   | System observability         |
+| LLM Integration         | 🔄 Planned | LOW      | Provider details             |
 
 ## 🤝 Contributing
 
 To improve documentation:
+
 1. Follow existing document structure
 2. Include real code examples
 3. Reference source files

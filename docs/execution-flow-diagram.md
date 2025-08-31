@@ -1,6 +1,7 @@
 # Agent Orchestration Conversation Flow
 
-This document shows the actual conversation flow from our agent orchestration system, displaying the messages exchanged between agents in a human-readable format.
+This document shows the actual conversation flow from our agent orchestration system, displaying the messages exchanged
+between agents in a human-readable format.
 
 ## Visual Flow Diagram
 
@@ -41,6 +42,7 @@ sequenceDiagram
 ### Orchestrator Example (Complex Multi-Agent Task)
 
 #### User Request
+
 ```
 I need you to:
 1. Analyze the src/core/agent-executor.ts file to understand how it works
@@ -52,24 +54,30 @@ This is a complex task that will require multiple specialists.
 ```
 
 #### Orchestrator - Iteration 1
+
 **Claude says:** "I'll break this down into a systematic workflow using TodoWrite and specialized agents."
 
 **Tool Use:** TodoWrite
+
 - Creates task plan for the complex request
 - Result: "TodoWrite completed in 1ms"
 
 #### Orchestrator - Iteration 2
+
 **Claude says:** "Now, I'll start by reading the file:"
 
 **Tool Use:** Read (src/core/agent-executor.ts)
+
 - Reads the AgentExecutor class file
 - Result: "Read completed in 1ms"
 - File content: 200+ lines of TypeScript code loaded into context
 
 #### Orchestrator - Iteration 3
+
 **Claude says:** "Now, I'll use the code-analyzer to help me analyze the file:"
 
 **Tool Use:** Task (Delegates to code-analyzer)
+
 ```
 Analyze the AgentExecutor class in agent-executor.ts. Focus on:
 1. Overall architecture and design patterns
@@ -80,10 +88,12 @@ Analyze the AgentExecutor class in agent-executor.ts. Focus on:
 ```
 
 #### Code-Analyzer Child Agent - Iteration 1
+
 **System:** "Starting execution with claude-3-5-haiku-latest (delegated from orchestrator)"
 **System:** "Inheriting 6 messages from parent context (filtered out system message)"
 
-**Claude says:** 
+**Claude says:**
+
 ```
 I'll provide a comprehensive analysis of the AgentExecutor class:
 
@@ -104,9 +114,11 @@ I'll provide a comprehensive analysis of the AgentExecutor class:
 ```
 
 **Tool Use:** Write (improvements.md)
+
 - Saves comprehensive analysis document
 
 #### Code-Analyzer Child Agent - Iteration 2
+
 **Tool Result:** "Successfully saved to improvements.md (2127 chars, 61 lines). Content: '# AgentExecutor Analysis...'"
 
 **Claude says:** "I've completed the analysis and saved it. The file covers architecture, patterns, and improvements."
@@ -118,6 +130,7 @@ I'll provide a comprehensive analysis of the AgentExecutor class:
 ### Direct Code-Analyzer Test
 
 #### User Request
+
 ```
 Analyze the file src/core/agent-executor.ts and provide:
 1. A brief overview of what this class does
@@ -128,7 +141,9 @@ Save your analysis to analysis-test.md
 ```
 
 #### Code-Analyzer - Iteration 1
-**Claude says:** 
+
+**Claude says:**
+
 ```
 I'll help you analyze the agent-executor.ts file. I'll break this down into steps:
 1. First, I'll read the contents of the file
@@ -139,18 +154,23 @@ Let's begin by reading the file:
 ```
 
 **Tool Use:** Read (src/core/agent-executor.ts)
+
 - Result: "Read completed in 1ms"
 
 #### Code-Analyzer - Iteration 2
+
 **Claude says:** "Now, I'll prepare a comprehensive analysis and save it to `analysis-test.md`:"
 
 **Tool Use:** Write (analysis-test.md)
+
 - Creates detailed analysis document
 
 #### Code-Analyzer - Iteration 3
+
 **Tool Result:** "Successfully saved to analysis-test.md (2127 chars, 61 lines). Content: '# AgentExecutor Analysis...'"
 
-**Claude says:** 
+**Claude says:**
+
 ```
 I've completed the analysis of the agent-executor.ts file and saved the detailed insights to analysis-test.md. 
 The analysis covers:
@@ -166,6 +186,7 @@ Would you like me to elaborate on any part of the analysis?
 ## Key Messages and Tool Results
 
 ### System Messages
+
 - "Starting execution with claude-3-5-haiku-latest"
 - "Agent loaded: orchestrator"
 - "Calling claude-3-5-haiku-latest (iteration N)"
@@ -175,6 +196,7 @@ Would you like me to elaborate on any part of the analysis?
 - "Inheriting 6 messages from parent context (filtered out system message)"
 
 ### Cache Metrics
+
 ```
 📊 Cache Metrics:
   Input tokens: 4
@@ -192,6 +214,7 @@ Would you like me to elaborate on any part of the analysis?
 ### Tool Results Evolution
 
 #### Before Fix (Generic)
+
 ```
 Tool: Write
 Result: "Write completed in 2ms"
@@ -199,6 +222,7 @@ Problem: Agent doesn't know what was written!
 ```
 
 #### After Fix (Contextual)
+
 ```
 Tool: Write
 Result: "Successfully saved to improvements.md (2127 chars, 61 lines). Content: '# AgentExecutor Analysis...'"
@@ -210,6 +234,7 @@ Impact: Agent understands task completion!
 ## Conversation Patterns
 
 ### 1. Parent-Child Delegation
+
 ```
 Parent (Orchestrator): "I'll use code-analyzer to analyze this"
    ↓ Delegates with full context
@@ -221,6 +246,7 @@ Parent: Continues with result
 ```
 
 ### 2. Tool Execution Flow
+
 ```
 Assistant: "I'll read the file"
    ↓ tool_use
@@ -230,6 +256,7 @@ Assistant: "Now I'll analyze..." (sees the content)
 ```
 
 ### 3. Iteration Pattern
+
 ```
 Iteration 1: Plan the task (TodoWrite)
 Iteration 2: Gather information (Read)
@@ -241,19 +268,20 @@ Iteration 4: Summarize results
 
 ## Actual Execution Metrics
 
-| Metric | Value |
-|--------|-------|
-| Total Orchestrator Iterations | 3-4 |
-| Child Agent Iterations | 2-3 |
-| Tool Execution Time | 1-2ms |
-| Cache Efficiency | Up to 89600% |
-| Typical Completion Time | 15-20 seconds |
+| Metric                        | Value         |
+|-------------------------------|---------------|
+| Total Orchestrator Iterations | 3-4           |
+| Child Agent Iterations        | 2-3           |
+| Tool Execution Time           | 1-2ms         |
+| Cache Efficiency              | Up to 89600%  |
+| Typical Completion Time       | 15-20 seconds |
 
 ## The Solution That Made It Work
 
 The key insight came from examining what the agent actually sees in its message history:
 
 **Before (Agent Confused):**
+
 ```json
 {
   "role": "assistant",
@@ -267,6 +295,7 @@ The key insight came from examining what the agent actually sees in its message 
 ```
 
 **After (Agent Understands):**
+
 ```json
 {
   "role": "assistant",
@@ -279,4 +308,5 @@ The key insight came from examining what the agent actually sees in its message 
 }
 ```
 
-This simple change - providing meaningful context in tool results - allows agents to understand what they've accomplished and properly complete their tasks.
+This simple change - providing meaningful context in tool results - allows agents to understand what they've
+accomplished and properly complete their tasks.

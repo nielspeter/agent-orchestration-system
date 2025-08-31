@@ -2,7 +2,9 @@
 
 ## Overview
 
-The agent orchestration system is built on a **middleware pipeline pattern** (Chain of Responsibility), where each middleware handles a specific concern. This replaces the monolithic 500+ line AgentExecutor with a clean, composable pipeline of focused components.
+The agent orchestration system is built on a **middleware pipeline pattern** (Chain of Responsibility), where each
+middleware handles a specific concern. This replaces the monolithic 500+ line AgentExecutor with a clean, composable
+pipeline of focused components.
 
 ## Core Concept
 
@@ -11,6 +13,7 @@ type Middleware = (ctx: MiddlewareContext, next: () => Promise<void>) => Promise
 ```
 
 Each middleware:
+
 1. Receives a context object containing the current state
 2. Performs its specific task
 3. Calls `next()` to invoke the next middleware
@@ -39,6 +42,7 @@ graph LR
 ## Middleware Components
 
 ### 1. ErrorHandlerMiddleware
+
 **File**: `src/middleware/error-handler.middleware.ts`
 **Purpose**: Global error boundary for the entire pipeline
 
@@ -59,12 +63,14 @@ export function createErrorHandlerMiddleware(): Middleware {
 ```
 
 **Key responsibilities**:
+
 - Catches all errors from downstream middleware
 - Provides fallback responses
 - Ensures pipeline never crashes
 - Logs errors for debugging
 
 ### 2. AgentLoaderMiddleware
+
 **File**: `src/middleware/agent-loader.middleware.ts`
 **Purpose**: Loads agent definitions from markdown files
 
@@ -76,22 +82,26 @@ export function createAgentLoaderMiddleware(
 ```
 
 **Key responsibilities**:
+
 - Loads agent from markdown file
 - Parses YAML frontmatter for configuration
 - Filters available tools based on agent config
 - Sets agent context in middleware context
 
 ### 3. ContextSetupMiddleware
+
 **File**: `src/middleware/context-setup.middleware.ts`
 **Purpose**: Initializes conversation context
 
 **Key responsibilities**:
+
 - Sets up system prompt from agent
 - Initializes message history
 - Manages conversation state
 - Handles context for delegated agents
 
 ### 4. SafetyChecksMiddleware
+
 **File**: `src/middleware/safety-checks.middleware.ts`
 **Purpose**: Enforces resource limits and prevents runaway execution
 
@@ -119,12 +129,14 @@ export function createSafetyChecksMiddleware(safetyLimits: SafetyConfig): Middle
 ```
 
 **Safety limits**:
+
 - `maxIterations`: Max LLM calls per execution (default: 10)
 - `maxDepth`: Max delegation chain depth (default: 5)
 - `warnAtIteration`: Warning threshold (default: 5)
 - `maxTokensEstimate`: Pre-flight token check (default: 100000)
 
 ### 5. LLMCallMiddleware
+
 **File**: `src/middleware/llm-call.middleware.ts`
 **Purpose**: Handles communication with the LLM provider
 
@@ -133,6 +145,7 @@ export function createLLMCallMiddleware(provider: AnthropicProvider): Middleware
 ```
 
 **Key responsibilities**:
+
 - Prepares messages for LLM
 - Makes API call to Anthropic
 - Handles caching with ephemeral cache
@@ -140,10 +153,12 @@ export function createLLMCallMiddleware(provider: AnthropicProvider): Middleware
 - Processes LLM response
 
 ### 6. ToolExecutionMiddleware
+
 **File**: `src/middleware/tool-execution.middleware.ts`
 **Purpose**: Executes tools requested by the LLM
 
 **Key responsibilities**:
+
 - Parses tool calls from LLM response
 - Validates tool availability
 - Executes tools in parallel groups
@@ -237,7 +252,7 @@ pipeline
   .use('error-handler', createErrorHandlerMiddleware())
   .use('metrics', createMetricsMiddleware()) // Custom middleware
   .use('agent-loader', createAgentLoaderMiddleware(...))
-  // ... rest of pipeline
+// ... rest of pipeline
 ```
 
 ## Benefits of Middleware Architecture
@@ -268,6 +283,7 @@ graph TD
 ## Common Patterns
 
 ### Pre/Post Processing
+
 ```typescript
 async (ctx, next) => {
   // Pre-processing
@@ -281,6 +297,7 @@ async (ctx, next) => {
 ```
 
 ### Short-Circuit
+
 ```typescript
 async (ctx, next) => {
   if (ctx.response) {
@@ -291,6 +308,7 @@ async (ctx, next) => {
 ```
 
 ### Error Recovery
+
 ```typescript
 async (ctx, next) => {
   try {
@@ -304,16 +322,19 @@ async (ctx, next) => {
 ## Troubleshooting
 
 **Issue**: Middleware not executing
+
 - Check pipeline order - middleware executes sequentially
 - Ensure `next()` is called
 - Verify middleware is added to pipeline
 
 **Issue**: Context not propagating
+
 - Context object is shared across all middleware
 - Mutations are visible to all middleware
 - Use context for communication between middleware
 
 **Issue**: Infinite loops
+
 - SafetyChecksMiddleware prevents runaway execution
 - Check iteration and depth limits
 - Monitor token usage

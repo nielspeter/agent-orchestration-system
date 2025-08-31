@@ -2,7 +2,9 @@
 
 ## Overview
 
-The agent orchestration system now uses a unified configuration approach built on the **Builder Pattern**. This provides a clean, testable, and flexible way to configure the system for any use case - from simple scripts to complex multi-agent workflows to unit tests.
+The agent orchestration system now uses a unified configuration approach built on the **Builder Pattern**. This provides
+a clean, testable, and flexible way to configure the system for any use case - from simple scripts to complex
+multi-agent workflows to unit tests.
 
 ## Key Benefits
 
@@ -17,10 +19,10 @@ The agent orchestration system now uses a unified configuration approach built o
 ### Basic Usage
 
 ```typescript
-import { AgentSystemBuilder } from '@poc-typescript';
+import {AgentSystemBuilder} from '@poc-typescript';
 
 // Simple setup
-const { executor, cleanup } = await new AgentSystemBuilder()
+const {executor, cleanup} = await new AgentSystemBuilder()
   .withModel('claude-3-5-haiku-latest')
   .withAgentsFrom('./agents')
   .withDefaultTools()
@@ -134,11 +136,11 @@ builder
 ### Unit Testing
 
 ```typescript
-import { TestConfigBuilder } from '@poc-typescript';
+import {TestConfigBuilder} from '@poc-typescript';
 
 describe('MyAgent', () => {
   it('should handle task correctly', async () => {
-    const { executor } = await TestConfigBuilder.forTest()
+    const {executor} = await TestConfigBuilder.forTest()
       .withMockAgent('test-agent', new Map([
         ['input1', 'response1'],
         ['input2', 'response2']
@@ -149,7 +151,7 @@ describe('MyAgent', () => {
       .withDeterministicMode()
       .withRecording()
       .buildForTest();
-    
+
     const result = await executor.execute('test-agent', 'input1');
     expect(result).toBe('response1');
   });
@@ -159,7 +161,7 @@ describe('MyAgent', () => {
 ### Test Presets
 
 ```typescript
-import { TEST_CONFIG_MINIMAL, TEST_CONFIG_WITH_TOOLS } from '@poc-typescript/config/types';
+import {TEST_CONFIG_MINIMAL, TEST_CONFIG_WITH_TOOLS} from '@poc-typescript/config/types';
 
 // Minimal test config
 const testExecutor = await AgentSystemBuilder
@@ -181,9 +183,9 @@ const withTools = await AgentSystemBuilder
 const advanced = await new AgentSystemBuilder()
   .with({
     model: 'claude-3-5-sonnet',
-    agents: { directories: ['./agents'] },
-    tools: { builtin: ['read', 'write'] },
-    safety: { maxIterations: 50 }
+    agents: {directories: ['./agents']},
+    tools: {builtin: ['read', 'write']},
+    safety: {maxIterations: 50}
   })
   .build();
 ```
@@ -203,24 +205,24 @@ interface BuildResult {
 ### Complete Example
 
 ```typescript
-import { AgentSystemBuilder } from '@poc-typescript';
+import {AgentSystemBuilder} from '@poc-typescript';
 
 async function main() {
   // Build a fully configured system
-  const { config, executor, cleanup } = await new AgentSystemBuilder()
+  const {config, executor, cleanup} = await new AgentSystemBuilder()
     .withModel('claude-3-5-haiku-latest')
     .withAgentsFrom('./agents')
     .withDefaultTools()
     .withTodoTool()
-    .withSafetyLimits({ maxIterations: 30 })
-    .withCaching({ enabled: true })
-    .withLogging({ verbose: true })
+    .withSafetyLimits({maxIterations: 30})
+    .withCaching({enabled: true})
+    .withLogging({verbose: true})
     .withSessionId('main-app')
     .build();
-  
+
   console.log('Using model:', config.model);
   console.log('Safety limits:', config.safety);
-  
+
   try {
     const result = await executor.execute(
       'orchestrator',
@@ -238,8 +240,9 @@ async function main() {
 ### From setupFromConfig
 
 **Before:**
+
 ```typescript
-import { setupFromConfig } from '@poc-typescript/config/mcp-config-loader';
+import {setupFromConfig} from '@poc-typescript/config/mcp-config-loader';
 
 const setup = await setupFromConfig({
   configPath: './agent-config.json',
@@ -250,10 +253,11 @@ await setup.cleanup();
 ```
 
 **After:**
-```typescript
-import { AgentSystemBuilder } from '@poc-typescript';
 
-const { executor, cleanup } = await AgentSystemBuilder
+```typescript
+import {AgentSystemBuilder} from '@poc-typescript';
+
+const {executor, cleanup} = await AgentSystemBuilder
   .fromConfigFile('./agent-config.json')
   .withSessionId('my-session')
   .build();
@@ -264,8 +268,9 @@ await cleanup();
 ### From quickSetup
 
 **Before:**
+
 ```typescript
-import { quickSetup } from '@poc-typescript/config/mcp-config-loader';
+import {quickSetup} from '@poc-typescript/config/mcp-config-loader';
 
 const setup = await quickSetup({
   additionalTools: ['todowrite']
@@ -273,10 +278,11 @@ const setup = await quickSetup({
 ```
 
 **After:**
-```typescript
-import { AgentSystemBuilder } from '@poc-typescript';
 
-const { executor } = await AgentSystemBuilder.default()
+```typescript
+import {AgentSystemBuilder} from '@poc-typescript';
+
+const {executor} = await AgentSystemBuilder.default()
   .withTodoTool()
   .build();
 ```

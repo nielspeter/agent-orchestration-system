@@ -1,12 +1,16 @@
 # Documentation Plan for Agent Orchestration System
 
 ## Overview
-This plan outlines the documentation needed to explain the inner workings of the agent orchestration system. Each document will provide deep technical insights into specific components.
+
+This plan outlines the documentation needed to explain the inner workings of the agent orchestration system. Each
+document will provide deep technical insights into specific components.
 
 ## Core Architecture Documentation
 
 ### 1. `middleware-architecture.md` ⭐ Priority: HIGH
+
 **Purpose**: Explain the middleware pipeline pattern that powers the entire system
+
 - How middleware chain of responsibility works
 - Execution flow through the pipeline
 - Context passing between middleware
@@ -15,12 +19,15 @@ This plan outlines the documentation needed to explain the inner workings of the
 - How to create custom middleware
 
 **Key files to document**:
+
 - `src/middleware/pipeline.ts`
 - `src/middleware/middleware-types.ts`
 - All individual middleware files
 
 ### 2. `tool-system.md` ⭐ Priority: HIGH
+
 **Purpose**: Comprehensive guide to the tool system
+
 - Tool interface and types
 - Tool registry architecture
 - Tool execution flow
@@ -30,13 +37,16 @@ This plan outlines the documentation needed to explain the inner workings of the
 - Tool safety and sandboxing
 
 **Key files to document**:
+
 - `src/tools/types.ts`
 - `src/tools/tool-registry.ts`
 - `src/core/tool-executor.ts`
 - `src/services/tool-executor.ts`
 
 ### 3. `agent-system.md` ⭐ Priority: HIGH
+
 **Purpose**: How agents work from markdown to execution
+
 - Agent loading from markdown files
 - YAML frontmatter configuration
 - Agent context and memory
@@ -45,12 +55,15 @@ This plan outlines the documentation needed to explain the inner workings of the
 - Agent autonomy principles
 
 **Key files to document**:
+
 - `src/core/agent-loader.ts`
 - `src/core/agent-executor.ts`
 - `src/middleware/agent-loader.middleware.ts`
 
 ### 4. `safety-mechanisms.md` ⭐ Priority: MEDIUM
+
 **Purpose**: System safety and resource management
+
 - Iteration limits and how they work
 - Depth limits for delegation chains
 - Token estimation and management
@@ -59,12 +72,15 @@ This plan outlines the documentation needed to explain the inner workings of the
 - Error boundaries
 
 **Key files to document**:
+
 - `src/middleware/safety-checks.middleware.ts`
 - `src/config/types.ts` (SafetyConfig)
 - Token estimation logic
 
 ### 5. `logging-debugging.md` ⭐ Priority: MEDIUM
+
 **Purpose**: Understanding system observability
+
 - JSONL conversation format
 - Log entry types and structure
 - Session management
@@ -73,12 +89,15 @@ This plan outlines the documentation needed to explain the inner workings of the
 - Cache metrics collection
 
 **Key files to document**:
+
 - `src/core/jsonl-logger.ts`
 - `src/core/conversation-logger.ts`
 - `src/core/cache-metrics-collector.ts`
 
 ### 6. `llm-integration.md` ⭐ Priority: MEDIUM
+
 **Purpose**: LLM provider abstraction and caching
+
 - Anthropic provider implementation
 - Ephemeral caching strategy
 - Cache metrics and efficiency
@@ -87,6 +106,7 @@ This plan outlines the documentation needed to explain the inner workings of the
 - Provider abstraction for future providers
 
 **Key files to document**:
+
 - `src/llm/anthropic-provider.ts`
 - `src/llm/types.ts`
 - Caching implementation details
@@ -94,7 +114,9 @@ This plan outlines the documentation needed to explain the inner workings of the
 ## Developer Guides
 
 ### 7. `developer-guides.md` ⭐ Priority: HIGH
+
 **Purpose**: Practical guides for extending the system
+
 - How to create a new agent (step-by-step)
 - How to create a new tool
 - How to add custom middleware
@@ -104,7 +126,9 @@ This plan outlines the documentation needed to explain the inner workings of the
 - Common patterns and anti-patterns
 
 ### 8. `pull-architecture.md` ⭐ Priority: LOW
+
 **Purpose**: Deep dive into pull vs push architecture
+
 - Why pull architecture
 - Comparison with traditional approaches
 - Benefits for agent systems
@@ -114,7 +138,9 @@ This plan outlines the documentation needed to explain the inner workings of the
 ## API Reference
 
 ### 9. `api-reference.md` ⭐ Priority: LOW
+
 **Purpose**: Complete API documentation
+
 - AgentSystemBuilder API
 - Middleware interfaces
 - Tool interfaces
@@ -124,23 +150,24 @@ This plan outlines the documentation needed to explain the inner workings of the
 ## Implementation Order
 
 1. **Phase 1 - Core Components** (Essential for understanding)
-   - middleware-architecture.md
-   - tool-system.md
-   - agent-system.md
+    - middleware-architecture.md
+    - tool-system.md
+    - agent-system.md
 
 2. **Phase 2 - Practical Guides** (For users/developers)
-   - developer-guides.md
-   - safety-mechanisms.md
+    - developer-guides.md
+    - safety-mechanisms.md
 
 3. **Phase 3 - Deep Dives** (Advanced topics)
-   - logging-debugging.md
-   - llm-integration.md
-   - pull-architecture.md
-   - api-reference.md
+    - logging-debugging.md
+    - llm-integration.md
+    - pull-architecture.md
+    - api-reference.md
 
 ## Documentation Style Guidelines
 
 Each document should include:
+
 1. **Overview** - What the component does and why it exists
 2. **Architecture** - Technical design with diagrams where helpful
 3. **Code Examples** - Real code from the system

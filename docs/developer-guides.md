@@ -3,6 +3,7 @@
 ## Quick Start Guide
 
 ### 1. Basic Setup
+
 ```bash
 # Clone and install
 git clone <repo>
@@ -23,6 +24,7 @@ npx tsx examples/01-quickstart.ts
 ### 2. Your First Agent
 
 Create `agents/my-first-agent.md`:
+
 ```markdown
 ---
 name: my-first-agent
@@ -32,6 +34,7 @@ tools: ["read", "write"]
 You are a helpful assistant who can read and write files.
 
 When asked to process files:
+
 1. Read the file content
 2. Analyze what's needed
 3. Write the result
@@ -40,8 +43,9 @@ Be concise and accurate.
 ```
 
 Use it:
+
 ```typescript
-import { AgentSystemBuilder } from './src/config/system-builder';
+import {AgentSystemBuilder} from './src/config/system-builder';
 
 const system = await AgentSystemBuilder.default()
   .withAgentsFrom('agents')
@@ -60,11 +64,14 @@ console.log(result);
 ### Step-by-Step Agent Creation
 
 #### 1. Define the Purpose
+
 Be specific about what the agent does:
+
 - ❌ "You help with code"
 - ✅ "You analyze TypeScript code for type safety issues"
 
 #### 2. Create the Agent File
+
 ```markdown
 ---
 name: type-checker
@@ -74,18 +81,22 @@ tools: ["read", "list"]
 You are a TypeScript type safety analyzer.
 
 ## Your Expertise
+
 - Identify type assertions (as Type)
 - Find uses of 'any' type
 - Detect missing type annotations
 - Suggest type guard implementations
 
 ## Process
+
 1. Read the TypeScript file
 2. Analyze for type issues
 3. Provide specific recommendations
 
 ## Output Format
+
 For each issue found:
+
 - Line number
 - Issue type
 - Current code
@@ -93,21 +104,23 @@ For each issue found:
 ```
 
 #### 3. Choose Tools Wisely
+
 ```yaml
 # Minimal - read only
-tools: ["read"]
+tools: [ "read" ]
 
 # File operations
-tools: ["read", "write", "list"]
+tools: [ "read", "write", "list" ]
 
 # Orchestrator
-tools: ["task"]
+tools: [ "task" ]
 
 # Full access (use sparingly)
-tools: ["*"]
+tools: [ "*" ]
 ```
 
 #### 4. Test the Agent
+
 ```typescript
 // test-agent.ts
 const system = await AgentSystemBuilder.default()
@@ -123,6 +136,7 @@ const result = await system.executor.execute(
 ### Agent Design Patterns
 
 #### 1. The Specialist
+
 ```markdown
 ---
 name: regex-expert
@@ -130,6 +144,7 @@ tools: ["read"]
 ---
 
 You are a regex specialist. You:
+
 - Write complex regular expressions
 - Explain regex patterns
 - Optimize regex performance
@@ -139,6 +154,7 @@ Always test patterns with examples.
 ```
 
 #### 2. The Orchestrator
+
 ```markdown
 ---
 name: project-analyzer
@@ -155,6 +171,7 @@ Synthesize their findings into a report.
 ```
 
 #### 3. The Transformer
+
 ```markdown
 ---
 name: markdown-to-html
@@ -162,6 +179,7 @@ tools: ["read", "write"]
 ---
 
 You convert markdown files to HTML:
+
 1. Read the markdown file
 2. Parse and convert to HTML
 3. Write the HTML output
@@ -174,44 +192,45 @@ Preserve formatting and structure.
 ### Basic Tool Implementation
 
 #### 1. Define the Tool Class
+
 ```typescript
 // src/tools/git-tool.ts
-import { Tool, ToolInput, ToolOutput } from './types';
-import { execSync } from 'child_process';
+import {Tool, ToolInput, ToolOutput} from './types';
+import {execSync} from 'child_process';
 
 export class GitTool implements Tool {
   name = 'git';
   description = 'Execute git commands';
-  
+
   inputSchema = {
     type: 'object',
     properties: {
-      command: { 
+      command: {
         type: 'string',
         enum: ['status', 'log', 'diff', 'branch']
       },
       args: {
         type: 'array',
-        items: { type: 'string' }
+        items: {type: 'string'}
       }
     },
     required: ['command']
   };
-  
+
   async execute(input: ToolInput): Promise<ToolOutput> {
     try {
-      const { command, args = [] } = input;
-      
+      const {command, args = []} = input;
+
       // Validate command is allowed
       const allowedCommands = ['status', 'log', 'diff', 'branch'];
       if (!allowedCommands.includes(command as string)) {
         throw new Error(`Command not allowed: ${command}`);
       }
-      
+
       // Execute git command
       const fullCommand = `git ${command} ${args.join(' ')}`;
-      const output = execSync(fullCommand, { encoding: 'utf-8' });
-      
+      const output = execSync(fullCommand, {encoding: 'utf-8'});
+
       return {
         success: true,
         output: output.trim()
@@ -227,15 +246,17 @@ export class GitTool implements Tool {
 ```
 
 #### 2. Register the Tool
+
 ```typescript
 // In system setup
-import { GitTool } from './tools/git-tool';
+import {GitTool} from './tools/git-tool';
 
 const builder = AgentSystemBuilder.default()
   .withCustomTool(new GitTool());
 ```
 
 #### 3. Use in Agent
+
 ```markdown
 ---
 name: git-helper
@@ -243,6 +264,7 @@ tools: ["git", "read"]
 ---
 
 You help with git operations. You can:
+
 - Check repository status
 - View commit history
 - Show diffs
@@ -252,36 +274,51 @@ You help with git operations. You can:
 ### Tool Best Practices
 
 #### Input Validation
+
 ```typescript
-async execute(input: ToolInput): Promise<ToolOutput> {
+async
+execute(input
+:
+ToolInput
+):
+Promise < ToolOutput > {
   // Validate required fields
-  if (!input.path || typeof input.path !== 'string') {
-    return {
-      success: false,
-      error: 'Path is required and must be a string'
-    };
-  }
-  
-  // Sanitize inputs
-  const safePath = path.resolve(input.path);
-  if (!safePath.startsWith(process.cwd())) {
-    return {
-      success: false,
-      error: 'Path must be within working directory'
-    };
-  }
-  
-  // ... rest of implementation
+  if(!
+input.path || typeof input.path !== 'string'
+)
+{
+  return {
+    success: false,
+    error: 'Path is required and must be a string'
+  };
+}
+
+// Sanitize inputs
+const safePath = path.resolve(input.path);
+if (!safePath.startsWith(process.cwd())) {
+  return {
+    success: false,
+    error: 'Path must be within working directory'
+  };
+}
+
+// ... rest of implementation
 }
 ```
 
 #### Error Handling
+
 ```typescript
-async execute(input: ToolInput): Promise<ToolOutput> {
+async
+execute(input
+:
+ToolInput
+):
+Promise < ToolOutput > {
   try {
     const result = await riskyOperation(input);
-    return { success: true, output: result };
-  } catch (error) {
+    return {success: true, output: result};
+  } catch(error) {
     // Provide helpful error messages
     if (error.code === 'ENOENT') {
       return {
@@ -289,7 +326,7 @@ async execute(input: ToolInput): Promise<ToolOutput> {
         error: `File not found: ${input.path}`
       };
     }
-    
+
     // Generic fallback
     return {
       success: false,
@@ -304,32 +341,33 @@ async execute(input: ToolInput): Promise<ToolOutput> {
 ### Custom Middleware Example
 
 #### 1. Create Middleware Function
+
 ```typescript
 // src/middleware/rate-limit.middleware.ts
-import { Middleware, MiddlewareContext } from './middleware-types';
+import {Middleware, MiddlewareContext} from './middleware-types';
 
 export function createRateLimitMiddleware(
   maxCallsPerMinute: number = 10
 ): Middleware {
   const calls: number[] = [];
-  
+
   return async (ctx: MiddlewareContext, next: () => Promise<void>) => {
     const now = Date.now();
     const oneMinuteAgo = now - 60000;
-    
+
     // Remove old calls
     while (calls.length > 0 && calls[0] < oneMinuteAgo) {
       calls.shift();
     }
-    
+
     // Check rate limit
     if (calls.length >= maxCallsPerMinute) {
       throw new Error(`Rate limit exceeded: ${maxCallsPerMinute} calls/minute`);
     }
-    
+
     // Record this call
     calls.push(now);
-    
+
     // Continue pipeline
     await next();
   };
@@ -337,13 +375,14 @@ export function createRateLimitMiddleware(
 ```
 
 #### 2. Add to Pipeline
+
 ```typescript
 // In AgentExecutor setup
 pipeline
   .use('error-handler', createErrorHandlerMiddleware())
   .use('rate-limit', createRateLimitMiddleware(20))  // Custom
   .use('agent-loader', createAgentLoaderMiddleware())
-  // ... rest of pipeline
+// ... rest of pipeline
 ```
 
 ## Testing Strategies
@@ -352,8 +391,8 @@ pipeline
 
 ```typescript
 // tests/agents/my-agent.test.ts
-import { describe, test, expect } from 'vitest';
-import { AgentSystemBuilder } from '../src/config/system-builder';
+import {describe, test, expect} from 'vitest';
+import {AgentSystemBuilder} from '../src/config/system-builder';
 
 describe('MyAgent', () => {
   test('processes files correctly', async () => {
@@ -369,13 +408,13 @@ describe('MyAgent', () => {
       }))
       .withAgent('agents/my-agent.md')
       .build();
-    
+
     // Execute agent
     const result = await system.executor.execute(
       'my-agent',
       'Process the file'
     );
-    
+
     // Verify result
     expect(result).toContain('processed');
   });
@@ -391,12 +430,12 @@ describe('Full Flow', () => {
     const system = await AgentSystemBuilder.default()
       .withAgentsFrom('agents')
       .build();
-    
+
     const result = await system.executor.execute(
       'orchestrator',
       'Analyze and document src/index.ts'
     );
-    
+
     expect(result).toContain('analysis');
     expect(result).toContain('documentation');
   });
@@ -406,6 +445,7 @@ describe('Full Flow', () => {
 ## Performance Optimization
 
 ### 1. Leverage Caching
+
 ```typescript
 // Reuse system for multiple calls
 const system = await AgentSystemBuilder.default().build();
@@ -417,9 +457,10 @@ for (const file of files) {
 ```
 
 ### 2. Parallel Processing
+
 ```typescript
 // Process multiple tasks in parallel
-const tasks = files.map(file => 
+const tasks = files.map(file =>
   system.executor.execute('processor', `Process ${file}`)
 );
 
@@ -427,6 +468,7 @@ const results = await Promise.all(tasks);
 ```
 
 ### 3. Optimize Agent Prompts
+
 ```markdown
 ---
 name: optimized-agent
@@ -434,9 +476,11 @@ tools: ["read"]
 ---
 
 # Concise, focused prompt
+
 You analyze code. Read the file and report issues.
 
 ## Check for:
+
 - Syntax errors
 - Type issues
 - Security problems
@@ -445,6 +489,7 @@ You analyze code. Read the file and report issues.
 ## Common Patterns
 
 ### File Processing Pipeline
+
 ```typescript
 const system = await AgentSystemBuilder.default()
   .withAgent('agents/reader.md')
@@ -459,6 +504,7 @@ await system.executor.execute('writer', `Write to output.txt: ${processed}`);
 ```
 
 ### Multi-Agent Analysis
+
 ```typescript
 // Different agents analyze different aspects
 const codeAnalysis = system.executor.execute('code-analyzer', prompt);
@@ -475,6 +521,7 @@ const [code, security, perf] = await Promise.all([
 ## Debugging Tips
 
 ### 1. Enable Verbose Logging
+
 ```typescript
 const system = await AgentSystemBuilder.default()
   .withLogLevel('debug')
@@ -482,6 +529,7 @@ const system = await AgentSystemBuilder.default()
 ```
 
 ### 2. Inspect Conversation Logs
+
 ```bash
 # Find recent conversation
 ls -lt conversations/*.jsonl | head -1
@@ -491,6 +539,7 @@ cat conversations/2024-*.jsonl | jq '.'
 ```
 
 ### 3. Test with Minimal Tools
+
 ```typescript
 // Start with minimal tools to isolate issues
 const system = await AgentSystemBuilder.minimal()
@@ -499,15 +548,17 @@ const system = await AgentSystemBuilder.minimal()
 ```
 
 ### 4. Add Debug Output to Agents
+
 ```markdown
 ---
 name: debug-agent
 tools: ["read"]
 ---
 
-You help debug issues. 
+You help debug issues.
 
 When processing:
+
 1. Log what you're about to do
 2. Show intermediate results
 3. Explain your reasoning
@@ -516,6 +567,7 @@ When processing:
 ## Security Considerations
 
 ### 1. Tool Restrictions
+
 ```typescript
 // Limit file access
 const safePath = path.resolve(input.path);
@@ -525,21 +577,24 @@ if (!safePath.startsWith(ALLOWED_DIR)) {
 ```
 
 ### 2. Input Sanitization
+
 ```typescript
 // Sanitize user inputs
 const sanitized = input.replace(/[^\w\s-]/g, '');
 ```
 
 ### 3. Agent Isolation
+
 ```yaml
 # Restricted agent
 ---
 name: sandboxed
-tools: ["read"]  # No write access
+tools: [ "read" ]  # No write access
 ---
 ```
 
 ### 4. Resource Limits
+
 ```typescript
 const system = await AgentSystemBuilder.default()
   .withSafetyLimits({
@@ -555,6 +610,7 @@ const system = await AgentSystemBuilder.default()
 ### Common Issues and Solutions
 
 **Agent not found**
+
 ```bash
 # Check agent file exists
 ls agents/my-agent.md
@@ -564,22 +620,26 @@ head -10 agents/my-agent.md
 ```
 
 **Tool execution fails**
+
 ```typescript
 // Add error details to tool
 return {
   success: false,
   error: `Failed at step X: ${error.message}`,
-  details: { input, context: error.stack }
+  details: {input, context: error.stack}
 };
 ```
 
 **Infinite loops**
+
 ```typescript
 // Reduce iteration limit
-.withSafetyLimits({ maxIterations: 3 })
+.
+withSafetyLimits({maxIterations: 3})
 ```
 
 **Memory issues**
+
 ```typescript
 // Clear system between runs
 await system.cleanup();

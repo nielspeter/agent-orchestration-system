@@ -2,7 +2,8 @@
 
 ## Overview
 
-The tool system provides agents with capabilities to interact with the environment. Tools are the bridge between agent intelligence and real-world actions - from reading files to delegating tasks to other agents.
+The tool system provides agents with capabilities to interact with the environment. Tools are the bridge between agent
+intelligence and real-world actions - from reading files to delegating tasks to other agents.
 
 ## Architecture
 
@@ -22,6 +23,7 @@ graph LR
 ## Core Interfaces
 
 ### Tool Interface
+
 **File**: `src/tools/types.ts`
 
 ```typescript
@@ -52,19 +54,19 @@ The registry manages all available tools in the system:
 ```typescript
 export class ToolRegistry {
   private tools = new Map<string, Tool>();
-  
+
   register(tool: Tool): void {
     this.tools.set(tool.name, tool);
   }
-  
+
   get(name: string): Tool | undefined {
     return this.tools.get(name);
   }
-  
+
   list(): Tool[] {
     return Array.from(this.tools.values());
   }
-  
+
   filter(names: string[]): Map<string, Tool> {
     const filtered = new Map<string, Tool>();
     for (const name of names) {
@@ -79,24 +81,37 @@ export class ToolRegistry {
 ## Built-in Tools
 
 ### 1. Read Tool
+
 **Purpose**: Read files from the filesystem
 **File**: `src/tools/file-tools.ts`
 
 ```typescript
 {
   name: 'read',
-  description: 'Read a file from the filesystem',
-  inputSchema: {
+    description
+:
+  'Read a file from the filesystem',
+    inputSchema
+:
+  {
     type: 'object',
-    properties: {
-      path: { type: 'string', description: 'File path to read' }
-    },
+      properties
+  :
+    {
+      path: {
+        type: 'string', description
+      :
+        'File path to read'
+      }
+    }
+  ,
     required: ['path']
   }
 }
 ```
 
 **Usage Example**:
+
 ```json
 {
   "tool": "read",
@@ -107,69 +122,116 @@ export class ToolRegistry {
 ```
 
 ### 2. Write Tool
+
 **Purpose**: Write content to files
 **File**: `src/tools/file-tools.ts`
 
 ```typescript
 {
   name: 'write',
-  description: 'Write content to a file',
-  inputSchema: {
+    description
+:
+  'Write content to a file',
+    inputSchema
+:
+  {
     type: 'object',
-    properties: {
-      path: { type: 'string' },
-      content: { type: 'string' }
-    },
+      properties
+  :
+    {
+      path: {
+        type: 'string'
+      }
+    ,
+      content: {
+        type: 'string'
+      }
+    }
+  ,
     required: ['path', 'content']
   }
 }
 ```
 
 ### 3. List Tool
+
 **Purpose**: List directory contents
 **File**: `src/tools/file-tools.ts`
 
 ```typescript
 {
   name: 'list',
-  description: 'List files in a directory',
-  inputSchema: {
+    description
+:
+  'List files in a directory',
+    inputSchema
+:
+  {
     type: 'object',
-    properties: {
-      path: { type: 'string' },
-      recursive: { type: 'boolean', default: false }
-    },
+      properties
+  :
+    {
+      path: {
+        type: 'string'
+      }
+    ,
+      recursive: {
+        type: 'boolean',
+      default:
+        false
+      }
+    }
+  ,
     required: ['path']
   }
 }
 ```
 
 ### 4. Task Tool (Delegation)
+
 **Purpose**: Delegate tasks to other agents
 **File**: `src/tools/task-tool.ts`
 
 ```typescript
 {
   name: 'task',
-  description: 'Delegate a task to another agent',
-  inputSchema: {
+    description
+:
+  'Delegate a task to another agent',
+    inputSchema
+:
+  {
     type: 'object',
-    properties: {
-      agent: { type: 'string', description: 'Agent to delegate to' },
-      task: { type: 'string', description: 'Task description' }
-    },
+      properties
+  :
+    {
+      agent: {
+        type: 'string', description
+      :
+        'Agent to delegate to'
+      }
+    ,
+      task: {
+        type: 'string', description
+      :
+        'Task description'
+      }
+    }
+  ,
     required: ['agent', 'task']
   }
 }
 ```
 
 **Special behavior**:
+
 - Creates new agent execution context
 - Increases depth counter
 - Returns agent's complete response
 - Enables multi-agent orchestration
 
 ### 5. TodoWrite Tool
+
 **Purpose**: Manage task lists for complex workflows
 **File**: `src/tools/todowrite-tool.ts`
 
@@ -187,6 +249,7 @@ interface TodoItem {
 **File**: `src/core/tool-executor.ts`, `src/services/tool-executor.ts`
 
 ### 1. Tool Call Parsing
+
 ```typescript
 // From LLM response
 const toolCalls = response.tool_calls;
@@ -194,54 +257,71 @@ const toolCalls = response.tool_calls;
 ```
 
 ### 2. Parallel Execution Groups
+
 Tools are executed in parallel groups based on dependencies:
 
 ```typescript
-async executeTools(toolCalls: ToolCall[]): Promise<ToolResult[]> {
+async
+executeTools(toolCalls
+:
+ToolCall[]
+):
+Promise < ToolResult[] > {
   const groups = this.groupToolCalls(toolCalls);
   const results = [];
-  
-  for (const group of groups) {
-    // Execute group in parallel
-    const groupResults = await Promise.all(
-      group.map(call => this.executeTool(call))
-    );
-    results.push(...groupResults);
-  }
-  
-  return results;
+
+  for(const group of groups
+)
+{
+  // Execute group in parallel
+  const groupResults = await Promise.all(
+    group.map(call => this.executeTool(call))
+  );
+  results.push(...groupResults);
+}
+
+return results;
 }
 ```
 
 ### 3. Individual Tool Execution
+
 ```typescript
-async executeTool(call: ToolCall): Promise<ToolResult> {
+async
+executeTool(call
+:
+ToolCall
+):
+Promise < ToolResult > {
   const tool = this.registry.get(call.name);
-  
-  if (!tool) {
-    return { 
-      success: false, 
-      error: `Unknown tool: ${call.name}` 
-    };
-  }
-  
-  try {
-    // Validate input against schema
-    validateInput(call.input, tool.inputSchema);
-    
-    // Execute tool
-    const result = await tool.execute(call.input, this.context);
-    
-    // Log execution
-    this.logger.logToolExecution(call, result);
-    
-    return result;
-  } catch (error) {
-    return { 
-      success: false, 
-      error: error.message 
-    };
-  }
+
+  if(!
+tool
+)
+{
+  return {
+    success: false,
+    error: `Unknown tool: ${call.name}`
+  };
+}
+
+try {
+  // Validate input against schema
+  validateInput(call.input, tool.inputSchema);
+
+  // Execute tool
+  const result = await tool.execute(call.input, this.context);
+
+  // Log execution
+  this.logger.logToolExecution(call, result);
+
+  return result;
+} catch (error) {
+  return {
+    success: false,
+    error: error.message
+  };
+}
 }
 ```
 
@@ -251,26 +331,26 @@ async executeTool(call: ToolCall): Promise<ToolResult> {
 
 ```typescript
 // src/tools/custom-tool.ts
-import { Tool, ToolInput, ToolOutput } from './types';
+import {Tool, ToolInput, ToolOutput} from './types';
 
 export class CustomTool implements Tool {
   name = 'custom';
   description = 'Does something custom';
-  
+
   inputSchema = {
     type: 'object',
     properties: {
-      param1: { type: 'string' },
-      param2: { type: 'number' }
+      param1: {type: 'string'},
+      param2: {type: 'number'}
     },
     required: ['param1']
   };
-  
+
   async execute(input: ToolInput, context: ExecutionContext): Promise<ToolOutput> {
     try {
       // Tool logic here
       const result = await this.doSomething(input.param1, input.param2);
-      
+
       return {
         success: true,
         output: result
@@ -282,7 +362,7 @@ export class CustomTool implements Tool {
       };
     }
   }
-  
+
   private async doSomething(param1: string, param2?: number): Promise<string> {
     // Implementation
     return `Processed ${param1} with ${param2 || 'default'}`;
@@ -304,24 +384,28 @@ toolRegistry.register(new CustomTool());
 # In agent markdown frontmatter
 ---
 name: my-agent
-tools: ["read", "write", "custom"]
+tools: [ "read", "write", "custom" ]
 ---
 ```
 
 Or use wildcard:
+
 ```yaml
-tools: ["*"]  # Access to all registered tools
+tools: [ "*" ]  # Access to all registered tools
 ```
 
 ## Tool Safety
 
 ### Input Validation
+
 - All inputs validated against JSON Schema
 - Type checking at runtime
 - Required fields enforced
 
 ### Execution Context
+
 Tools receive limited context:
+
 ```typescript
 interface ExecutionContext {
   sessionId: string;
@@ -333,6 +417,7 @@ interface ExecutionContext {
 ```
 
 ### Resource Limits
+
 - File operations limited to working directory
 - Network requests can be restricted
 - Execution timeouts can be configured
@@ -340,19 +425,27 @@ interface ExecutionContext {
 ## Tool Patterns
 
 ### Idempotent Tools
+
 Tools should be idempotent when possible:
+
 ```typescript
 // Good: Can be called multiple times safely
-async execute(input) {
+async
+execute(input)
+{
   const content = await fs.readFile(input.path);
-  return { success: true, output: content };
+  return {success: true, output: content};
 }
 ```
 
 ### Error Handling
+
 Always return structured errors:
+
 ```typescript
-async execute(input) {
+async
+execute(input)
+{
   try {
     // Tool logic
   } catch (error) {
@@ -366,68 +459,94 @@ async execute(input) {
 ```
 
 ### Progress Reporting
+
 For long-running tools:
+
 ```typescript
-async execute(input, context) {
+async
+execute(input, context)
+{
   context.logger.log('Starting processing...');
-  
+
   for (let i = 0; i < items.length; i++) {
     await processItem(items[i]);
     context.logger.log(`Progress: ${i + 1}/${items.length}`);
   }
-  
-  return { success: true, output: 'Complete' };
+
+  return {success: true, output: 'Complete'};
 }
 ```
 
 ## Tool Execution Examples
 
 ### Single Tool Call
+
 ```json
 {
-  "tool_calls": [{
-    "name": "read",
-    "input": { "path": "README.md" }
-  }]
+  "tool_calls": [
+    {
+      "name": "read",
+      "input": {
+        "path": "README.md"
+      }
+    }
+  ]
 }
 ```
 
 ### Multiple Tools (Parallel)
+
 ```json
 {
   "tool_calls": [
-    { "name": "read", "input": { "path": "file1.txt" } },
-    { "name": "read", "input": { "path": "file2.txt" } }
+    {
+      "name": "read",
+      "input": {
+        "path": "file1.txt"
+      }
+    },
+    {
+      "name": "read",
+      "input": {
+        "path": "file2.txt"
+      }
+    }
   ]
 }
 ```
 
 ### Delegation Chain
+
 ```json
 {
-  "tool_calls": [{
-    "name": "task",
-    "input": {
-      "agent": "code-analyzer",
-      "task": "Analyze the architecture of src/"
+  "tool_calls": [
+    {
+      "name": "task",
+      "input": {
+        "agent": "code-analyzer",
+        "task": "Analyze the architecture of src/"
+      }
     }
-  }]
+  ]
 }
 ```
 
 ## Troubleshooting
 
 **Issue**: Tool not found
+
 - Check tool is registered in ToolRegistry
 - Verify agent has access (check tools in frontmatter)
 - Ensure tool name matches exactly
 
 **Issue**: Input validation fails
+
 - Check input matches schema
 - Verify required fields are present
 - Check type compatibility
 
 **Issue**: Tool execution fails
+
 - Check error message in result
 - Verify file permissions (for file tools)
 - Check execution context has required services
