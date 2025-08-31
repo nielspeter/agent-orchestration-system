@@ -10,26 +10,22 @@ export function createContextSetupMiddleware(): Middleware {
       ctx.messages = [];
     }
 
-    // Add parent messages if available (for context inheritance)
-    if (ctx.executionContext.parentMessages) {
-      // Filter out the parent's system message to avoid tool confusion
-      const filteredParentMessages = ctx.executionContext.parentMessages.filter(
-        (msg) => msg.role !== 'system'
-      );
-      ctx.messages.push(...filteredParentMessages);
-
+    // PULL ARCHITECTURE: Don't inherit parent messages
+    // Child agents will use tools to gather what they need
+    if (ctx.executionContext.parentMessages && ctx.executionContext.parentMessages.length > 0) {
       ctx.logger.log({
         timestamp: new Date().toISOString(),
         agentName: ctx.agentName,
         depth: ctx.executionContext.depth,
         type: 'system',
-        content: `Inheriting ${filteredParentMessages.length} messages from parent context (filtered out system message)`,
+        content: `Pull architecture: NOT inheriting parent messages. Agent will gather context via tools.`,
         metadata: {
-          parentMessageTypes: filteredParentMessages.map((m) => m.role).join(', '),
-          originalCount: ctx.executionContext.parentMessages.length,
+          parentMessagesAvailable: ctx.executionContext.parentMessages.length,
+          pullArchitecture: true,
           toolsAvailable: ctx.tools?.map(t => t.name).join(', ') || 'none',
         },
       });
+      // Don't push parent messages - child starts fresh!
     }
 
     // Add agent's system prompt and user prompt (only on first iteration)
@@ -54,27 +50,32 @@ ${ctx.tools.map(t => `- ${t.name}: ${t.description}`).join('\n')}`;
       // Add task completion protocol based on agent role
       if (ctx.executionContext.parentAgent) {
         // Child agent - MUST return result to parent
-        systemPrompt += `\n\n### CRITICAL: YOU ARE A DELEGATED AGENT
+        systemPrompt += `\n\n### CRITICAL: YOU ARE A DELEGATED SPECIALIST (PULL ARCHITECTURE)
 You were called by ${ctx.executionContext.parentAgent} to complete a specific task.
-Your final text response will be returned as the result of this delegation.
 
-MANDATORY COMPLETION PROTOCOL:
-1. Use tools to complete the requested task
-2. After tools execute, you will see their results
-3. IMMEDIATELY provide a text summary of what was accomplished
-4. This text summary is your RETURN VALUE to ${ctx.executionContext.parentAgent}
-5. Do NOT use any more tools after seeing tool results
+IMPORTANT: You start with a clean slate - no inherited context from parent.
+You must use your tools to discover and gather any information you need.
 
-YOU MUST FOLLOW THIS PATTERN:
-- First response: Use tools to do the work
-- Second response: Text summary of what was done (NO MORE TOOLS)
+YOUR APPROACH:
+1. Understand the task from the delegation prompt
+2. Use tools (Read, Grep, List, etc.) to discover relevant files and information
+3. Build your understanding progressively through tool usage
+4. Complete the requested work
+5. Return a clear summary of what you accomplished
 
-EXAMPLE:
-Request: "Analyze the code and save findings"
-Your first response: [Use Read tool, Write tool]
-Your second response: "I've completed the analysis. The code implements a middleware pipeline pattern with..." 
+PULL-BASED DISCOVERY PATTERN:
+- If asked to "analyze auth.ts" → Use Read tool to get the file
+- If asked to "debug login issue" → Use Grep to find login-related files, then Read them
+- If asked to "understand architecture" → Use List to explore structure, Read key files
+- Don't expect context from parent - gather what you need autonomously!
 
-THIS IS A HARD REQUIREMENT. After seeing tool results, you MUST provide only text.`;
+COMPLETION PROTOCOL:
+After completing your investigation and work:
+- Provide a clear text summary of what you discovered and accomplished
+- This summary is your RETURN VALUE to ${ctx.executionContext.parentAgent}
+- Focus on results, not process
+
+Remember: You have full autonomy to investigate and discover. Use your tools!`;
       } else {
         // Parent/orchestrator agent - manages workflow  
         systemPrompt += `\n\n### ORCHESTRATION PROTOCOL

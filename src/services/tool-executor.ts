@@ -193,35 +193,21 @@ async function handleDelegation(
   ctx: MiddlewareContext,
   executeDelegate: ExecuteDelegate
 ): Promise<ToolResult> {
-  // Get parent messages but handle the case where the last message might have tool_use
-  let parentMessages = ctx.messages.slice();
+  // PULL ARCHITECTURE: Don't pass parent messages to child agents
+  // Child agents will use tools to gather the information they need
   
-  // Check if the last message is an assistant message with tool_calls
-  const lastMessage = parentMessages[parentMessages.length - 1];
-  if (lastMessage?.role === 'assistant' && lastMessage.tool_calls && lastMessage.tool_calls.length > 0) {
-    // Remove the tool_calls from the last message since we don't have the results yet
-    // Create a clean version of the last message without tool_calls
-    const cleanLastMessage: Message = {
-      role: lastMessage.role,
-      content: lastMessage.content
-    };
-    
-    // Replace the last message with the clean version
-    parentMessages = [...parentMessages.slice(0, -1), cleanLastMessage];
-  }
-
   ctx.logger.log({
     timestamp: new Date().toISOString(),
     agentName: ctx.agentName,
     depth: ctx.executionContext.depth,
     type: 'delegation',
-    content: `[SIDECHAIN] Delegating to ${args.subagent_type} with full context`,
+    content: `[SIDECHAIN] Delegating to ${args.subagent_type} with minimal context (pull architecture)`,
     metadata: {
       subAgent: args.subagent_type,
       toolName: 'Task',
       prompt: args.prompt,
-      parentContextSize: parentMessages.length,
-      contextWillBeCached: true,
+      parentContextSize: 0, // No parent messages passed
+      pullArchitecture: true,
     },
   });
 
@@ -230,7 +216,7 @@ async function handleDelegation(
     depth: ctx.executionContext.depth + 1,
     parentAgent: ctx.agentName,
     isSidechain: true,
-    parentMessages,
+    parentMessages: [], // Empty array - child starts fresh (Claude Code style)
   });
 
   return { content: subAgentResult };
