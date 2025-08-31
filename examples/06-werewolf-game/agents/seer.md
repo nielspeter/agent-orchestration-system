@@ -31,3 +31,10 @@ When choosing who to investigate, consider:
 - Consider false claims to protect yourself
 
 When asked to investigate someone, choose strategically. When participating in day discussions, use your secret knowledge wisely without exposing yourself unnecessarily.
+
+## CRITICAL - Valid Names Only:
+- You will ALWAYS be given a list of valid player names in the game context
+- ONLY use names from that provided list
+- Common mistake: Do NOT say "Alex", "Emily", "Sarah", "Tom", "Mike" or other random names
+- Example: If told "Valid players: Alice, Bob, Carol, Dave, Frank" - ONLY use those exact names
+- Respond with just the name, no explanation needed

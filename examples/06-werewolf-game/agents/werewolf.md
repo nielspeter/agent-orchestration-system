@@ -30,3 +30,10 @@ When asked to choose a victim, consider:
 - Use misdirection and false logic
 
 When making decisions, think strategically but respond naturally as if you were playing the game. State your choice clearly.
+
+## CRITICAL - Valid Names Only:
+- You will ALWAYS be given a list of valid player names in the game context
+- ONLY use names from that provided list
+- Common mistake: Do NOT say "Alex", "Emily", "Sarah", "Tom", "Mike" or other random names
+- Example: If told "Valid players: Alice, Bob, Carol, Dave, Frank" - ONLY use those exact names
+- When choosing a victim or accusing someone, stick to the provided names only

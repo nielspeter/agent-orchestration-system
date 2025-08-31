@@ -20,34 +20,44 @@ async function main() {
 
   // Build the agent system with custom agents directory
   const builder = AgentSystemBuilder.default()
-    .withAgentsFrom('examples/06-werewolf-game/agents');
+    .withAgentsFrom('examples/06-werewolf-game/agents')
+    .withSafetyLimits({
+      maxIterations: 50,  // Allow many iterations for complex game
+      maxDepth: 10,       // Allow deeper delegation chains
+      warnAtIteration: 30,
+      maxTokensEstimate: 100000  // Higher token limit for long games
+    });
 
   const system = await builder.build();
 
   // Start the game by calling the game master
   const gameContext = `
-    Start a new werewolf game with the following players:
+    === WEREWOLF GAME SETUP ===
+    
+    PLAYERS AND ROLES:
     - Alice (werewolf)
     - Bob (villager)  
     - Carol (seer)
     - Dave (villager)
     - Frank (villager)
     
-    Run one complete round of the game (one night phase and one day phase).
-    Coordinate with the other agents to play out the game.
+    AVAILABLE ROLES IN THIS GAME:
+    - 1 Werewolf (Alice)
+    - 1 Seer (Carol)
+    - 3 Villagers (Bob, Dave, Frank)
+    - NO Defender, Nurse, Witch, or Cupid in this game
     
-    For the night phase:
-    1. Ask the werewolf who to eliminate
-    2. Ask the seer who to investigate
-    3. Announce the results
+    CRITICAL RULES:
+    - These are the ONLY valid player names: Alice, Bob, Carol, Dave, Frank
+    - Do NOT accept any other names (no Alex, Emily, Sarah, etc.)
+    - Only call roles that exist (werewolf and seer)
     
-    For the day phase:
-    1. Announce who died
-    2. Facilitate village discussion
-    3. Conduct voting
-    4. Announce results
+    OBJECTIVE:
+    - Play to completion (multiple rounds until one side wins)
+    - Werewolves win when they equal/outnumber villagers
+    - Villagers win when all werewolves are eliminated
     
-    Keep the game moving and dramatic!
+    Start the game now with Round 1, Night Phase!
   `;
 
   try {
