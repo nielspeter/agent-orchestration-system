@@ -201,13 +201,12 @@ async function handleDelegation(
     agentName: ctx.agentName,
     depth: ctx.executionContext.depth,
     type: 'delegation',
-    content: `[SIDECHAIN] Delegating to ${args.subagent_type} with minimal context (pull architecture)`,
+    content: `[SIDECHAIN] Delegating to ${args.subagent_type}`,
     metadata: {
       subAgent: args.subagent_type,
       toolName: 'Task',
       prompt: args.prompt,
-      parentContextSize: 0, // No parent messages passed
-      pullArchitecture: true,
+      parentContextSize: 0,
     },
   });
 

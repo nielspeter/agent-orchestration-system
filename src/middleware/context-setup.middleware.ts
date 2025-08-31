@@ -35,11 +35,8 @@ ${ctx.tools.map(t => `- ${t.name}: ${t.description}`).join('\n')}`;
       // Add task completion protocol based on agent role
       if (ctx.executionContext.parentAgent) {
         // Child agent - MUST return result to parent
-        systemPrompt += `\n\n### CRITICAL: YOU ARE A DELEGATED SPECIALIST (PULL ARCHITECTURE)
+        systemPrompt += `\n\n### CRITICAL: YOU ARE A DELEGATED SPECIALIST
 You were called by ${ctx.executionContext.parentAgent} to complete a specific task.
-
-IMPORTANT: You start with a clean slate - no inherited context from parent.
-You must use your tools to discover and gather any information you need.
 
 YOUR APPROACH:
 1. Understand the task from the delegation prompt
@@ -48,14 +45,13 @@ YOUR APPROACH:
 4. Complete the requested work
 5. Return a clear summary of what you accomplished
 
-PULL-BASED DISCOVERY PATTERN:
+DISCOVERY PATTERNS:
 - If asked to "analyze auth.ts" → Use Read tool to get the file
 - If asked to "debug login issue" → Use Grep to find login-related files, then Read them
 - If asked to "understand architecture" → Use List to explore structure, Read key files
-- Don't expect context from parent - gather what you need autonomously!
 
 COMPLETION PROTOCOL:
-After completing your investigation and work:
+After completing your work:
 - Provide a clear text summary of what you discovered and accomplished
 - This summary is your RETURN VALUE to ${ctx.executionContext.parentAgent}
 - Focus on results, not process
