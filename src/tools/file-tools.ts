@@ -51,7 +51,15 @@ export const createWriteTool = (): BaseTool => ({
       const typedArgs = args as any;
       await fs.mkdir(path.dirname(typedArgs.path), { recursive: true });
       await fs.writeFile(typedArgs.path, typedArgs.content, 'utf-8');
-      return { content: `File written successfully to ${typedArgs.path}` };
+      
+      // Provide meaningful context about what was written
+      const contentLength = typedArgs.content.length;
+      const lineCount = typedArgs.content.split('\n').length;
+      const preview = typedArgs.content.substring(0, 100).replace(/\n/g, ' ');
+      
+      return { 
+        content: `Successfully saved to ${typedArgs.path} (${contentLength} chars, ${lineCount} lines). Content: "${preview}${contentLength > 100 ? '...' : ''}"` 
+      };
     } catch (error) {
       return {
         content: null,

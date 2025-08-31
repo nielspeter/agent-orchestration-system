@@ -17,6 +17,7 @@
     "format:check": "prettier --check .",
     "check": "npm run lint && npm run format:check && npm run test",
     "example:orchestration": "tsx examples/orchestration-demo.ts",
+    "example:analyzer": "tsx examples/code-analyzer-direct.ts",
     "example:logging": "tsx examples/logging-demo.ts",
     "example:structure": "tsx examples/structure-demo.ts",
     "example:caching": "tsx examples/claude-code-caching-demo.ts",
@@ -26,10 +27,13 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.60.0",
+    "@modelcontextprotocol/sdk": "^1.17.4",
+    "@types/uuid": "^10.0.0",
     "ai": "^5.0.28",
     "dotenv": "^16.4.5",
     "gray-matter": "^4.0.3",
     "openai": "^4.29.2",
+    "uuid": "^11.1.0",
     "zod": "^3.25.76"
   },
   "devDependencies": {
