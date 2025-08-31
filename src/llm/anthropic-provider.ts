@@ -355,7 +355,7 @@ export class AnthropicProvider {
           (block) =>
             block.type === 'text' &&
             'cache_control' in block &&
-            (block as any).cache_control?.type === 'ephemeral'
+            block.cache_control?.type === 'ephemeral'
         ).length;
       }
     }
@@ -367,7 +367,7 @@ export class AnthropicProvider {
    * Record detailed cache metrics
    */
   private recordDetailedMetrics(
-    usage: any,
+    usage: Anthropic.Message['usage'],
     totalCachedBlocks: number,
     responseTimeMs: number
   ): void {

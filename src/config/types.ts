@@ -237,25 +237,73 @@ export const TEST_CONFIG_WITH_TOOLS: SystemConfig = {
 };
 
 /**
+ * Deep merge helper for objects
+ */
+function deepMergeObjects<T>(target: T | undefined, source: T): T {
+  if (!target) return source;
+  const result = { ...target } as T;
+  for (const key in source) {
+    if (source[key] !== undefined) {
+      (result as Record<string, unknown>)[key] = source[key];
+    }
+  }
+  return result;
+}
+
+/**
  * Utility to deep merge configurations
  */
 export function mergeConfigs(...configs: Partial<SystemConfig>[]): SystemConfig {
-  const result: any = {};
+  const result: Partial<SystemConfig> = {};
 
   for (const config of configs) {
-    for (const key in config) {
-      const value = (config as any)[key];
-      if (value === undefined) continue;
+    // Handle model string
+    if (config.model !== undefined) {
+      result.model = config.model;
+    }
 
-      if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-        result[key] = mergeConfigs(result[key] || {}, value);
-      } else {
-        result[key] = value;
-      }
+    // Handle agents config
+    if (config.agents !== undefined) {
+      result.agents = deepMergeObjects<AgentConfig>(result.agents, config.agents);
+    }
+
+    // Handle tools config
+    if (config.tools !== undefined) {
+      result.tools = deepMergeObjects<ToolConfig>(result.tools, config.tools);
+    }
+
+    // Handle safety config
+    if (config.safety !== undefined) {
+      result.safety = deepMergeObjects<SafetyConfig>(result.safety, config.safety);
+    }
+
+    // Handle caching config
+    if (config.caching !== undefined) {
+      result.caching = deepMergeObjects<CachingConfig>(result.caching, config.caching);
+    }
+
+    // Handle logging config
+    if (config.logging !== undefined) {
+      result.logging = deepMergeObjects<LoggingConfig>(result.logging, config.logging);
+    }
+
+    // Handle MCP config
+    if (config.mcp !== undefined) {
+      result.mcp = deepMergeObjects<MCPConfig>(result.mcp, config.mcp);
+    }
+
+    // Handle session config
+    if (config.session !== undefined) {
+      result.session = deepMergeObjects<SessionConfig>(result.session, config.session);
+    }
+
+    // Handle todos config
+    if (config.todos !== undefined) {
+      result.todos = deepMergeObjects<TodoConfig>(result.todos, config.todos);
     }
   }
 
-  return result;
+  return result as SystemConfig;
 }
 
 /**

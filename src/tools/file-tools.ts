@@ -2,6 +2,32 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { BaseTool, ToolResult } from '../types';
 
+// Type definitions for tool arguments
+interface ReadArgs {
+  path: string;
+  [key: string]: unknown; // Index signature for Record<string, unknown> constraint
+}
+
+interface WriteArgs {
+  path: string;
+  content: string;
+  [key: string]: unknown; // Index signature for Record<string, unknown> constraint
+}
+
+interface ListArgs {
+  path: string;
+  [key: string]: unknown; // Index signature for Record<string, unknown> constraint
+}
+
+// Type guard helper
+function validateArgs<T extends Record<string, unknown>>(
+  args: unknown,
+  requiredFields: (keyof T)[]
+): args is T {
+  if (!args || typeof args !== 'object') return false;
+  return requiredFields.every((field) => field in args);
+}
+
 /**
  * Creates a Read tool for file system access
  *
@@ -28,7 +54,13 @@ export const createReadTool = (): BaseTool => ({
   },
   execute: async (args): Promise<ToolResult> => {
     try {
-      const content = await fs.readFile((args as any).path, 'utf-8');
+      if (!validateArgs<ReadArgs>(args, ['path'])) {
+        return {
+          content: null,
+          error: 'Invalid arguments: path is required',
+        };
+      }
+      const content = await fs.readFile(args.path, 'utf-8');
       return { content };
     } catch (error) {
       return {
@@ -72,17 +104,22 @@ export const createWriteTool = (): BaseTool => ({
   },
   execute: async (args): Promise<ToolResult> => {
     try {
-      const typedArgs = args as any;
-      await fs.mkdir(path.dirname(typedArgs.path), { recursive: true });
-      await fs.writeFile(typedArgs.path, typedArgs.content, 'utf-8');
+      if (!validateArgs<WriteArgs>(args, ['path', 'content'])) {
+        return {
+          content: null,
+          error: 'Invalid arguments: path and content are required',
+        };
+      }
+      await fs.mkdir(path.dirname(args.path), { recursive: true });
+      await fs.writeFile(args.path, args.content, 'utf-8');
 
       // Provide meaningful context about what was written
-      const contentLength = typedArgs.content.length;
-      const lineCount = typedArgs.content.split('\n').length;
-      const preview = typedArgs.content.substring(0, 100).replace(/\n/g, ' ');
+      const contentLength = args.content.length;
+      const lineCount = args.content.split('\n').length;
+      const preview = args.content.substring(0, 100).replace(/\n/g, ' ');
 
       return {
-        content: `Successfully saved to ${typedArgs.path} (${contentLength} chars, ${lineCount} lines). Content: "${preview}${contentLength > 100 ? '...' : ''}"`,
+        content: `Successfully saved to ${args.path} (${contentLength} chars, ${lineCount} lines). Content: "${preview}${contentLength > 100 ? '...' : ''}"`,
       };
     } catch (error) {
       return {
@@ -122,7 +159,13 @@ export const createListTool = (): BaseTool => ({
   },
   execute: async (args): Promise<ToolResult> => {
     try {
-      const files = await fs.readdir((args as any).path);
+      if (!validateArgs<ListArgs>(args, ['path'])) {
+        return {
+          content: null,
+          error: 'Invalid arguments: path is required',
+        };
+      }
+      const files = await fs.readdir(args.path);
       return { content: files };
     } catch (error) {
       return {

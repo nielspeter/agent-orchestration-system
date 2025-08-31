@@ -146,14 +146,17 @@ export class ConsoleLogger implements ConversationLogger {
         });
         break;
 
-      case 'tool':
+      case 'tool': {
+        const toolContent = { content: entry.content };
+        const toolName = entry.metadata?.toolName || 'unknown';
         const toolUseId = await this.jsonlLogger.logToolUse(
-          entry.metadata?.toolName || 'unknown',
-          entry.content,
+          toolName,
+          toolContent,
           this.currentModel
         );
-        this.toolUseIds.set(entry.metadata?.toolName || 'unknown', toolUseId);
+        this.toolUseIds.set(toolName, toolUseId);
         break;
+      }
 
       case 'delegation':
         await this.jsonlLogger.logAgentDelegation(
@@ -244,7 +247,13 @@ export class FileLogger implements ConversationLogger {
       timestamp: entry.timestamp,
       sessionId: this.sessionId,
       isSidechain: entry.metadata?.isSidechain || false,
-      type: entry.type === 'error' ? 'system' : (entry.type as any),
+      type:
+        entry.type === 'error' ||
+        entry.type === 'tool' ||
+        entry.type === 'delegation' ||
+        entry.type === 'result'
+          ? 'system'
+          : (entry.type as 'system' | 'user' | 'assistant' | 'summary'),
       message: {
         role: entry.type === 'user' ? 'user' : entry.type === 'assistant' ? 'assistant' : 'system',
         content: [

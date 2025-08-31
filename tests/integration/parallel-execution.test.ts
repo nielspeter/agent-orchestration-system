@@ -1,9 +1,8 @@
-import { describe, test, expect, beforeAll, afterAll, beforeEach, afterEach } from '@jest/globals';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from '@jest/globals';
 import * as dotenv from 'dotenv';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { AgentSystemBuilder } from '../../src/config/system-builder';
-import { BuildResult } from '../../src/config/system-builder';
+import { AgentSystemBuilder, BuildResult } from '../../src/config/system-builder';
 
 // Load environment variables
 dotenv.config();

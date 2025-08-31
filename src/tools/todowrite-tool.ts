@@ -120,13 +120,14 @@ When in doubt, use this tool. Being proactive with task management demonstrates 
     required: ['todos'],
   },
 
-  execute: async (args: any): Promise<ToolResult> => {
+  execute: async (args: Record<string, unknown>): Promise<ToolResult> => {
     try {
+      const todos = args.todos as TodoItem[];
       // Update todos using the manager (includes validation and persistence)
-      await todoManager.updateTodos(args.todos);
+      await todoManager.updateTodos(todos);
 
       return {
-        content: `Todo list updated with ${args.todos.length} items. Tasks have been saved and are being tracked.`,
+        content: `Todo list updated with ${todos.length} items. Tasks have been saved and are being tracked.`,
       };
     } catch (error) {
       return {

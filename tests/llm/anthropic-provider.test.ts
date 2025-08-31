@@ -1,5 +1,4 @@
 import { AnthropicProvider } from '../../src/llm/anthropic-provider';
-import { Message } from '../../src/types';
 
 describe('AnthropicProvider Caching Strategy', () => {
   let provider: AnthropicProvider;

@@ -1,90 +1,77 @@
 # AgentExecutor Improvement Proposal
 
-## 1. Enhanced Performance Monitoring
+## Current Architecture Overview
+The AgentExecutor is a sophisticated middleware-based agent execution engine designed to provide flexible, safe, and traceable task delegation across different agents. Its core strengths include:
+- Middleware pipeline architecture
+- Comprehensive safety mechanisms
+- Detailed logging and tracing
+- Dynamic agent and tool execution
 
-### Current Limitation
-The current implementation has a fixed 5-minute timeout and basic performance tracking.
+## Proposed Improvements
 
-### Proposed Improvements
-- Implement configurable timeout mechanisms
-- Add more granular performance metrics
-- Create a performance profiling middleware
-
+### 1. Enhanced Dependency Injection
+**Current Limitation**: Rigid dependency construction
+**Proposed Solution**:
 ```typescript
-interface PerformanceMetrics {
-  totalExecutionTime: number;
-  iterationCount: number;
-  averageIterationTime: number;
-  peakMemoryUsage?: number;
+interface IExecutionStrategy {
+  execute(context: MiddlewareContext): Promise<void>;
+}
+
+interface ILoggingStrategy {
+  log(entry: LogEntry): void;
+  flush(): Promise<void>;
+}
+
+class AgentExecutor {
+  constructor(
+    private executionStrategy: IExecutionStrategy,
+    private loggingStrategy: ILoggingStrategy,
+    // Other injectable components
+  ) {}
 }
 ```
 
-## 2. Advanced Safety Mechanisms
+### 2. Configurable Safety Parameters
+- Make timeout duration configurable
+- Implement more granular safety controls
+- Add dynamic iteration and depth limit adjustments
 
-### Current Limitation
-Basic iteration and time-based safety checks.
+### 3. Advanced Error Handling
+- Implement circuit breaker pattern
+- Add retry mechanisms for transient failures
+- More detailed error reporting with context preservation
 
-### Proposed Improvements
-- Implement a circuit breaker for repeated agent failures
-- Add more sophisticated resource consumption tracking
-- Create adaptive safety thresholds
+### 4. Performance Optimizations
+- Implement object pooling for middleware contexts
+- Add lazy initialization for heavy components
+- Support asynchronous logging
+- Introduce caching mechanisms for repeated computations
 
-```typescript
-class CircuitBreaker {
-  private failureCount = 0;
-  private maxFailures = 3;
-  private cooldownPeriod = 5 * 60 * 1000; // 5 minutes
-
-  shouldAllowExecution(): boolean {
-    // Adaptive failure tracking logic
-  }
-}
-```
-
-## 3. Caching and Optimization
-
-### Current Limitation
-No built-in caching for repeated or similar tasks.
-
-### Proposed Improvements
-- Implement a configurable caching layer
-- Support result memoization for deterministic tasks
-- Allow cache strategy configuration
-
-```typescript
-interface CacheStrategy {
-  maxEntries: number;
-  ttl: number;
-  shouldCache: (context: MiddlewareContext) => boolean;
-}
-```
-
-## 4. Extensible Logging
-
-### Current Limitation
-Fixed logging structure with limited customization.
-
-### Proposed Improvements
-- Create a plugin-based logging system
-- Support multiple log output formats
-- Allow custom log enrichment
-
-```typescript
-interface LogEnricher {
-  enrich(logEntry: LogEntry): LogEntry;
-}
-```
+### 5. Tracing and Observability
+- Add distributed tracing support
+- Implement comprehensive log levels
+- Create performance monitoring hooks
 
 ## Implementation Roadmap
-1. Design and implement performance middleware
-2. Create circuit breaker mechanism
-3. Develop flexible caching infrastructure
-4. Extend logging capabilities
-5. Comprehensive testing of new features
-6. Documentation and usage guidelines
+1. Refactor dependency injection (High Priority)
+2. Enhance safety and timeout mechanisms
+3. Implement advanced error handling
+4. Add performance optimizations
+5. Improve tracing and observability
 
 ## Expected Benefits
-- Improved system reliability
-- More predictable agent execution
-- Better performance insights
-- Enhanced configurability
+- More flexible and maintainable codebase
+- Improved performance
+- Enhanced debugging capabilities
+- Better separation of concerns
+
+## Potential Risks
+- Increased complexity
+- Potential performance overhead from additional abstractions
+- Requires careful testing of refactored components
+
+**Recommended Next Steps**:
+- Conduct thorough code review
+- Create comprehensive test suite
+- Implement changes incrementally
+- Measure performance impact of each modification

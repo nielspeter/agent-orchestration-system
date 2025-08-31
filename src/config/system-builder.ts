@@ -17,7 +17,7 @@ import { LoggerFactory } from '../core/conversation-logger';
 import { createListTool, createReadTool, createWriteTool } from '../tools/file-tools';
 import { createTaskTool } from '../tools/task-tool';
 import { createTodoWriteTool } from '../tools/todowrite-tool';
-import { BaseTool } from '../types';
+import { BaseTool, ToolParameter, ToolResult, ToolSchema } from '../types';
 import {
   CachingConfig,
   DEFAULT_SYSTEM_CONFIG,
@@ -27,6 +27,7 @@ import {
   resolveConfig,
   ResolvedSystemConfig,
   SafetyConfig,
+  SessionConfig,
   SystemConfig,
   TEST_CONFIG_MINIMAL,
   TodoConfig,
@@ -39,6 +40,33 @@ interface MCPClientWrapper {
   client: Client;
   transport: StdioClientTransport;
   serverName: string;
+}
+
+/**
+ * Configuration object from file format
+ */
+interface FileConfig {
+  model?: string;
+  execution?: {
+    defaultModel?: string;
+    maxIterations?: number;
+    maxDepth?: number;
+    warnAtIteration?: number;
+    maxTokensEstimate?: number;
+    timeout?: number;
+  };
+  agents?: {
+    directory?: string;
+    directories?: string[];
+    additionalDirectories?: string[];
+  };
+  builtinTools?: {
+    tools?: string[];
+  };
+  tools?: {
+    builtin?: string[];
+  };
+  mcpServers?: Record<string, MCPConfig['servers'][string]>;
 }
 
 /**
@@ -123,7 +151,7 @@ export class AgentSystemBuilder {
   /**
    * Add a custom tool
    */
-  withTool(tool: BaseTool): AgentSystemBuilder {
+  withTool(tool: BaseTool): this {
     this.customTools.push(tool);
     return this;
   }
@@ -166,7 +194,7 @@ export class AgentSystemBuilder {
       session: {
         ...this.config.session,
         sessionId,
-      },
+      } as SessionConfig,
     });
   }
 
@@ -279,11 +307,25 @@ export class AgentSystemBuilder {
 
           // Register each tool from the MCP server
           for (const tool of tools) {
+            // Ensure inputSchema has the correct structure
+            const toolSchema: ToolSchema = tool.inputSchema
+              ? {
+                  type: 'object' as const,
+                  properties:
+                    ((tool.inputSchema as Record<string, unknown>).properties as Record<
+                      string,
+                      ToolParameter
+                    >) || {},
+                  required:
+                    ((tool.inputSchema as Record<string, unknown>).required as string[]) || [],
+                }
+              : { type: 'object' as const, properties: {}, required: [] };
+
             const mcpTool: BaseTool = {
               name: `${serverName}.${tool.name}`,
               description: tool.description || `Tool from ${serverName} MCP server`,
-              parameters: tool.inputSchema as any,
-              execute: async (input: any) => {
+              parameters: toolSchema,
+              execute: async (input: Record<string, unknown>) => {
                 try {
                   const result = await client.callTool({
                     name: tool.name,
@@ -361,7 +403,7 @@ export class AgentSystemBuilder {
   /**
    * Factory method: Create from config object
    */
-  static fromConfig(config: any): AgentSystemBuilder {
+  static fromConfig(config: FileConfig): AgentSystemBuilder {
     const systemConfig: Partial<SystemConfig> = {};
 
     // Map from file config format to our format
@@ -386,15 +428,15 @@ export class AgentSystemBuilder {
 
     if (config.execution) {
       systemConfig.safety = {
-        maxIterations: config.execution.maxIterations,
-        maxDepth: config.execution.maxDepth,
-        warnAtIteration: config.execution.warnAtIteration,
-        maxTokensEstimate: config.execution.maxTokensEstimate,
-      };
+        maxIterations: config.execution.maxIterations!,
+        maxDepth: config.execution.maxDepth!,
+        warnAtIteration: config.execution.warnAtIteration!,
+        maxTokensEstimate: config.execution.maxTokensEstimate!,
+      } as SafetyConfig;
 
       systemConfig.session = {
         timeout: config.execution.timeout,
-      };
+      } as SessionConfig;
     }
 
     if (config.mcpServers) {
@@ -459,14 +501,15 @@ export class AgentSystemBuilder {
  * Test-specific builder with additional capabilities
  */
 export class TestConfigBuilder extends AgentSystemBuilder {
-  protected mockAgents: Map<string, any> = new Map();
-  protected mockTools: Map<string, any> = new Map();
+  protected mockAgents: Map<string, Map<string, string>> = new Map();
+  protected mockTools: Map<string, (args: Record<string, unknown>) => Promise<ToolResult>> =
+    new Map();
   protected recording: boolean = false;
 
   /**
    * Add a mock agent
    */
-  withMockAgent(name: string, responses: Map<string, string>): TestConfigBuilder {
+  withMockAgent(name: string, responses: Map<string, string>): this {
     this.mockAgents.set(name, responses);
     return this;
   }
@@ -474,7 +517,10 @@ export class TestConfigBuilder extends AgentSystemBuilder {
   /**
    * Add a mock tool
    */
-  withMockTool(name: string, handler: (args: any) => Promise<any>): TestConfigBuilder {
+  withMockTool(
+    name: string,
+    handler: (args: Record<string, unknown>) => Promise<ToolResult>
+  ): this {
     this.mockTools.set(name, handler);
     return this;
   }
@@ -482,7 +528,7 @@ export class TestConfigBuilder extends AgentSystemBuilder {
   /**
    * Enable recording for assertions
    */
-  withRecording(): TestConfigBuilder {
+  withRecording(): this {
     this.recording = true;
     return this;
   }

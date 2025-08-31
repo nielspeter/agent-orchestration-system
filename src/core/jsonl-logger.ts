@@ -1,7 +1,7 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
-import { Message } from '../types';
+import { Message, ToolResult } from '../types';
 
 /**
  * Claude Code compatible JSONL event structure
@@ -25,9 +25,9 @@ export interface JsonlEvent {
       text?: string;
       id?: string;
       name?: string;
-      input?: any;
+      input?: Record<string, unknown>;
       tool_use_id?: string;
-      content?: string | any;
+      content?: string | Record<string, unknown>;
     }>;
     model?: string;
     stop_reason?: string | null;
@@ -65,7 +65,7 @@ export interface JsonlEvent {
       startLine: number;
       totalLines: number;
     };
-    [key: string]: any;
+    [key: string]: unknown;
   };
 
   // Agent-specific metadata (our extension)
@@ -83,10 +83,10 @@ export interface JsonlEvent {
  * JSONL Logger compatible with Claude Code's conversation format
  */
 export class JsonlLogger {
-  private filePath: string;
-  private sessionId: string;
+  private readonly filePath: string;
+  private readonly sessionId: string;
   private currentParentUuid: string | null = null;
-  private eventChain: Map<string, string> = new Map(); // Maps event to its UUID
+  private readonly eventChain: Map<string, string> = new Map(); // Maps event to its UUID
 
   constructor(sessionId?: string, outputDir: string = 'conversations') {
     this.sessionId = sessionId || uuidv4();
@@ -149,11 +149,28 @@ export class JsonlLogger {
   async logAssistantMessage(
     content: string,
     model: string,
-    usage?: any,
+    usage?: Record<string, unknown>,
     parentUuid?: string
   ): Promise<string> {
     const uuid = uuidv4();
     const requestId = `req_${uuidv4().substring(0, 12)}`;
+
+    // Convert usage to proper type if provided
+    const typedUsage = usage
+      ? {
+          input_tokens: (usage.input_tokens as number) || 0,
+          output_tokens: (usage.output_tokens as number) || 0,
+          cache_creation_input_tokens: usage.cache_creation_input_tokens as number | undefined,
+          cache_read_input_tokens: usage.cache_read_input_tokens as number | undefined,
+          cache_creation: usage.cache_creation as
+            | {
+                ephemeral_5m_input_tokens?: number;
+                ephemeral_1h_input_tokens?: number;
+              }
+            | undefined,
+          service_tier: usage.service_tier as string | undefined,
+        }
+      : undefined;
 
     const event: JsonlEvent = {
       uuid,
@@ -174,7 +191,7 @@ export class JsonlLogger {
         ],
         stop_reason: 'end_turn',
         stop_sequence: null,
-        usage,
+        usage: typedUsage,
       },
     };
 
@@ -188,7 +205,7 @@ export class JsonlLogger {
    */
   async logToolUse(
     toolName: string,
-    toolInput: any,
+    toolInput: Record<string, unknown>,
     model: string,
     parentUuid?: string
   ): Promise<string> {
@@ -227,7 +244,7 @@ export class JsonlLogger {
   /**
    * Log a tool result
    */
-  async logToolResult(toolUseId: string, result: any, parentUuid?: string): Promise<string> {
+  async logToolResult(toolUseId: string, result: ToolResult, parentUuid?: string): Promise<string> {
     const uuid = uuidv4();
 
     const event: JsonlEvent = {
@@ -247,7 +264,10 @@ export class JsonlLogger {
           },
         ],
       },
-      toolUseResult: result,
+      toolUseResult: {
+        type: 'tool_result',
+        ...result,
+      },
     };
 
     await this.writeEvent(event);
