@@ -27,7 +27,13 @@ export class AgentLoader {
         tools: data.tools || [],
         model: data.model,
       };
-    } catch (error) {
+    } catch (error: any) {
+      // Provide more helpful error messages
+      if (error.code === 'ENOENT') {
+        throw new Error(
+          `Agent '${name}' not found at ${agentPath}. Please ensure the agent file exists.`
+        );
+      }
       throw new Error(`Failed to load agent ${name}: ${error}`);
     }
   }
@@ -36,7 +42,15 @@ export class AgentLoader {
     try {
       const files = await fs.readdir(this.agentsDir);
       return files.filter((f) => f.endsWith('.md')).map((f) => f.replace('.md', ''));
-    } catch (error) {
+    } catch (error: any) {
+      // Only log as error if the directory exists but can't be read
+      // If directory doesn't exist (ENOENT), just return empty array silently
+      if (error.code === 'ENOENT') {
+        // Directory doesn't exist - this is fine if no agents were explicitly configured
+        return [];
+      }
+
+      // Other errors should be logged
       const errorMsg = `Failed to list agents: ${error}`;
       if (this.logger) {
         this.logger.log({
@@ -47,7 +61,7 @@ export class AgentLoader {
           content: errorMsg,
         });
       } else {
-        console.error(errorMsg);
+        console.error(`❌ [AgentLoader] ERROR: ${errorMsg}`);
       }
       return [];
     }

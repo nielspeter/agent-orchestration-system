@@ -3,7 +3,11 @@
  * Demonstration of MCP server integration with time utilities
  */
 
+import * as path from 'path';
+import { fileURLToPath } from 'url';
 import { AgentSystemBuilder } from '../src';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 async function main() {
   console.log('🕐 MCP Time Server Demo\n');

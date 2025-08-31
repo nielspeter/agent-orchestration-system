@@ -2,10 +2,13 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } fr
 import * as dotenv from 'dotenv';
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
 import { AgentSystemBuilder, BuildResult } from '../../src/config/system-builder';
 
 // Load environment variables
 dotenv.config();
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 describe('Parallel Execution Integration Tests', () => {
   let buildResult: BuildResult;
@@ -14,6 +17,7 @@ describe('Parallel Execution Integration Tests', () => {
   beforeAll(async () => {
     buildResult = await AgentSystemBuilder.default()
       .withModel(process.env.MODEL || 'claude-3-5-haiku-latest')
+      .withAgentsFrom(path.join(__dirname, 'test-agents'))
       .withSessionId('parallel-execution-test')
       .build();
   });

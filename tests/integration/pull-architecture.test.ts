@@ -1,9 +1,13 @@
 import { afterAll, beforeAll, describe, expect, test } from '@jest/globals';
 import * as dotenv from 'dotenv';
+import * as path from 'path';
+import { fileURLToPath } from 'url';
 import { AgentSystemBuilder, BuildResult } from '../../src/config/system-builder';
 
 // Load environment variables
 dotenv.config();
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 describe('Pull Architecture Integration Tests', () => {
   let buildResult: BuildResult;
@@ -12,6 +16,7 @@ describe('Pull Architecture Integration Tests', () => {
     const modelName = process.env.MODEL || 'claude-3-5-haiku-latest';
     buildResult = await AgentSystemBuilder.default()
       .withModel(modelName)
+      .withAgentsFrom(path.join(__dirname, 'test-agents'))
       .withSessionId('pull-architecture-test')
       .build();
   });

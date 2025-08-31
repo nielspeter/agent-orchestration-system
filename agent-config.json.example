@@ -1,4 +1,11 @@
 {
+  "// Note": "This is an example configuration. Agents are organized as follows:",
+  "// Structure": {
+    "agents/": "Template agents for library users",
+    "examples/*/agents/": "Example-specific agents",  
+    "tests/integration/test-agents/": "Test-specific agents"
+  },
+  
   "mcpServers": {
     "time": {
       "command": "uvx",
@@ -9,14 +16,17 @@
       "description": "Time and timezone utilities"
     }
   },
+  
   "builtinTools": {
     "enabled": true,
     "tools": ["read", "write", "list", "task", "todowrite"]
   },
+  
   "agents": {
     "directory": "./agents",
     "additionalDirectories": []
   },
+  
   "execution": {
     "defaultModel": "claude-3-5-haiku-latest",
     "maxDepth": 10,
