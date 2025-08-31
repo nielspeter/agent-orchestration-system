@@ -24,7 +24,7 @@ Use this tool proactively when:
 - You've completed significant work that should be reviewed or documented
 - The task involves complex multi-step coordination${agentList}
 
-The subagent will receive minimal context (just the task prompt) and use tools to gather information it needs autonomously (pull architecture).`,
+The subagent will work autonomously to complete the delegated task and return comprehensive results.`,
     parameters: {
       type: 'object',
       properties: {
