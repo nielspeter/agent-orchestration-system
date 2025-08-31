@@ -1,14 +1,30 @@
 import { Middleware, MiddlewareContext } from './middleware-types';
 
 /**
- * Simple middleware pipeline executor
- * Runs middleware in sequence, passing control via next()
+ * MiddlewarePipeline - Executes middleware functions in sequence
+ * 
+ * Implements the Chain of Responsibility pattern where each middleware
+ * can process the context and decide whether to pass control to the next
+ * middleware via the next() function.
+ * 
+ * @example
+ * ```typescript
+ * const pipeline = new MiddlewarePipeline();
+ * pipeline
+ *   .use(loggingMiddleware)
+ *   .use(authMiddleware)
+ *   .use(processingMiddleware);
+ * await pipeline.execute(context);
+ * ```
  */
 export class MiddlewarePipeline {
   private readonly middlewares: Middleware[] = [];
 
   /**
-   * Add middleware to the pipeline
+   * Adds a middleware function to the pipeline
+   * 
+   * @param middleware - Function that processes context and calls next()
+   * @returns this - For method chaining
    */
   use(middleware: Middleware): this {
     this.middlewares.push(middleware);
@@ -16,7 +32,10 @@ export class MiddlewarePipeline {
   }
 
   /**
-   * Execute the pipeline with the given context
+   * Executes the middleware pipeline with the given context
+   * 
+   * @param context - The context object passed through all middleware
+   * @throws Any error thrown by middleware functions
    */
   async execute(context: MiddlewareContext): Promise<void> {
     // Create execution-scoped iterator

@@ -3,7 +3,10 @@ import { ToolRegistry } from '../core/tool-registry';
 import { MiddlewareContext } from '../middleware/middleware-types';
 
 /**
- * Groups tools by concurrency safety
+ * Represents a group of tools that can be executed together
+ * 
+ * @property isConcurrencySafe - Whether these tools can run in parallel
+ * @property tools - Array of tool calls in this group
  */
 export interface ToolGroup {
   isConcurrencySafe: boolean;
@@ -11,7 +14,8 @@ export interface ToolGroup {
 }
 
 /**
- * Delegate function for recursive agent execution
+ * Function signature for delegating execution to another agent
+ * Used by the Task tool to recursively execute child agents
  */
 export type ExecuteDelegate = (
   agentName: string,
@@ -20,7 +24,18 @@ export type ExecuteDelegate = (
 ) => Promise<string>;
 
 /**
- * Groups tool calls by their concurrency safety
+ * Groups tool calls by their concurrency safety for optimal execution
+ * 
+ * Safe tools (Read, List, Grep) can run in parallel.
+ * Unsafe tools (Write, Task) must run sequentially.
+ * 
+ * @param toolCalls - Array of tool calls from the LLM
+ * @param toolRegistry - Registry to check tool safety
+ * @returns Array of tool groups ordered for execution
+ * 
+ * @example
+ * Input: [Read1, Read2, Write1, Read3]
+ * Output: [{safe: true, tools: [Read1, Read2]}, {safe: false, tools: [Write1]}, {safe: true, tools: [Read3]}]
  */
 export function groupToolsByConcurrency(
   toolCalls: ToolCall[],
@@ -47,7 +62,16 @@ export function groupToolsByConcurrency(
 }
 
 /**
- * Executes tools sequentially
+ * Executes tools sequentially (one at a time)
+ * 
+ * Used for tools that modify state or delegate to other agents.
+ * Ensures operations complete in order without race conditions.
+ * 
+ * @param toolCalls - Tools to execute in sequence
+ * @param ctx - Middleware context with agent state
+ * @param toolRegistry - Registry to lookup tool implementations
+ * @param executeDelegate - Function for recursive agent delegation
+ * @returns Array of tool result messages
  */
 export async function executeToolsSequentially(
   toolCalls: ToolCall[],
@@ -112,6 +136,15 @@ export async function executeToolsConcurrently(
 
 /**
  * Executes a single tool call
+ * 
+ * Handles special cases like Task delegation and provides
+ * detailed logging and error handling for each tool execution.
+ * 
+ * @param toolCall - The tool to execute
+ * @param ctx - Middleware context
+ * @param toolRegistry - Registry to lookup tool implementation
+ * @param executeDelegate - Function for recursive agent delegation
+ * @returns Tool result message
  */
 export async function executeSingleTool(
   toolCall: ToolCall,

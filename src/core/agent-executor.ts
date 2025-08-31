@@ -13,12 +13,34 @@ import { createLLMCallMiddleware } from '../middleware/llm-call.middleware';
 import { createToolExecutionMiddleware } from '../middleware/tool-execution.middleware';
 import { createErrorHandlerMiddleware } from '../middleware/error-handler.middleware';
 
+/**
+ * AgentExecutor - Core orchestration engine for agent-based task execution
+ * 
+ * Implements a middleware pipeline architecture where agents can autonomously
+ * execute tools and delegate to other agents. Uses pull architecture where
+ * child agents receive minimal context and gather information via tools.
+ * 
+ * @example
+ * ```typescript
+ * const executor = new AgentExecutor(agentLoader, toolRegistry);
+ * const result = await executor.execute('orchestrator', 'Analyze the codebase');
+ * ```
+ */
 export class AgentExecutor {
   private readonly logger: ConversationLogger;
   private readonly provider: AnthropicProvider;
   private readonly config = ConfigManager.getInstance();
   private readonly pipeline: MiddlewarePipeline;
 
+  /**
+   * Creates a new AgentExecutor instance
+   * 
+   * @param agentLoader - Loads agent definitions from markdown files
+   * @param toolRegistry - Registry of available tools agents can use
+   * @param modelName - Optional LLM model name (defaults to config)
+   * @param logger - Optional custom logger (creates default if not provided)
+   * @param sessionId - Optional session ID for conversation tracking
+   */
   constructor(
     private readonly agentLoader: AgentLoader,
     private readonly toolRegistry: ToolRegistry,
@@ -35,9 +57,18 @@ export class AgentExecutor {
     this.setupPipeline();
   }
 
+  /**
+   * Sets up the middleware pipeline in execution order
+   * 
+   * Pipeline order:
+   * 1. ErrorHandler - Catches and handles all errors
+   * 2. AgentLoader - Loads agent definition and filters tools
+   * 3. ContextSetup - Initializes conversation context
+   * 4. SafetyChecks - Enforces execution limits
+   * 5. LLMCall - Communicates with the language model
+   * 6. ToolExecution - Executes tools and handles delegation
+   */
   private setupPipeline(): void {
-    // Add middleware in order
-    // Error handler wraps everything to catch any errors
     this.pipeline
       .use(createErrorHandlerMiddleware())
       .use(createAgentLoaderMiddleware(this.agentLoader, this.toolRegistry))
@@ -45,10 +76,20 @@ export class AgentExecutor {
       .use(createSafetyChecksMiddleware())
       .use(createLLMCallMiddleware(this.provider))
       .use(
-        createToolExecutionMiddleware(this.toolRegistry, this.execute.bind(this)) // Pass delegate function
+        createToolExecutionMiddleware(this.toolRegistry, this.execute.bind(this))
       );
   }
 
+  /**
+   * Executes an agent with a given prompt
+   * 
+   * @param agentName - Name of the agent to execute
+   * @param prompt - The task or question for the agent
+   * @param context - Optional execution context (used for delegation)
+   * @returns The agent's response as a string
+   * 
+   * @throws Error if agent not found or execution fails
+   */
   async execute(agentName: string, prompt: string, context?: ExecutionContext): Promise<string> {
     const startTime = Date.now();
 
