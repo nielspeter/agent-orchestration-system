@@ -31,6 +31,8 @@ npx tsx examples/02-orchestration.ts # Agent delegation demo
 npx tsx examples/03-configuration.ts # Config file usage
 npx tsx examples/04-logging.ts       # Logging features
 npx tsx examples/05-mcp-integration.ts # MCP tool server
+npx tsx examples/06-werewolf-game.ts # Autonomous multi-agent game
+npx tsx examples/06b-werewolf-dynamic.ts # Dynamic game setup (if created)
 ```
 
 ## Architecture Overview
@@ -55,6 +57,12 @@ When agent A delegates to agent B:
 
 **Everything is an Agent**: No special orchestrator class. All agents use the same pipeline and can delegate to others via the Task tool.
 
+**Autonomous Agents**: Agents are self-contained entities with their own knowledge and decision-making:
+- Agent configuration lives in markdown files with YAML frontmatter
+- Agents receive high-level requests and determine implementation details
+- Example: Werewolf game-master knows how to set up and run games without hardcoded rules
+- This promotes reusability and true agent autonomy
+
 **Configuration via Builder Pattern**: `AgentSystemBuilder` provides fluent API with presets:
 - `.minimal()` - Just AgentExecutor, no tools
 - `.default()` - Standard tools (Read, Write, Task)  
@@ -70,6 +78,26 @@ When agent A delegates to agent B:
 **Actual vs Estimated Tokens**: 
 - Pre-flight estimation (`length/4`) prevents obviously oversized requests
 - Actual token counts from API response used for tracking/metrics
+
+### Code Style Guidelines
+
+**TypeScript Best Practices**:
+- **NO type assertions** (`as Type`) - Use proper typing or type guards
+- **NO `any` types** - Use `unknown` and type guards if type is truly unknown
+- **USE type guards** - Proper runtime type checking with type predicates
+- **Keep it DRY** - This is an MVP/POC, avoid unnecessary abstractions
+- **Prefer explicit types** - Don't rely on inference for public APIs
+
+Example of good type guard usage:
+```typescript
+// Good - type guard
+function isToolResult(value: unknown): value is ToolResult {
+  return typeof value === 'object' && value !== null && 'success' in value;
+}
+
+// Bad - type assertion
+const result = response as ToolResult; // Avoid this!
+```
 
 ### File Organization
 

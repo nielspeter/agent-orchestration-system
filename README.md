@@ -59,6 +59,39 @@ npx tsx examples/02-orchestration.ts    # Agent orchestration
 npx tsx examples/03-configuration.ts    # Config file usage
 npx tsx examples/04-logging.ts          # Logging features
 npx tsx examples/05-mcp-integration.ts  # MCP server integration
+npx tsx examples/06-werewolf-game.ts    # Autonomous multi-agent game
+```
+
+## 🎮 Examples
+
+### Basic Agent Execution (01-quickstart.ts)
+Simple demonstration of agent execution with file operations.
+
+### Agent Orchestration (02-orchestration.ts)
+Shows how agents delegate tasks to specialized sub-agents using the Task tool.
+
+### Configuration Files (03-configuration.ts)
+Demonstrates loading agent system configuration from JSON files.
+
+### Werewolf Game - Autonomous Agents (06-werewolf-game.ts)
+A complex multi-agent game demonstrating true agent autonomy:
+- **Game-master agent** orchestrates the entire game independently
+- **Role agents** (werewolf, seer, villager) make strategic decisions
+- **Evidence-based gameplay** with alibis, deductions, and voting
+- **No hardcoded logic** - all game rules exist in agent prompts
+
+This example showcases how agents can be truly autonomous entities that receive high-level requests ("run a game") and handle all implementation details themselves.
+
+```bash
+# Run the werewolf game
+npx tsx examples/06-werewolf-game.ts
+
+# The game-master will:
+# 1. Set up players and roles
+# 2. Run night phases (kills, investigations)
+# 3. Facilitate day discussions with evidence
+# 4. Manage voting and eliminations
+# 5. Continue until one side wins
 ```
 
 ## 📁 Project Structure
@@ -98,7 +131,14 @@ poc-typescript/
     ├── 02-orchestration.ts   # Agent delegation
     ├── 03-configuration.ts   # Config file usage
     ├── 04-logging.ts         # Logging features
-    └── 05-mcp-integration.ts # MCP server support
+    ├── 05-mcp-integration.ts # MCP server support
+    └── 06-werewolf-game/     # Autonomous multi-agent game
+        ├── 06-werewolf-game.ts     # Main game runner
+        └── agents/                 # Game agent definitions
+            ├── game-master.md      # Autonomous game orchestrator
+            ├── werewolf.md         # Werewolf role agent
+            ├── seer.md             # Seer role agent
+            └── villager.md         # Villager role agent
 ```
 
 ## 🏗️ Middleware Architecture Benefits
