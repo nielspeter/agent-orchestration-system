@@ -472,17 +472,6 @@ export class AgentSystemBuilder {
     return new AgentSystemBuilder({
       model: DEFAULT_SYSTEM_CONFIG.model,
       agents: { directories: ['./agents'] },
-      tools: { builtin: ['read', 'write', 'list', 'task'] },
-    });
-  }
-
-  /**
-   * Factory method: Full configuration
-   */
-  static full(): AgentSystemBuilder {
-    return new AgentSystemBuilder({
-      model: DEFAULT_SYSTEM_CONFIG.model,
-      agents: { directories: ['./agents'] },
       tools: { builtin: ['read', 'write', 'list', 'task', 'todowrite'] },
       caching: { enabled: true, maxCacheBlocks: 4, cacheTTLMinutes: 5 },
       logging: { logDir: 'logs', verbose: true },

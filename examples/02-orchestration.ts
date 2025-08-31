@@ -16,7 +16,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
  */
 async function testTrueOrchestration() {
   // Use full configuration with example-specific agents for complex orchestration
-  const { executor, cleanup } = await AgentSystemBuilder.full()
+  const { executor, cleanup } = await AgentSystemBuilder.default()
     .withModel(process.env.MODEL || 'claude-3-5-haiku-latest')
     .withAgentsFrom(path.join(__dirname, '02-orchestration', 'agents'))
     .withSessionId('true-orchestration-demo')

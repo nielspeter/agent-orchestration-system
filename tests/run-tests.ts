@@ -1,4 +1,4 @@
-import { AnthropicProvider } from '../src/llm/anthropic-provider';
+import { AnthropicProvider } from '@/llm/anthropic-provider';
 
 console.log('🧪 Running AnthropicProvider Tests\n');
 

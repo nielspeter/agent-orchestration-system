@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test } from 'vitest';
-import { AnthropicProvider } from '../../src/llm/anthropic-provider';
+import { AnthropicProvider } from '@/llm/anthropic-provider';
 
 describe('AnthropicProvider Caching Strategy', () => {
   let provider: AnthropicProvider;

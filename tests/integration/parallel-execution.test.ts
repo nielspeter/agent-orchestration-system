@@ -3,7 +3,7 @@ import * as dotenv from 'dotenv';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
-import { AgentSystemBuilder, BuildResult } from '../../src/config/system-builder';
+import { AgentSystemBuilder, BuildResult } from '@/config/system-builder';
 
 // Load environment variables
 dotenv.config();

@@ -1,8 +1,8 @@
 import { beforeAll, describe, expect, test } from 'vitest';
-import { AgentLoader } from '../../src/core/agent-loader';
-import { ToolRegistry } from '../../src/core/tool-registry';
-import { createListTool, createReadTool, createWriteTool } from '../../src/tools/file-tools';
-import { createTaskTool } from '../../src/tools/task-tool';
+import { AgentLoader } from '@/core/agent-loader';
+import { ToolRegistry } from '@/core/tool-registry';
+import { createListTool, createReadTool, createWriteTool } from '@/tools/file-tools';
+import { createTaskTool } from '@/tools/task-tool';
 
 describe('System Structure Tests', () => {
   let agentLoader: AgentLoader;

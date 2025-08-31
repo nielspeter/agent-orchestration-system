@@ -208,7 +208,7 @@ const withTools = await AgentSystemBuilder.default()
   .build();
 
 // Full configuration with MCP support
-const full = await AgentSystemBuilder.full()
+const full = await AgentSystemBuilder.default()
   .withMCPServers({
     'time': {
       command: 'uvx',

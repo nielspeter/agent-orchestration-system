@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from 'vitest';
-import { AgentSystemBuilder } from '../../src/config/system-builder';
+import { AgentSystemBuilder } from '@/config/system-builder';
 import * as fs from 'fs/promises';
 
 describe('AgentSystemBuilder Tests', () => {
@@ -33,11 +33,11 @@ describe('AgentSystemBuilder Tests', () => {
       expect(toolNames).toContain('Write');
       expect(toolNames).toContain('List');
       expect(toolNames).toContain('Task');
-      expect(toolNames).not.toContain('TodoWrite');
+      expect(toolNames).toContain('TodoWrite');
     });
 
     test('full() should create builder with all tools', async () => {
-      const result = await AgentSystemBuilder.full().build();
+      const result = await AgentSystemBuilder.default().build();
       cleanup = result.cleanup;
 
       const toolNames = result.toolRegistry.list().map((t) => t.name);

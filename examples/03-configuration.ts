@@ -70,7 +70,7 @@ async function fullSetupExample() {
   console.log('='.repeat(60));
 
   // Full setup with all tools including TodoWrite and example-specific agents
-  const { executor, cleanup } = await AgentSystemBuilder.full()
+  const { executor, cleanup } = await AgentSystemBuilder.default()
     .withAgentsFrom(path.join(__dirname, '03-configuration', 'agents'))
     .build();
 

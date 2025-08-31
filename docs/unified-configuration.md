@@ -48,7 +48,7 @@ const standard = await AgentSystemBuilder.default()
   .build();
 
 // Full setup (includes todo management)
-const full = await AgentSystemBuilder.full()
+const full = await AgentSystemBuilder.default()
   .withSessionId('full-demo')
   .build();
 ```

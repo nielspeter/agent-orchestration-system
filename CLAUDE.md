@@ -66,7 +66,7 @@ When agent A delegates to agent B:
 **Configuration via Builder Pattern**: `AgentSystemBuilder` provides fluent API with presets:
 - `.minimal()` - Just AgentExecutor, no tools
 - `.default()` - Standard tools (Read, Write, Task)  
-- `.full()` - All tools including MCP support
+- `.default()` - All tools including MCP support
 - `.forTest()` - Optimized for testing
 
 **Safety First**: Hard limits prevent runaway execution:
