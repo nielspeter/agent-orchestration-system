@@ -24,7 +24,7 @@ Use this tool proactively when:
 - You've completed significant work that should be reviewed or documented
 - The task involves complex multi-step coordination${agentList}
 
-The subagent will receive full conversation context and return comprehensive results.`,
+The subagent will receive minimal context (just the task prompt) and use tools to gather information it needs autonomously (pull architecture).`,
     parameters: {
       type: 'object',
       properties: {
@@ -52,6 +52,6 @@ The subagent will receive full conversation context and return comprehensive res
     execute: async (args: Record<string, unknown>): Promise<ToolResult> => {
       throw new Error('Task tool should be handled by AgentExecutor');
     },
-    isConcurrencySafe: () => false, // Task delegation must be sequential to maintain context
+    isConcurrencySafe: () => false, // Task delegation must be sequential for proper orchestration
   };
 };
