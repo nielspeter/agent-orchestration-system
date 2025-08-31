@@ -1,4 +1,4 @@
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from '@jest/globals';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from 'vitest';
 import * as dotenv from 'dotenv';
 import * as fs from 'fs/promises';
 import * as path from 'path';

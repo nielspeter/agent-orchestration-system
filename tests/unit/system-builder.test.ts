@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, test } from '@jest/globals';
+import { afterEach, describe, expect, test } from 'vitest';
 import { AgentSystemBuilder } from '../../src/config/system-builder';
 import * as fs from 'fs/promises';
 

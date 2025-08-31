@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, expect, test } from '@jest/globals';
+import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 import { fileURLToPath } from 'url';

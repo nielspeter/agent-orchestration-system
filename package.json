@@ -8,10 +8,10 @@
     "build": "tsc",
     "dev": "tsx src/index.ts",
     "test": "npm run test:unit && npm run test:integration",
-    "test:unit": "NODE_OPTIONS=\"--experimental-vm-modules\" jest --config jest.config.unit.js",
-    "test:integration": "NODE_OPTIONS=\"--experimental-vm-modules\" jest --config jest.config.integration.js",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
+    "test:unit": "vitest run --config vitest.config.unit.ts",
+    "test:integration": "vitest run --config vitest.config.integration.ts",
+    "test:watch": "vitest watch",
+    "test:coverage": "vitest run --coverage",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
@@ -36,17 +36,16 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
-    "@types/jest": "^30.0.0",
     "@types/node": "^20.11.30",
     "@typescript-eslint/eslint-plugin": "^8.41.0",
     "@typescript-eslint/parser": "^8.41.0",
+    "@vitest/coverage-v8": "^2.1.8",
     "eslint": "^9.34.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
-    "jest": "^30.1.1",
     "prettier": "^3.6.2",
-    "ts-jest": "^29.4.1",
     "tsx": "^4.7.1",
-    "typescript": "^5.4.2"
+    "typescript": "^5.4.2",
+    "vitest": "^2.1.8"
   }
 }

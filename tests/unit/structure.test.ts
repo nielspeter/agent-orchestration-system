@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, test } from '@jest/globals';
+import { beforeAll, describe, expect, test } from 'vitest';
 import { AgentLoader } from '../../src/core/agent-loader';
 import { ToolRegistry } from '../../src/core/tool-registry';
 import { createListTool, createReadTool, createWriteTool } from '../../src/tools/file-tools';
