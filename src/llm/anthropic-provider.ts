@@ -2,6 +2,8 @@ import Anthropic from '@anthropic-ai/sdk';
 import { BaseTool, Message, ToolCall } from '../types';
 import { ConversationLogger } from '../core/conversation-logger';
 import { CacheMetricsCollector } from '../core/cache-metrics-collector';
+import { AuthProvider } from '../auth/auth-provider';
+import { SecureLogger } from '../auth/secure-logger';
 
 export interface CacheMetrics {
   inputTokens: number;
@@ -16,8 +18,13 @@ export class AnthropicProvider {
   private readonly modelName: string;
   private readonly logger?: ConversationLogger;
   private readonly metricsCollector: CacheMetricsCollector;
+  private readonly authProvider: AuthProvider;
 
-  constructor(modelName: string = 'claude-3-5-haiku-20241022', logger?: ConversationLogger) {
+  constructor(
+    modelName: string = 'claude-3-5-haiku-20241022',
+    logger?: ConversationLogger,
+    authProvider?: AuthProvider
+  ) {
     if (!modelName.startsWith('claude')) {
       throw new Error(`AnthropicProvider only supports Claude models, got: ${modelName}`);
     }
@@ -25,13 +32,31 @@ export class AnthropicProvider {
     this.modelName = modelName;
     this.logger = logger;
     this.metricsCollector = new CacheMetricsCollector(logger);
+    
+    // Use provided auth provider or create a new one
+    this.authProvider = authProvider || new AuthProvider();
+    
+    if (!this.authProvider.isAuthenticated()) {
+      throw new Error('No authentication configured. Please set ANTHROPIC_API_KEY environment variable or provide authentication.');
+    }
 
-    if (!process.env.ANTHROPIC_API_KEY) {
-      throw new Error('ANTHROPIC_API_KEY is required for AnthropicProvider');
+    // Log authentication status (redacted)
+    SecureLogger.info('AnthropicProvider initialized with:', this.authProvider.getRedactedAuthInfo());
+
+    // Get auth headers and extract the API key or token
+    const authHeaders = this.authProvider.getAuthHeaders();
+    let apiKey: string | undefined;
+    
+    if (authHeaders['x-api-key']) {
+      apiKey = authHeaders['x-api-key'];
+    } else if (authHeaders['Authorization']) {
+      // For bearer token, we'll need to handle this differently
+      // For now, throw an error as Anthropic SDK doesn't support bearer tokens directly
+      throw new Error('Bearer token authentication not yet supported. Please use API key.');
     }
 
     this.client = new Anthropic({
-      apiKey: process.env.ANTHROPIC_API_KEY,
+      apiKey: apiKey,
     });
   }
 
@@ -86,13 +111,16 @@ export class AnthropicProvider {
       // Convert response back to our Message format
       return this.formatResponse(response);
     } catch (error) {
+      // Use secure logger for error messages
+      SecureLogger.error('API error:', error);
+      
       if (this.logger) {
         this.logger.log({
           timestamp: new Date().toISOString(),
           agentName: 'AnthropicProvider',
           depth: 0,
           type: 'error',
-          content: `API error: ${error}`,
+          content: `API error: ${SecureLogger.redact(String(error))}`,
         });
       }
       throw error;
