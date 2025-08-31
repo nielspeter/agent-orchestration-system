@@ -17,21 +17,22 @@ export function createContextSetupMiddleware(): Middleware {
     if (ctx.agent && ctx.iteration === 1) {
       // Build enhanced system prompt with system-level instructions
       let systemPrompt = ctx.agent.description;
-      
+
       // Always add system-level instructions
       systemPrompt += '\n\n## SYSTEM INSTRUCTIONS';
-      
+
       // Add dynamic tool availability information
       if (ctx.tools && ctx.tools.length > 0) {
-        const toolNames = ctx.tools.map(t => t.name).join(', ');
+        const toolNames = ctx.tools.map((t) => t.name).join(', ');
         systemPrompt += `\n\n### AVAILABLE TOOLS
 You have access to ONLY the following tools: ${toolNames}
 DO NOT attempt to use any other tools or delegate to other agents unless you have the Task tool.
-${ctx.tools.map(t => `- ${t.name}: ${t.description}`).join('\n')}`;
+${ctx.tools.map((t) => `- ${t.name}: ${t.description}`).join('\n')}`;
       } else {
-        systemPrompt += '\n\n### AVAILABLE TOOLS\nYou have no tools available. Provide your response as text only.';
+        systemPrompt +=
+          '\n\n### AVAILABLE TOOLS\nYou have no tools available. Provide your response as text only.';
       }
-      
+
       // Add task completion protocol based on agent role
       if (ctx.executionContext.parentAgent) {
         // Child agent - MUST return result to parent
@@ -58,13 +59,13 @@ After completing your work:
 
 Remember: You have full autonomy to investigate and discover. Use your tools!`;
       } else {
-        // Parent/orchestrator agent - manages workflow  
+        // Parent/orchestrator agent - manages workflow
         systemPrompt += `\n\n### ORCHESTRATION PROTOCOL
 As the orchestrator, you manage the overall workflow.
 When delegating to other agents via the Task tool, you will receive their response as the result.
 Use these responses to coordinate the overall task completion.`;
       }
-      
+
       ctx.messages.push(
         { role: 'system', content: systemPrompt },
         { role: 'user', content: ctx.prompt }

@@ -11,11 +11,11 @@ export interface JsonlEvent {
   uuid: string;
   parentUuid: string | null;
   timestamp: string;
-  
+
   // Conversation metadata
   sessionId: string;
   isSidechain: boolean;
-  
+
   // Event type and content
   type: 'user' | 'assistant' | 'system' | 'summary';
   message?: {
@@ -44,7 +44,7 @@ export interface JsonlEvent {
       service_tier?: string;
     };
   };
-  
+
   // Optional metadata
   summary?: string;
   leafUuid?: string;
@@ -54,7 +54,7 @@ export interface JsonlEvent {
   gitBranch?: string;
   isMeta?: boolean;
   requestId?: string;
-  
+
   // Tool execution results
   toolUseResult?: {
     type: string;
@@ -67,7 +67,7 @@ export interface JsonlEvent {
     };
     [key: string]: any;
   };
-  
+
   // Agent-specific metadata (our extension)
   agentMetadata?: {
     agentName: string;
@@ -87,13 +87,13 @@ export class JsonlLogger {
   private sessionId: string;
   private currentParentUuid: string | null = null;
   private eventChain: Map<string, string> = new Map(); // Maps event to its UUID
-  
+
   constructor(sessionId?: string, outputDir: string = 'conversations') {
     this.sessionId = sessionId || uuidv4();
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     this.filePath = path.join(process.cwd(), outputDir, `${timestamp}.jsonl`);
   }
-  
+
   /**
    * Initialize the log file with a summary event
    */
@@ -106,18 +106,18 @@ export class JsonlLogger {
       parentUuid: null,
       timestamp: new Date().toISOString(),
       sessionId: this.sessionId,
-      isSidechain: false
+      isSidechain: false,
     };
-    
+
     await this.writeEvent(summaryEvent);
   }
-  
+
   /**
    * Log a user message
    */
   async logUserMessage(content: string, parentUuid?: string): Promise<string> {
     const uuid = uuidv4();
-    
+
     const event: JsonlEvent = {
       uuid,
       parentUuid: parentUuid || this.currentParentUuid,
@@ -129,18 +129,20 @@ export class JsonlLogger {
       cwd: process.cwd(),
       message: {
         role: 'user',
-        content: [{
-          type: 'text',
-          text: content
-        }]
-      }
+        content: [
+          {
+            type: 'text',
+            text: content,
+          },
+        ],
+      },
     };
-    
+
     await this.writeEvent(event);
     this.currentParentUuid = uuid;
     return uuid;
   }
-  
+
   /**
    * Log an assistant message
    */
@@ -152,7 +154,7 @@ export class JsonlLogger {
   ): Promise<string> {
     const uuid = uuidv4();
     const requestId = `req_${uuidv4().substring(0, 12)}`;
-    
+
     const event: JsonlEvent = {
       uuid,
       parentUuid: parentUuid || this.currentParentUuid,
@@ -164,21 +166,23 @@ export class JsonlLogger {
       message: {
         role: 'assistant',
         model,
-        content: [{
-          type: 'text',
-          text: content
-        }],
+        content: [
+          {
+            type: 'text',
+            text: content,
+          },
+        ],
         stop_reason: 'end_turn',
         stop_sequence: null,
-        usage
-      }
+        usage,
+      },
     };
-    
+
     await this.writeEvent(event);
     this.currentParentUuid = uuid;
     return uuid;
   }
-  
+
   /**
    * Log a tool use
    */
@@ -190,7 +194,7 @@ export class JsonlLogger {
   ): Promise<string> {
     const uuid = uuidv4();
     const toolUseId = `toolu_${uuidv4().substring(0, 12)}`;
-    
+
     const event: JsonlEvent = {
       uuid,
       parentUuid: parentUuid || this.currentParentUuid,
@@ -201,33 +205,31 @@ export class JsonlLogger {
       message: {
         role: 'assistant',
         model,
-        content: [{
-          type: 'tool_use',
-          id: toolUseId,
-          name: toolName,
-          input: toolInput
-        }],
+        content: [
+          {
+            type: 'tool_use',
+            id: toolUseId,
+            name: toolName,
+            input: toolInput,
+          },
+        ],
         stop_reason: null,
-        stop_sequence: null
-      }
+        stop_sequence: null,
+      },
     };
-    
+
     await this.writeEvent(event);
     this.currentParentUuid = uuid;
     this.eventChain.set(toolUseId, uuid);
     return toolUseId;
   }
-  
+
   /**
    * Log a tool result
    */
-  async logToolResult(
-    toolUseId: string,
-    result: any,
-    parentUuid?: string
-  ): Promise<string> {
+  async logToolResult(toolUseId: string, result: any, parentUuid?: string): Promise<string> {
     const uuid = uuidv4();
-    
+
     const event: JsonlEvent = {
       uuid,
       parentUuid: parentUuid || this.eventChain.get(toolUseId) || this.currentParentUuid,
@@ -237,20 +239,22 @@ export class JsonlLogger {
       type: 'user',
       message: {
         role: 'user',
-        content: [{
-          tool_use_id: toolUseId,
-          type: 'tool_result',
-          content: typeof result === 'string' ? result : JSON.stringify(result)
-        }]
+        content: [
+          {
+            tool_use_id: toolUseId,
+            type: 'tool_result',
+            content: typeof result === 'string' ? result : JSON.stringify(result),
+          },
+        ],
       },
-      toolUseResult: result
+      toolUseResult: result,
     };
-    
+
     await this.writeEvent(event);
     this.currentParentUuid = uuid;
     return uuid;
   }
-  
+
   /**
    * Log an agent delegation (sidechain)
    */
@@ -261,7 +265,7 @@ export class JsonlLogger {
     depth: number = 0
   ): Promise<string> {
     const uuid = uuidv4();
-    
+
     const event: JsonlEvent = {
       uuid,
       parentUuid: this.currentParentUuid,
@@ -271,18 +275,20 @@ export class JsonlLogger {
       type: 'system',
       message: {
         role: 'system',
-        content: [{
-          type: 'text',
-          text: `Delegating to ${agentName}: ${prompt}`
-        }]
+        content: [
+          {
+            type: 'text',
+            text: `Delegating to ${agentName}: ${prompt}`,
+          },
+        ],
       },
       agentMetadata: {
         agentName,
         depth,
-        parentAgent
-      }
+        parentAgent,
+      },
     };
-    
+
     await this.writeEvent(event);
     return uuid;
   }
@@ -302,14 +308,14 @@ export class JsonlLogger {
   endSidechain(previousParent: string): void {
     this.currentParentUuid = previousParent;
   }
-  
+
   /**
    * Write an event to the JSONL file
    */
   async writeEvent(event: JsonlEvent): Promise<void> {
     const dir = path.dirname(this.filePath);
     await fs.mkdir(dir, { recursive: true });
-    
+
     const line = JSON.stringify(event) + '\n';
     await fs.appendFile(this.filePath, line, 'utf-8');
   }
@@ -322,8 +328,8 @@ export class JsonlLogger {
       const content = await fs.readFile(this.filePath, 'utf-8');
       return content
         .split('\n')
-        .filter(line => line.trim())
-        .map(line => JSON.parse(line));
+        .filter((line) => line.trim())
+        .map((line) => JSON.parse(line));
     } catch {
       return [];
     }
@@ -347,11 +353,13 @@ export class JsonlLogger {
         type: msg.role === 'user' ? 'user' : 'assistant',
         message: {
           role: msg.role,
-          content: [{
-            type: 'text',
-            text: msg.content
-          }]
-        }
+          content: [
+            {
+              type: 'text',
+              text: msg.content,
+            },
+          ],
+        },
       };
 
       events.push(event);

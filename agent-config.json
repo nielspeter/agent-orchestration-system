@@ -20,7 +20,7 @@
     ]
   },
   "execution": {
-    "defaultModel": "claude-3-5-haiku-20241022",
+    "defaultModel": "claude-3-5-haiku-latest",
     "maxDepth": 10,
     "maxIterations": 100,
     "timeout": 300000

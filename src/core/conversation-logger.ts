@@ -1,4 +1,4 @@
-import { JsonlLogger, JsonlEvent } from './jsonl-logger';
+import { JsonlEvent, JsonlLogger } from './jsonl-logger';
 import { v4 as uuidv4 } from 'uuid';
 
 export interface LogEntry {
@@ -46,7 +46,7 @@ export class ConsoleLogger implements ConversationLogger {
   private sessionId: string;
   private currentModel: string = 'claude-3-5-haiku-latest';
   private toolUseIds: Map<string, string> = new Map();
-  
+
   private readonly colors = {
     system: '\x1b[90m', // gray
     user: '\x1b[36m', // cyan
@@ -67,7 +67,7 @@ export class ConsoleLogger implements ConversationLogger {
     result: '✅',
     error: '❌',
   };
-  
+
   constructor(sessionId?: string) {
     this.sessionId = sessionId || uuidv4();
     this.jsonlLogger = new JsonlLogger(this.sessionId);
@@ -76,11 +76,11 @@ export class ConsoleLogger implements ConversationLogger {
   log(entry: LogEntry): void {
     // Console output (keep existing visualization)
     this.logToConsole(entry);
-    
+
     // JSONL output (Claude Code compatible)
     this.logToJsonl(entry);
   }
-  
+
   private logToConsole(entry: LogEntry): void {
     const indent = '  '.repeat(entry.depth);
     const color = this.colors[entry.type];
@@ -125,31 +125,27 @@ export class ConsoleLogger implements ConversationLogger {
       );
     }
   }
-  
+
   private async logToJsonl(entry: LogEntry): Promise<void> {
     // Update model if provided
     if (entry.metadata?.model) {
       this.currentModel = entry.metadata.model;
     }
-    
+
     switch (entry.type) {
       case 'user':
         await this.jsonlLogger.logUserMessage(entry.content);
         break;
-        
+
       case 'assistant':
-        await this.jsonlLogger.logAssistantMessage(
-          entry.content,
-          this.currentModel,
-          {
-            input_tokens: entry.metadata?.tokenCount || 0,
-            output_tokens: 0,
-            cache_read_input_tokens: entry.metadata?.parentMessageCount || 0,
-            service_tier: 'standard'
-          }
-        );
+        await this.jsonlLogger.logAssistantMessage(entry.content, this.currentModel, {
+          input_tokens: entry.metadata?.tokenCount || 0,
+          output_tokens: 0,
+          cache_read_input_tokens: entry.metadata?.parentMessageCount || 0,
+          service_tier: 'standard',
+        });
         break;
-        
+
       case 'tool':
         const toolUseId = await this.jsonlLogger.logToolUse(
           entry.metadata?.toolName || 'unknown',
@@ -158,7 +154,7 @@ export class ConsoleLogger implements ConversationLogger {
         );
         this.toolUseIds.set(entry.metadata?.toolName || 'unknown', toolUseId);
         break;
-        
+
       case 'delegation':
         await this.jsonlLogger.logAgentDelegation(
           entry.metadata?.subAgent || '',
@@ -167,20 +163,16 @@ export class ConsoleLogger implements ConversationLogger {
           entry.depth
         );
         break;
-        
+
       case 'result':
         // Log as assistant message with result
-        await this.jsonlLogger.logAssistantMessage(
-          entry.content,
-          this.currentModel,
-          {
-            input_tokens: entry.metadata?.tokenCount || 0,
-            output_tokens: 0,
-            service_tier: 'standard'
-          }
-        );
+        await this.jsonlLogger.logAssistantMessage(entry.content, this.currentModel, {
+          input_tokens: entry.metadata?.tokenCount || 0,
+          output_tokens: 0,
+          service_tier: 'standard',
+        });
         break;
-        
+
       case 'system':
       case 'error':
         // Log as system events in JSONL
@@ -193,10 +185,12 @@ export class ConsoleLogger implements ConversationLogger {
           type: 'system',
           message: {
             role: 'system',
-            content: [{
-              type: 'text',
-              text: entry.content
-            }]
+            content: [
+              {
+                type: 'text',
+                text: entry.content,
+              },
+            ],
           },
           agentMetadata: {
             agentName: entry.agentName,
@@ -204,8 +198,8 @@ export class ConsoleLogger implements ConversationLogger {
             parentAgent: entry.metadata?.parentAgent,
             executionTime: entry.metadata?.executionTime,
             iterations: entry.metadata?.iterations,
-            toolCount: Number(entry.metadata?.toolCount) || undefined
-          }
+            toolCount: Number(entry.metadata?.toolCount) || undefined,
+          },
         };
         await this.jsonlLogger.writeEvent(event);
         break;
@@ -215,7 +209,7 @@ export class ConsoleLogger implements ConversationLogger {
   async flush(): Promise<void> {
     // JSONL logger auto-flushes, but we can read events if needed
   }
-  
+
   async initialize(summary: string): Promise<void> {
     await this.jsonlLogger.initialize(summary);
   }
@@ -238,12 +232,12 @@ export class FileLogger implements ConversationLogger {
     // Convert LogEntry to JSONL format
     this.logToJsonl(entry).catch(console.error);
   }
-  
+
   private async logToJsonl(entry: LogEntry): Promise<void> {
     if (entry.metadata?.model) {
       this.currentModel = entry.metadata.model;
     }
-    
+
     const event: JsonlEvent = {
       uuid: uuidv4(),
       parentUuid: null,
@@ -253,11 +247,13 @@ export class FileLogger implements ConversationLogger {
       type: entry.type === 'error' ? 'system' : (entry.type as any),
       message: {
         role: entry.type === 'user' ? 'user' : entry.type === 'assistant' ? 'assistant' : 'system',
-        content: [{
-          type: 'text',
-          text: entry.content
-        }],
-        model: this.currentModel
+        content: [
+          {
+            type: 'text',
+            text: entry.content,
+          },
+        ],
+        model: this.currentModel,
       },
       agentMetadata: {
         agentName: entry.agentName,
@@ -265,17 +261,17 @@ export class FileLogger implements ConversationLogger {
         parentAgent: entry.metadata?.parentAgent,
         executionTime: entry.metadata?.executionTime,
         iterations: entry.metadata?.iterations,
-        toolCount: Number(entry.metadata?.toolCount) || undefined
-      }
+        toolCount: Number(entry.metadata?.toolCount) || undefined,
+      },
     };
-    
+
     await this.jsonlLogger['writeEvent'](event);
   }
 
   async flush(): Promise<void> {
     // JSONL auto-flushes
   }
-  
+
   async initialize(summary: string): Promise<void> {
     await this.jsonlLogger.initialize(summary);
   }
@@ -300,7 +296,7 @@ export class CombinedLogger implements ConversationLogger {
   async flush(): Promise<void> {
     await this.consoleLogger.flush();
   }
-  
+
   async initialize(summary: string): Promise<void> {
     await this.consoleLogger.initialize(summary);
   }

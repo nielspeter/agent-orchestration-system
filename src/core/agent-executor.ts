@@ -3,7 +3,7 @@ import { ToolRegistry } from './tool-registry';
 import { AnthropicProvider } from '../llm/anthropic-provider';
 import { ExecutionContext } from '../types';
 import { ConversationLogger, LoggerFactory } from './conversation-logger';
-import { ConfigManager } from '../config/config-manager';
+import { ResolvedSystemConfig } from '../config/types';
 import { MiddlewarePipeline } from '../middleware/pipeline';
 import { MiddlewareContext } from '../middleware/middleware-types';
 import { createAgentLoaderMiddleware } from '../middleware/agent-loader.middleware';
@@ -15,11 +15,11 @@ import { createErrorHandlerMiddleware } from '../middleware/error-handler.middle
 
 /**
  * AgentExecutor - Core orchestration engine for agent-based task execution
- * 
+ *
  * Implements a middleware pipeline architecture where agents can autonomously
  * execute tools and delegate to other agents. Uses pull architecture where
  * child agents receive minimal context and gather information via tools.
- * 
+ *
  * @example
  * ```typescript
  * const executor = new AgentExecutor(agentLoader, toolRegistry);
@@ -29,14 +29,14 @@ import { createErrorHandlerMiddleware } from '../middleware/error-handler.middle
 export class AgentExecutor {
   private readonly logger: ConversationLogger;
   private readonly provider: AnthropicProvider;
-  private readonly config = ConfigManager.getInstance();
   private readonly pipeline: MiddlewarePipeline;
 
   /**
    * Creates a new AgentExecutor instance
-   * 
+   *
    * @param agentLoader - Loads agent definitions from markdown files
    * @param toolRegistry - Registry of available tools agents can use
+   * @param config - System configuration
    * @param modelName - Optional LLM model name (defaults to config)
    * @param logger - Optional custom logger (creates default if not provided)
    * @param sessionId - Optional session ID for conversation tracking
@@ -44,12 +44,13 @@ export class AgentExecutor {
   constructor(
     private readonly agentLoader: AgentLoader,
     private readonly toolRegistry: ToolRegistry,
+    private readonly config: ResolvedSystemConfig,
     modelName?: string,
     logger?: ConversationLogger,
     sessionId?: string
   ) {
     this.logger = logger || LoggerFactory.createCombinedLogger(sessionId);
-    const finalModelName = modelName || this.config.getModels().defaultModel;
+    const finalModelName = modelName || this.config.model;
     this.provider = new AnthropicProvider(finalModelName, this.logger);
 
     // Build the middleware pipeline
@@ -59,7 +60,7 @@ export class AgentExecutor {
 
   /**
    * Sets up the middleware pipeline in execution order
-   * 
+   *
    * Pipeline order:
    * 1. ErrorHandler - Catches and handles all errors
    * 2. AgentLoader - Loads agent definition and filters tools
@@ -73,21 +74,19 @@ export class AgentExecutor {
       .use(createErrorHandlerMiddleware())
       .use(createAgentLoaderMiddleware(this.agentLoader, this.toolRegistry))
       .use(createContextSetupMiddleware())
-      .use(createSafetyChecksMiddleware())
+      .use(createSafetyChecksMiddleware(this.config.safety))
       .use(createLLMCallMiddleware(this.provider))
-      .use(
-        createToolExecutionMiddleware(this.toolRegistry, this.execute.bind(this))
-      );
+      .use(createToolExecutionMiddleware(this.toolRegistry, this.execute.bind(this)));
   }
 
   /**
    * Executes an agent with a given prompt
-   * 
+   *
    * @param agentName - Name of the agent to execute
    * @param prompt - The task or question for the agent
    * @param context - Optional execution context (used for delegation)
    * @returns The agent's response as a string
-   * 
+   *
    * @throws Error if agent not found or execution fails
    */
   async execute(agentName: string, prompt: string, context?: ExecutionContext): Promise<string> {
@@ -95,7 +94,9 @@ export class AgentExecutor {
 
     // Initialize JSONL logger with summary if first execution
     if (!context && this.logger.initialize) {
-      await this.logger.initialize(`Agent Orchestration: ${agentName} - ${prompt.substring(0, 100)}`);
+      await this.logger.initialize(
+        `Agent Orchestration: ${agentName} - ${prompt.substring(0, 100)}`
+      );
     }
 
     // Initialize execution context
@@ -148,7 +149,7 @@ export class AgentExecutor {
     };
 
     // Main execution loop with timeout protection
-    const safetyLimits = this.config.getSafety();
+    const safetyLimits = this.config.safety;
     const maxExecutionTime = 5 * 60 * 1000; // 5 minutes max for POC
     const executionStartTime = Date.now();
 

@@ -9,6 +9,7 @@ import { createListTool, createReadTool, createWriteTool } from './tools/file-to
 import { createTodoWriteTool } from './tools/todowrite-tool';
 import { LoggerFactory } from './core/conversation-logger';
 import { TodoManager } from './core/todo-manager';
+import { DEFAULT_SYSTEM_CONFIG, ResolvedSystemConfig } from './config/types';
 
 // Load environment variables
 dotenv.config();
@@ -25,6 +26,7 @@ export class AgentOrchestrationSystem {
   private readonly toolRegistry: ToolRegistry;
   private readonly executor: AgentExecutor;
   private readonly todoManager: TodoManager;
+  private readonly config: ResolvedSystemConfig;
 
   /**
    * Creates a new agent orchestration system
@@ -37,6 +39,12 @@ export class AgentOrchestrationSystem {
     // Initialize logger first
     const logger = LoggerFactory.createCombinedLogger();
 
+    // Initialize configuration
+    this.config = {
+      ...DEFAULT_SYSTEM_CONFIG,
+      model: config.modelName || DEFAULT_SYSTEM_CONFIG.model,
+    };
+
     // Initialize components
     this.agentLoader = new AgentLoader(config.agentsDir, logger);
     this.toolRegistry = new ToolRegistry();
@@ -45,7 +53,8 @@ export class AgentOrchestrationSystem {
     this.executor = new AgentExecutor(
       this.agentLoader,
       this.toolRegistry,
-      config.modelName || 'claude-3-5-haiku-20241022',
+      this.config,
+      config.modelName || 'claude-3-5-haiku-latest',
       logger
     );
   }
@@ -115,7 +124,7 @@ async function main() {
 
   const system = new AgentOrchestrationSystem({
     agentsDir: path.join(getDirname(import.meta.url), '../agents'),
-    modelName: process.env.MODEL || 'claude-3-5-haiku-20241022',
+    modelName: process.env.MODEL || 'claude-3-5-haiku-latest',
   });
 
   // Initialize async components
@@ -135,4 +144,10 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   main().catch(console.error);
 }
 
+// Core exports
 export { AgentLoader, ToolRegistry, AgentExecutor };
+
+// Configuration exports
+export { AgentSystemBuilder, TestConfigBuilder } from './config/system-builder';
+export type { BuildResult } from './config/system-builder';
+export * from './config/types';

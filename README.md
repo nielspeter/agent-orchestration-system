@@ -2,6 +2,12 @@
 
 A TypeScript implementation of Claude Code's agent orchestration system using **pull architecture** where child agents autonomously gather information via tools rather than inheriting parent context. Built with a **middleware pipeline architecture** (Chain of Responsibility pattern) and leverages Anthropic's ephemeral caching for efficiency.
 
+## 🆕 Recent Updates
+- **Unified Configuration System**: New `AgentSystemBuilder` with fluent API
+- **MCP Support**: Integrated Model Context Protocol for external tool servers
+- **Comprehensive Testing**: Separate unit and integration test suites
+- **Enhanced Examples**: Streamlined, numbered examples demonstrating key features
+
 ## 🎯 Architecture Highlights
 
 ### Clean Middleware Pipeline
@@ -43,8 +49,16 @@ cp .env.example .env
 npm run build
 
 # Run tests
-npm run example:structure     # Test without API calls
-npm run example:orchestration # Test with API (requires key)
+npm test              # Run all tests
+npm run test:unit     # Unit tests only (no API)
+npm run test:integration # Integration tests (requires API key)
+
+# Run examples
+npx tsx examples/01-quickstart.ts       # Simple quickstart
+npx tsx examples/02-orchestration.ts    # Agent orchestration
+npx tsx examples/03-configuration.ts    # Config file usage
+npx tsx examples/04-logging.ts          # Logging features
+npx tsx examples/05-mcp-integration.ts  # MCP server integration
 ```
 
 ## 📁 Project Structure
@@ -52,6 +66,9 @@ npm run example:orchestration # Test with API (requires key)
 ```
 poc-typescript/
 ├── src/
+│   ├── config/               # Configuration system
+│   │   ├── system-builder.ts # Fluent API for configuration
+│   │   └── types.ts          # Configuration types
 │   ├── middleware/           # Middleware pipeline components
 │   │   ├── *.middleware.ts   # Individual middleware
 │   │   ├── middleware-types.ts # Middleware types
@@ -64,14 +81,24 @@ poc-typescript/
 │   │   └── tool-registry.ts  # Tool management
 │   ├── tools/                # Available tools
 │   │   ├── task-tool.ts      # Delegation tool
-│   │   └── file-tools.ts     # File operations
+│   │   ├── file-tools.ts     # File operations
+│   │   └── todowrite-tool.ts # Todo management
 │   └── llm/                  # LLM providers
 │       └── anthropic-provider.ts # Anthropic with caching
 ├── agents/                   # Agent definitions (markdown)
 │   ├── orchestrator.md       # Main orchestrator
 │   ├── code-analyzer.md      # Code analysis specialist
 │   └── summarizer.md         # Summarization specialist
+├── tests/                    # Comprehensive test suite
+│   ├── unit/                 # Unit tests (no API)
+│   ├── integration/          # Integration tests (with API)
+│   └── README.md             # Testing documentation
 └── examples/                 # Example demonstrations
+    ├── 01-quickstart.ts      # Simple getting started
+    ├── 02-orchestration.ts   # Agent delegation
+    ├── 03-configuration.ts   # Config file usage
+    ├── 04-logging.ts         # Logging features
+    └── 05-mcp-integration.ts # MCP server support
 ```
 
 ## 🏗️ Middleware Architecture Benefits
@@ -124,6 +151,44 @@ You are a specialist agent that focuses on...
 [Define the agent's role and capabilities]
 ```
 
+## ⚙️ Configuration System
+
+The new `AgentSystemBuilder` provides a fluent API for configuring the system:
+
+```typescript
+import { AgentSystemBuilder } from './src/config/system-builder';
+
+// Minimal configuration
+const minimal = await AgentSystemBuilder.minimal().build();
+
+// Default with file tools
+const withTools = await AgentSystemBuilder.default()
+  .withModel('claude-3-5-haiku-latest')
+  .withSessionId('my-session')
+  .build();
+
+// Full configuration with MCP support
+const full = await AgentSystemBuilder.full()
+  .withMCPServers({
+    'time': {
+      command: 'uvx',
+      args: ['mcp-server-time'],
+      description: 'Time utilities'
+    }
+  })
+  .withSafetyLimits({ maxIterations: 100 })
+  .withLogging({ verbose: true })
+  .build();
+
+// From config file
+const fromFile = await AgentSystemBuilder
+  .fromConfigFile('./agent-config.json')
+  .build();
+
+// Always cleanup when done
+await full.cleanup();
+```
+
 ## 🔧 Adding Custom Middleware
 
 ```typescript
@@ -171,6 +236,71 @@ parentMessages: []  // Clean slate, agent pulls what it needs
 - **Caching is essential**: Architecture depends on context reuse
 - **OpenAI lacks caching**: Would make delegation prohibitively expensive
 - **Anthropic's ephemeral cache**: Makes the architecture economically viable
+
+## 🧪 Testing
+
+The project includes comprehensive test coverage with separate unit and integration tests:
+
+### Unit Tests
+```bash
+npm run test:unit
+```
+- No API calls required
+- Tests system structure and configuration
+- Fast execution (~1 second)
+- 100% reliable
+
+### Integration Tests
+```bash
+npm run test:integration
+```
+- Requires real Anthropic API key
+- Tests actual agent orchestration
+- Tests caching behavior
+- Tests parallel execution
+- **Note**: May hit rate limits if run too frequently
+
+### Test Configuration
+Create `.env.test` for test-specific settings:
+```bash
+ANTHROPIC_API_KEY=your-test-key
+MODEL=claude-3-5-haiku-latest
+LOG_DIR=./test-logs
+MAX_ITERATIONS=10
+MAX_DEPTH=3
+```
+
+## 🔌 MCP (Model Context Protocol) Support
+
+The system supports MCP servers for extending functionality with external tools:
+
+### Configuration
+```json
+{
+  "mcpServers": {
+    "time": {
+      "command": "uvx",
+      "args": ["mcp-server-time"],
+      "description": "Time and timezone utilities"
+    },
+    "weather": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-weather"],
+      "description": "Weather information"
+    }
+  }
+}
+```
+
+### Usage
+```typescript
+const builder = await AgentSystemBuilder
+  .fromConfigFile('./agent-config.json')
+  .build();
+
+// MCP tools are automatically registered with server prefix
+// e.g., "time.get_current_time", "weather.get_forecast"
+```
 
 ## 📈 Example Workflow
 
@@ -384,6 +514,20 @@ npm run example:cache
 - Metrics collection (OpenTelemetry)
 - Message pruning for long conversations
 - Circuit breaker for external services
+
+## 📦 Key Dependencies
+
+- **@anthropic-ai/sdk**: Anthropic's official SDK with caching support
+- **@modelcontextprotocol/sdk**: MCP client for external tool servers
+- **tsx**: TypeScript execution for examples
+- **jest**: Testing framework with TypeScript support
+- **dotenv**: Environment variable management
+
+## 🔄 Version Requirements
+
+- Node.js 18+ (for native fetch and ES modules)
+- TypeScript 5.0+
+- npm 8+
 
 ## 📝 License
 

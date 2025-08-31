@@ -1,13 +1,10 @@
 import { Middleware } from './middleware-types';
-import { ConfigManager } from '../config/config-manager';
+import { SafetyConfig } from '../config/types';
 
 /**
  * Performs safety checks (depth, iterations, tokens)
  */
-export function createSafetyChecksMiddleware(): Middleware {
-  const config = ConfigManager.getInstance();
-  const safetyLimits = config.getSafety();
-
+export function createSafetyChecksMiddleware(safetyLimits: SafetyConfig): Middleware {
   return async (ctx, next) => {
     // Check recursion depth
     const effectiveMaxDepth = Math.min(ctx.executionContext.maxDepth, safetyLimits.maxDepth);

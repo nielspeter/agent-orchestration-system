@@ -17,7 +17,7 @@ export class AnthropicProvider {
   private readonly logger?: ConversationLogger;
   private readonly metricsCollector: CacheMetricsCollector;
 
-  constructor(modelName: string = 'claude-3-5-haiku-20241022', logger?: ConversationLogger) {
+  constructor(modelName: string = 'claude-3-5-haiku-latest', logger?: ConversationLogger) {
     if (!modelName.startsWith('claude')) {
       throw new Error(`AnthropicProvider only supports Claude models, got: ${modelName}`);
     }

@@ -1,5 +1,5 @@
 import * as dotenv from 'dotenv';
-import { setupFromConfig } from '../src/config/mcp-config-loader';
+import { AgentSystemBuilder } from '../src/config/system-builder';
 
 // Load environment variables
 dotenv.config();
@@ -8,25 +8,15 @@ dotenv.config();
  * Test with beautiful logging to see the orchestration flow
  */
 async function testWithLogging() {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-
-  if (!apiKey) {
-    console.error('Please set ANTHROPIC_API_KEY environment variable');
-    console.error('This system requires Anthropic Claude models for caching support');
-    process.exit(1);
-  }
-
-  // Use configuration-based setup
-  const setup = await setupFromConfig({
-    sessionId: 'logging-demo',
-    configOverrides: {
-      execution: {
-        defaultModel: process.env.MODEL || 'claude-3-5-haiku-20241022'
-      }
-    }
-  });
-  
-  const { executor } = setup;
+  // Minimal config with verbose logging enabled
+  const { executor, cleanup } = await new AgentSystemBuilder()
+    .withModel(process.env.MODEL || 'claude-3-5-haiku-latest')
+    .withAgentsFrom('./agents')
+    .withDefaultTools() // read, write, list, task for delegation demos
+    .withTodoTool() // Include todo for Test 3
+    .withLogging({ verbose: true }) // Enable detailed logging
+    .withSessionId('logging-demo')
+    .build();
 
   console.log('🚀 Agent Orchestration System - With Full Audit Logging\n');
   console.log('='.repeat(60));
@@ -91,9 +81,9 @@ async function testWithLogging() {
   console.log('\n' + '='.repeat(60));
   console.log('✅ All tests completed!');
   console.log('\n📁 Check the "conversations" directory for the full audit log in JSON format.');
-  
-  // Clean up MCP connections
-  await setup.cleanup();
+
+  // Clean up
+  await cleanup();
 }
 
 // Run the test

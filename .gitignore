@@ -8,6 +8,7 @@ yarn-error.log*
 .env
 .env.local
 .env.*.local
+.env.test.local
 
 # Build output
 dist/
@@ -24,7 +25,10 @@ build/
 
 # Test artifacts
 test-files/
+test-logs/
+test-config.json
 coverage/
+coverage-integration/
 *.log
 
 # Conversation logs (may contain sensitive data)
@@ -35,4 +39,5 @@ agents/parallel-test-orchestrator.md
 # Temporary files
 tmp/
 temp/
-*.tmp
+*.tmp.env.test
+.env.test.local

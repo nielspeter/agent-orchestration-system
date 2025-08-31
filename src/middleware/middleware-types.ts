@@ -34,7 +34,7 @@ export interface MiddlewareContext {
   // Control flow
   shouldContinue: boolean;
   error?: Error;
-  
+
   // Iteration tracking for child agents
   hasUsedTools?: boolean;
 }

@@ -4,12 +4,12 @@ import { BaseTool, ToolResult } from '../types';
 
 /**
  * Creates a Read tool for file system access
- * 
+ *
  * Allows agents to read file contents. This is a safe tool that
  * can be executed in parallel with other read operations.
- * 
+ *
  * @returns BaseTool configured for file reading
- * 
+ *
  * @example
  * Agent usage: Read path="src/index.ts"
  */
@@ -42,13 +42,13 @@ export const createReadTool = (): BaseTool => ({
 
 /**
  * Creates a Write tool for file system modification
- * 
+ *
  * Allows agents to create or overwrite files. This tool provides
  * meaningful feedback about what was written to help agents understand
  * task completion. Must be executed sequentially for safety.
- * 
+ *
  * @returns BaseTool configured for file writing
- * 
+ *
  * @example
  * Agent usage: Write path="output.txt" content="Hello, World!"
  * Returns: "Successfully saved to output.txt (13 chars, 1 lines)"
@@ -75,14 +75,14 @@ export const createWriteTool = (): BaseTool => ({
       const typedArgs = args as any;
       await fs.mkdir(path.dirname(typedArgs.path), { recursive: true });
       await fs.writeFile(typedArgs.path, typedArgs.content, 'utf-8');
-      
+
       // Provide meaningful context about what was written
       const contentLength = typedArgs.content.length;
       const lineCount = typedArgs.content.split('\n').length;
       const preview = typedArgs.content.substring(0, 100).replace(/\n/g, ' ');
-      
-      return { 
-        content: `Successfully saved to ${typedArgs.path} (${contentLength} chars, ${lineCount} lines). Content: "${preview}${contentLength > 100 ? '...' : ''}"` 
+
+      return {
+        content: `Successfully saved to ${typedArgs.path} (${contentLength} chars, ${lineCount} lines). Content: "${preview}${contentLength > 100 ? '...' : ''}"`,
       };
     } catch (error) {
       return {
@@ -96,13 +96,13 @@ export const createWriteTool = (): BaseTool => ({
 
 /**
  * Creates a List tool for directory exploration
- * 
+ *
  * Allows agents to discover files and subdirectories. Safe to run
  * in parallel with other read operations. Essential for agents to
  * explore project structure in pull architecture.
- * 
+ *
  * @returns BaseTool configured for directory listing
- * 
+ *
  * @example
  * Agent usage: List path="src"
  * Returns: List of files and directories in src/

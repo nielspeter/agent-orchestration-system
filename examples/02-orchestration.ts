@@ -1,5 +1,5 @@
 import * as dotenv from 'dotenv';
-import { setupFromConfig } from '../src/config/mcp-config-loader';
+import { AgentSystemBuilder } from '../src/config/system-builder';
 
 // Load environment variables
 dotenv.config();
@@ -11,25 +11,11 @@ dotenv.config();
  * not just sequential function calls.
  */
 async function testTrueOrchestration() {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-
-  if (!apiKey) {
-    console.error('Please set ANTHROPIC_API_KEY environment variable');
-    console.error('This system requires Anthropic Claude models for caching support');
-    process.exit(1);
-  }
-
-  // Use configuration-based setup
-  const setup = await setupFromConfig({
-    sessionId: 'true-orchestration-demo',
-    configOverrides: {
-      execution: {
-        defaultModel: process.env.MODEL || 'claude-3-5-haiku-20241022'
-      }
-    }
-  });
-  
-  const { executor } = setup;
+  // Use full configuration for complex orchestration
+  const { executor, cleanup } = await AgentSystemBuilder.full()
+    .withModel(process.env.MODEL || 'claude-3-5-haiku-latest')
+    .withSessionId('true-orchestration-demo')
+    .build();
 
   console.log('🎭 TRUE Agent Orchestration Demonstration');
   console.log('='.repeat(70));
@@ -84,9 +70,9 @@ async function testTrueOrchestration() {
   console.log('📁 Check conversations/true-orchestration-demo-*.json for the full audit trail');
   console.log('\nNotice how the delegation decisions were made by the LLM,');
   console.log("not by our code. The orchestration emerged from the agent's reasoning!");
-  
-  // Clean up MCP connections
-  await setup.cleanup();
+
+  // Clean up
+  await cleanup();
 }
 
 // Run the demonstration

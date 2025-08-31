@@ -2,11 +2,11 @@ import { Middleware, MiddlewareContext } from './middleware-types';
 
 /**
  * MiddlewarePipeline - Executes middleware functions in sequence
- * 
+ *
  * Implements the Chain of Responsibility pattern where each middleware
  * can process the context and decide whether to pass control to the next
  * middleware via the next() function.
- * 
+ *
  * @example
  * ```typescript
  * const pipeline = new MiddlewarePipeline();
@@ -22,7 +22,7 @@ export class MiddlewarePipeline {
 
   /**
    * Adds a middleware function to the pipeline
-   * 
+   *
    * @param middleware - Function that processes context and calls next()
    * @returns this - For method chaining
    */
@@ -33,7 +33,7 @@ export class MiddlewarePipeline {
 
   /**
    * Executes the middleware pipeline with the given context
-   * 
+   *
    * @param context - The context object passed through all middleware
    * @throws Any error thrown by middleware functions
    */
