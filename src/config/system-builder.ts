@@ -7,6 +7,7 @@
  */
 
 import * as fs from 'fs/promises';
+import * as os from 'os';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import { AgentLoader } from '@/core/agent-loader';
@@ -309,6 +310,7 @@ export class AgentSystemBuilder {
             command: serverConfig.command,
             args: serverConfig.args,
             env: cleanEnv,
+            cwd: serverConfig.cwd, // Use server-specific working directory if provided
           });
 
           // Create client

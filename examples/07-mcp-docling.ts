@@ -7,12 +7,9 @@
  */
 
 import * as path from 'path';
+import * as os from 'os';
 import { fileURLToPath } from 'url';
-import { config } from 'dotenv';
 import { AgentSystemBuilder } from '../src';
-
-// Load environment variables
-config();
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -21,11 +18,14 @@ async function main() {
 
   try {
     // Setup with Docling MCP server
+    // Run in temp directory to avoid .env file conflicts
     const builder = AgentSystemBuilder.default()
       .withMCPServers({
         docling: {
           command: 'uvx',
-          args: ['--from=docling-mcp', 'docling-mcp-server']
+          args: ['--from=docling-mcp', 'docling-mcp-server'],
+          cwd: os.tmpdir(), // Run in temp directory to avoid .env conflicts
+          description: 'Document conversion to markdown'
         }
       })
       .withAgentsFrom(path.join(__dirname, '07-mcp-docling', 'agents'));
@@ -36,7 +36,8 @@ async function main() {
     const doclingTools = toolRegistry.list().filter(t => t.name.startsWith('docling.'));
     
     if (doclingTools.length === 0) {
-      console.log('❌ Docling not available. Install uvx: pip install uvx');
+      console.log('❌ No Docling tools found.');
+      console.log('   Make sure uvx is installed: pip install uvx');
       await cleanup();
       return;
     }

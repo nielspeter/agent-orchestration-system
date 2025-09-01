@@ -117,6 +117,8 @@ export interface MCPServerConfig {
   args: string[];
   /** Environment variables */
   env?: Record<string, string>;
+  /** Working directory for the server process */
+  cwd?: string;
   /** Server description */
   description?: string;
 }
