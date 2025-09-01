@@ -149,6 +149,11 @@ const mcpTool: BaseTool = {
    "@modelcontextprotocol/server-slack"
    ```
 
+6. **Docling** - Document processing and conversion
+   ```typescript
+   "docling-mcp"  // Installed via uvx or pip
+   ```
+
 ### Community Servers
 
 Check the [MCP servers list](https://github.com/modelcontextprotocol/servers) for community-contributed servers.
@@ -243,6 +248,41 @@ const system = await AgentSystemBuilder.default()
   })
   .build();
 ```
+
+### Example 5: Docling Document Processing
+
+```typescript
+// Configure Docling MCP server for document conversion
+const system = await AgentSystemBuilder.default()
+  .withMCPServers({
+    docling: {
+      command: "uvx",
+      args: ["--from=docling-mcp", "docling-mcp-server"],
+      description: "Document processing with OCR and markdown export"
+    }
+  })
+  .build();
+
+// Convert a PDF to markdown
+const convertDoc = toolRegistry.get('docling.convert_document_into_docling_document');
+const exportMd = toolRegistry.get('docling.export_docling_document_to_markdown');
+
+if (convertDoc && exportMd) {
+  // Convert PDF
+  const result = await convertDoc.execute({
+    source: "/path/to/document.pdf"
+  });
+  
+  // Export to markdown
+  const markdown = await exportMd.execute({
+    document_key: extractKey(result.content)
+  });
+  
+  console.log(markdown.content);
+}
+```
+
+See `examples/07-mcp-docling.ts` for a complete working example.
 
 ## Creating Custom MCP Servers
 
