@@ -295,11 +295,20 @@ export class AgentSystemBuilder {
         try {
           console.log(`Initializing MCP server: ${serverName}`);
 
-          // Create transport
+          // Create transport with clean environment
+          // MCP servers should not inherit process environment variables
+          const cleanEnv: Record<string, string> = {
+            PATH: process.env.PATH || '',
+            HOME: process.env.HOME || '',
+            USER: process.env.USER || '',
+            // Add any server-specific env vars
+            ...(serverConfig.env || {}),
+          };
+          
           const transport = new StdioClientTransport({
             command: serverConfig.command,
             args: serverConfig.args,
-            env: serverConfig.env,
+            env: cleanEnv,
           });
 
           // Create client
