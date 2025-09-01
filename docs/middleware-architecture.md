@@ -3,8 +3,7 @@
 ## Overview
 
 The agent orchestration system is built on a **middleware pipeline pattern** (Chain of Responsibility), where each
-middleware handles a specific concern. This replaces the monolithic 500+ line AgentExecutor with a clean, composable
-pipeline of focused components.
+middleware handles a specific concern.
 
 ## Core Concept
 

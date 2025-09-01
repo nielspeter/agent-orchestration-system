@@ -2,7 +2,7 @@
 
 ## Overview
 
-The agent orchestration system now uses a unified configuration approach built on the **Builder Pattern**. This provides
+The agent orchestration system uses a unified configuration approach built on the **Builder Pattern**. This provides
 a clean, testable, and flexible way to configure the system for any use case - from simple scripts to complex
 multi-agent workflows to unit tests.
 
@@ -233,58 +233,6 @@ async function main() {
     await cleanup();
   }
 }
-```
-
-## Migration Guide
-
-### From setupFromConfig
-
-**Before:**
-
-```typescript
-import {setupFromConfig} from '@poc-typescript/config/mcp-config-loader';
-
-const setup = await setupFromConfig({
-  configPath: './agent-config.json',
-  sessionId: 'my-session'
-});
-const result = await setup.executor.execute('agent', 'task');
-await setup.cleanup();
-```
-
-**After:**
-
-```typescript
-import {AgentSystemBuilder} from '@poc-typescript';
-
-const {executor, cleanup} = await AgentSystemBuilder
-  .fromConfigFile('./agent-config.json')
-  .withSessionId('my-session')
-  .build();
-const result = await executor.execute('agent', 'task');
-await cleanup();
-```
-
-### From quickSetup
-
-**Before:**
-
-```typescript
-import {quickSetup} from '@poc-typescript/config/mcp-config-loader';
-
-const setup = await quickSetup({
-  additionalTools: ['todowrite']
-});
-```
-
-**After:**
-
-```typescript
-import {AgentSystemBuilder} from '@poc-typescript';
-
-const {executor} = await AgentSystemBuilder.default()
-  .withTodoTool()
-  .build();
 ```
 
 ## Configuration Types

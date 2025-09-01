@@ -13,6 +13,7 @@ systems using middleware pipeline architecture and pull-based information gather
   everything
 - **[Tool System](./tool-system.md)** ⭐ - How agents interact with the environment through tools
 - **[Agent System](./agent-system.md)** ⭐ - Understanding agents from markdown to execution
+- **[MCP Integration](./mcp-integration.md)** ⭐ - Model Context Protocol server integration for external tools
 
 ### Configuration & Setup
 
@@ -100,6 +101,7 @@ This documentation evolves with the codebase. When making changes:
 | Middleware Architecture | ✅ Complete | HIGH     | Core system design           |
 | Tool System             | ✅ Complete | HIGH     | Agent capabilities           |
 | Agent System            | ✅ Complete | HIGH     | Agent lifecycle and patterns |
+| MCP Integration         | ✅ Complete | HIGH     | External tool servers        |
 | Developer Guides        | ✅ Complete | HIGH     | Practical tutorials          |
 | Unified Configuration   | ✅ Complete | MEDIUM   | System setup                 |
 | Execution Flow          | ✅ Complete | MEDIUM   | Visual system flow           |

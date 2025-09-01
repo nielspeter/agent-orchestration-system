@@ -32,7 +32,6 @@ npx tsx examples/03-configuration.ts # Config file usage
 npx tsx examples/04-logging.ts       # Logging features
 npx tsx examples/05-mcp-integration.ts # MCP tool server
 npx tsx examples/06-werewolf-game.ts # Autonomous multi-agent game
-npx tsx examples/06b-werewolf-dynamic.ts # Dynamic game setup (if created)
 ```
 
 ## Architecture Overview
