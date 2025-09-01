@@ -38,7 +38,8 @@ async function main() {
     notification: {
       id: 'NOTIF-2025-001',
       type: 'critical_illness_claim',
-      content: 'Patient diagnosed with stage 3 lung cancer, requesting claim under critical illness policy',
+      content:
+        'Patient diagnosed with stage 3 lung cancer, requesting claim under critical illness policy',
       timestamp: new Date().toISOString(),
       claimantInfo: {
         name: 'John Doe',
@@ -74,7 +75,7 @@ Follow the complete workflow:
 
 Important: Generate deterministic IDs and timestamps for testing consistency.`
     );
-    
+
     console.log('\n✅ Claim Processing Complete!');
     console.log('================================');
     console.log(result);
@@ -82,7 +83,6 @@ Important: Generate deterministic IDs and timestamps for testing consistency.`
     // The orchestrator should have saved results to claim-results.json
     console.log('\n📄 Results saved to: claim-results.json');
     console.log('Check the file for complete audit trail and processing details.');
-    
   } catch (error) {
     console.error('❌ Processing error:', error);
   } finally {

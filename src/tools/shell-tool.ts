@@ -1,12 +1,12 @@
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import { BaseTool, ToolResult } from '../types';
+import { BaseTool, ToolResult } from '@/types';
 
 const execAsync = promisify(exec);
 
 /**
  * Shell execution tool - enables running shell commands
- * 
+ *
  * This tool provides basic shell command execution with:
  * - Timeout support
  * - Cross-platform compatibility
@@ -44,7 +44,7 @@ export function createShellTool(): BaseTool {
       const command = args.command as string;
       const timeout = (args.timeout as number) || 30000;
       const cwd = args.cwd as string | undefined;
-      const parseJson = args.parseJson as boolean || false;
+      const parseJson = (args.parseJson as boolean) || false;
 
       try {
         // Execute the command with timeout
@@ -75,18 +75,26 @@ export function createShellTool(): BaseTool {
           // Include stderr in error field if present
           error: stderr ? `stderr: ${stderr}` : undefined,
         };
-      } catch (error: any) {
-        // Handle execution errors
-        const errorMessage = error.message || 'Command execution failed';
-        const killed = error.killed || false;
-        const code = error.code || 1;
+      } catch (error) {
+        // Handle execution errors with proper typing
+        const execError = error as NodeJS.ErrnoException & {
+          killed?: boolean;
+          signal?: string;
+          stdout?: string;
+          stderr?: string;
+          code?: number;
+        };
         
+        const errorMessage = execError.message || 'Command execution failed';
+        const killed = execError.killed || false;
+        const code = execError.code || 1;
+
         // Extract stdout/stderr from error if available
-        const stdout = error.stdout || '';
-        const stderr = error.stderr || '';
+        const stdout = execError.stdout || '';
+        const stderr = execError.stderr || '';
 
         // Check if it was a timeout
-        if (killed && error.signal === 'SIGTERM') {
+        if (killed && execError.signal === 'SIGTERM') {
           return {
             content: stdout || '',
             error: `Command timed out after ${timeout}ms. Exit code: ${code}${stderr ? `, stderr: ${stderr}` : ''}`,

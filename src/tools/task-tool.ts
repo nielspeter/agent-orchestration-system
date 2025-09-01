@@ -1,5 +1,5 @@
-import { Tool, ToolResult } from '../types';
-import { AgentLoader } from '../core/agent-loader';
+import { Tool, ToolResult } from '@/types';
+import { AgentLoader } from '@/core/agent-loader';
 
 /**
  * The Task tool - enables delegation to other agents
@@ -50,7 +50,7 @@ The subagent will work autonomously to complete the delegated task and return co
       required: ['subagent_type', 'prompt'],
     },
     // This is a placeholder - the actual execution is handled by AgentExecutor
-    execute: async (args: Record<string, unknown>): Promise<ToolResult> => {
+    execute: async (_args: Record<string, unknown>): Promise<ToolResult> => {
       throw new Error('Task tool should be handled by AgentExecutor');
     },
     isConcurrencySafe: () => false, // Task delegation must be sequential for proper orchestration

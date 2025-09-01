@@ -1,12 +1,12 @@
 #!/usr/bin/env tsx
 /**
  * Session Analysis Example - Analyze agent conversation logs
- * 
+ *
  * This example demonstrates using the session-analyzer agent to:
  * 1. List available session files
  * 2. Analyze specific sessions
  * 3. Generate comprehensive reports with summaries, flow diagrams, and message logs
- * 
+ *
  * The session-analyzer agent reads JSONL files and creates markdown reports
  * containing metrics, Mermaid diagrams, and detailed message tracking.
  */
@@ -18,11 +18,11 @@ import * as readline from 'readline/promises';
 
 async function listSessions(): Promise<string[]> {
   const conversationsDir = path.join(process.cwd(), 'conversations');
-  
+
   try {
     const files = await fs.readdir(conversationsDir);
     return files
-      .filter(f => f.endsWith('.jsonl'))
+      .filter((f) => f.endsWith('.jsonl'))
       .sort((a, b) => a.localeCompare(b))
       .reverse(); // Most recent first
   } catch {
@@ -33,7 +33,7 @@ async function listSessions(): Promise<string[]> {
 async function formatSessionInfo(sessionFile: string): Promise<string> {
   const conversationsDir = path.join(process.cwd(), 'conversations');
   const filePath = path.join(conversationsDir, sessionFile);
-  
+
   try {
     const stats = await fs.stat(filePath);
     const sizeKB = (stats.size / 1024).toFixed(1);
@@ -58,7 +58,7 @@ async function main() {
 
     // Get available sessions
     const sessions = await listSessions();
-    
+
     if (sessions.length === 0) {
       console.log('❌ No session files found in conversations folder');
       await cleanup();
@@ -66,13 +66,13 @@ async function main() {
     }
 
     console.log(`Found ${sessions.length} session file(s):\n`);
-    
+
     // Display available sessions
     for (let i = 0; i < Math.min(sessions.length, 10); i++) {
       const info = await formatSessionInfo(sessions[i]);
       console.log(`  ${i + 1}. ${info}`);
     }
-    
+
     if (sessions.length > 10) {
       console.log(`  ... and ${sessions.length - 10} more`);
     }
@@ -80,7 +80,7 @@ async function main() {
     // Interactive selection
     const rl = readline.createInterface({
       input: process.stdin,
-      output: process.stdout
+      output: process.stdout,
     });
 
     console.log('\nOptions:');
@@ -124,9 +124,9 @@ async function main() {
     for (const sessionFile of sessionsToAnalyze) {
       console.log(`\n📝 Analyzing: ${sessionFile}`);
       console.log('─'.repeat(50));
-      
+
       const startTime = Date.now();
-      
+
       try {
         await executor.execute(
           'session-analyzer',
@@ -134,21 +134,22 @@ async function main() {
         );
         const duration = ((Date.now() - startTime) / 1000).toFixed(1);
         console.log(`\n✅ Analysis complete in ${duration}s`);
-        
+
         // Check if report was created
         const reportPath = path.join(
-          process.cwd(), 
+          process.cwd(),
           'session-analysis',
           sessionFile.replace('.jsonl', '.md')
         );
-        
+
         try {
           await fs.access(reportPath);
-          console.log(`📄 Report saved to: session-analysis/${sessionFile.replace('.jsonl', '.md')}`);
+          console.log(
+            `📄 Report saved to: session-analysis/${sessionFile.replace('.jsonl', '.md')}`
+          );
         } catch {
           console.log('⚠️  Report file not found - check the result above');
         }
-        
       } catch (error) {
         console.error(`❌ Error analyzing session: ${error}`);
       }
@@ -159,17 +160,17 @@ async function main() {
     console.log('📊 Analysis Summary');
     console.log('='.repeat(50));
     console.log(`Sessions analyzed: ${sessionsToAnalyze.length}`);
-    console.log(`Reports location: session-analysis/`);
-    
+    console.log('Reports location: session-analysis/');
+
     // List generated reports
     try {
       const analysisDir = path.join(process.cwd(), 'session-analysis');
       const reports = await fs.readdir(analysisDir);
-      const mdReports = reports.filter(f => f.endsWith('.md'));
-      
+      const mdReports = reports.filter((f) => f.endsWith('.md'));
+
       if (mdReports.length > 0) {
         console.log(`\nGenerated reports (${mdReports.length} total):`);
-        mdReports.slice(0, 5).forEach(report => {
+        mdReports.slice(0, 5).forEach((report) => {
           console.log(`  - ${report}`);
         });
         if (mdReports.length > 5) {
@@ -182,7 +183,6 @@ async function main() {
 
     await cleanup();
     console.log('\n✨ Done!');
-    
   } catch (error) {
     console.error('Fatal error:', error);
   }

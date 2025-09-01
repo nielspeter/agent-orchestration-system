@@ -315,7 +315,7 @@ export class AgentSystemBuilder {
       const toolLoader = new ToolLoader(directory, logger);
       const toolNames = await toolLoader.listTools();
       console.log(`Found ${toolNames.length} tool(s): ${toolNames.join(', ')}`);
-      
+
       for (const toolName of toolNames) {
         try {
           const tool = await toolLoader.loadTool(toolName);

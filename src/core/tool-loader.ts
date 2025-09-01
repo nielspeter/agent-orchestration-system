@@ -1,8 +1,8 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { BaseTool, ToolResult } from '../types';
+import { BaseTool, ToolResult } from '@/types';
 import { ConversationLogger } from './conversation-logger';
-import { createShellTool } from '../tools/shell-tool';
+import { createShellTool } from '@/tools/shell-tool';
 
 /**
  * Tool metadata extracted from script files
@@ -10,24 +10,28 @@ import { createShellTool } from '../tools/shell-tool';
 interface ToolMetadata {
   name: string;
   description?: string;
-  parameters?: Record<string, any>;
+  parameters?: Record<string, {
+    type: string;
+    description?: string;
+    required?: boolean;
+  }>;
   returns?: string;
 }
 
 /**
  * ToolLoader - Loads script files as tools
- * 
+ *
  * Similar to AgentLoader, this class loads tool definitions from script files.
  * It parses metadata from script headers and creates BaseTool wrappers that
  * execute the scripts via the shell tool.
- * 
+ *
  * Supported formats:
  * - Python (.py) with docstring metadata
  * - JavaScript (.js) with JSDoc comments
  * - Shell scripts (.sh) with comment metadata
  */
 export class ToolLoader {
-  private shellTool: BaseTool;
+  private readonly shellTool: BaseTool;
 
   constructor(
     private readonly toolsDir: string,
@@ -87,10 +91,11 @@ export class ToolLoader {
       const tools = files
         .filter((f) => f.endsWith('.py') || f.endsWith('.js') || f.endsWith('.sh'))
         .map((f) => f.replace(/\.(py|js|sh)$/, ''));
-      
+
       return [...new Set(tools)]; // Remove duplicates if same name with different extensions
-    } catch (error: any) {
-      if (error.code === 'ENOENT') {
+    } catch (error) {
+      const fileError = error as NodeJS.ErrnoException;
+      if (fileError.code === 'ENOENT') {
         return [];
       }
       throw error;
@@ -126,29 +131,32 @@ export class ToolLoader {
    */
   private parsePythonMetadata(content: string): ToolMetadata {
     const metadata: ToolMetadata = { name: '' };
-    
+
     // Look for docstring at the beginning (after shebang)
-    const docstringMatch = content.match(/^(?:#!.*\n)?"""([\s\S]*?)"""/);
+    const docstringMatch = RegExp(/^(?:#!.*\n)?"""([\s\S]*?)"""/).exec(content);
     if (!docstringMatch) {
       return metadata;
     }
 
     const docstring = docstringMatch[1];
-    
+
     // Parse simple key: value pairs
-    const nameMatch = docstring.match(/name:\s*(.+)/);
+    const nameMatch = RegExp(/name:\s*(.+)/).exec(docstring);
     if (nameMatch) metadata.name = nameMatch[1].trim();
-    
-    const descMatch = docstring.match(/description:\s*(.+)/);
+
+    const descMatch = RegExp(/description:\s*(.+)/).exec(docstring);
     if (descMatch) metadata.description = descMatch[1].trim();
-    
+
     // Parse parameters (simplified - could be enhanced)
-    const paramsMatch = docstring.match(/parameters:\s*\n((?:\s+.+\n)*)/);
+    const paramsMatch = RegExp(/parameters:\s*\n((?:\s+.+\n)*)/).exec(docstring);
     if (paramsMatch) {
       metadata.parameters = {};
-      const paramLines = paramsMatch[1].split('\n').filter(line => line.trim());
+      const paramLines = paramsMatch[1].split('\n').filter((line) => line.trim());
       for (const line of paramLines) {
-        const [key, type] = line.trim().split(':').map(s => s.trim());
+        const [key, type] = line
+          .trim()
+          .split(':')
+          .map((s) => s.trim());
         if (key && type) {
           metadata.parameters[key] = { type, description: `Parameter ${key}` };
         }
@@ -163,24 +171,24 @@ export class ToolLoader {
    */
   private parseJavaScriptMetadata(content: string): ToolMetadata {
     const metadata: ToolMetadata = { name: '' };
-    
+
     // Look for JSDoc comment at the beginning
-    const jsdocMatch = content.match(/^(?:#!.*\n)?\/\*\*([\s\S]*?)\*\//);
+    const jsdocMatch = RegExp(/^(?:#!.*\n)?\/\*\*([\s\S]*?)\*\//).exec(content);
     if (!jsdocMatch) {
       return metadata;
     }
 
     const jsdoc = jsdocMatch[1];
-    
+
     // Parse @tool and @description tags
-    const nameMatch = jsdoc.match(/@tool\s+(\S+)/);
+    const nameMatch = RegExp(/@tool\s+(\S+)/).exec(jsdoc);
     if (nameMatch) metadata.name = nameMatch[1];
-    
-    const descMatch = jsdoc.match(/@description\s+(.+)/);
+
+    const descMatch = RegExp(/@description\s+(.+)/).exec(jsdoc);
     if (descMatch) metadata.description = descMatch[1].trim();
-    
+
     // Parse @param tags
-    const paramMatches = jsdoc.matchAll(/@param\s+\{(\w+)\}\s+(\w+)(?:\s+-\s+(.+))?/g);
+    const paramMatches = jsdoc.matchAll(/@param\s+\{(\w+)}\s+(\w+)(?:\s+-\s+(.+))?/g);
     metadata.parameters = {};
     for (const match of paramMatches) {
       const [, type, name, description] = match;
@@ -195,10 +203,11 @@ export class ToolLoader {
    */
   private parseShellMetadata(content: string): ToolMetadata {
     const metadata: ToolMetadata = { name: '' };
-    
+
     // Look for comments at the beginning
     const lines = content.split('\n');
-    for (const line of lines.slice(0, 10)) { // Check first 10 lines
+    for (const line of lines.slice(0, 10)) {
+      // Check first 10 lines
       if (line.startsWith('# Tool:')) {
         metadata.name = line.substring(7).trim();
       } else if (line.startsWith('# Description:')) {
@@ -216,7 +225,7 @@ export class ToolLoader {
    */
   private createScriptTool(name: string, scriptPath: string, metadata: ToolMetadata): BaseTool {
     // Build parameter schema from metadata
-    const properties: Record<string, any> = {};
+    const properties: Record<string, { type: string; description: string }> = {};
     const required: string[] = [];
 
     if (metadata.parameters) {
@@ -247,35 +256,31 @@ export class ToolLoader {
         let command: string;
 
         // Build command based on script type
+        // Pass JSON via stdin for all script types (most flexible)
+        const jsonArgs = JSON.stringify(args);
+
         if (ext === '.py') {
-          // Pass arguments as JSON via stdin for Python
-          const jsonArgs = JSON.stringify(args);
           command = `echo '${jsonArgs.replace(/'/g, "'\\''")}' | python3 "${scriptPath}"`;
         } else if (ext === '.js') {
-          // Pass arguments as command line args for Node
-          const argsStr = Object.entries(args)
-            .map(([key, value]) => `--${key}="${value}"`)
-            .join(' ');
-          command = `node "${scriptPath}" ${argsStr}`;
+          // Also pass via stdin for Node.js scripts
+          command = `echo '${jsonArgs.replace(/'/g, "'\\''")}' | node "${scriptPath}"`;
         } else if (ext === '.sh') {
-          // Pass arguments as environment variables for shell
+          // For shell scripts, pass as environment variables (they typically don't read stdin)
           const envVars = Object.entries(args)
             .map(([key, value]) => `${key.toUpperCase()}="${value}"`)
             .join(' ');
           command = `${envVars} bash "${scriptPath}"`;
         } else {
-          // Default: just run the script
-          command = `"${scriptPath}"`;
+          // Default: pass JSON via stdin
+          command = `echo '${jsonArgs.replace(/'/g, "'\\''")}' | "${scriptPath}"`;
         }
 
         // Execute via shell tool
-        const result = await this.shellTool.execute({
+        return await this.shellTool.execute({
           command,
           timeout: 30000,
           parseJson: true, // Try to parse output as JSON
         });
-
-        return result;
       },
 
       isConcurrencySafe: () => true, // Scripts can generally run in parallel
