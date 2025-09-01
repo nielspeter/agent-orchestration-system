@@ -11,7 +11,7 @@ export const createTaskTool = async (agentLoader: AgentLoader): Promise<Tool> =>
   const agentList =
     availableAgents.length > 0
       ? `\n\nAvailable agents: ${availableAgents.join(', ')}`
-      : '\n\nNo agents available in the agents directory.';
+      : '\n\nNo agents available in the agents directory. You can always use "default" for general-purpose tasks.';
 
   return {
     name: 'Task',
@@ -32,8 +32,9 @@ The subagent will work autonomously to complete the delegated task and return co
           type: 'string',
           description:
             availableAgents.length > 0
-              ? `The type of specialized agent to use for this task. Must match one of: ${availableAgents.join(', ')}`
-              : 'The type of specialized agent to use for this task',
+              ? `The type of specialized agent to use for this task. Options: ${availableAgents.join(', ')}. ` +
+                "Use 'default' for general-purpose tasks when no specific agent fits."
+              : 'The type of specialized agent to use for this task. Use "default" for general-purpose agent.',
         },
         prompt: {
           type: 'string',

@@ -32,7 +32,6 @@ npx tsx examples/03-configuration.ts # Config file usage
 npx tsx examples/04-logging.ts       # Logging features
 npx tsx examples/05-mcp-integration.ts # MCP tool server (time utilities)
 npx tsx examples/06-werewolf-game.ts # Autonomous multi-agent game
-npx tsx examples/07-mcp-docling.ts   # Document conversion with Docling MCP
 ```
 
 ## Architecture Overview

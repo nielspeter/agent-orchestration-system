@@ -85,6 +85,76 @@ const builder = AgentSystemBuilder.default()
   .withAgentsFrom('examples/game/agents');  // Multiple sources
 ```
 
+## Default Agent
+
+### Overview
+
+The system includes a built-in **default agent** that serves as a fallback and general-purpose handler. This ensures all tasks can be executed even when specific agents aren't available.
+
+### Key Features
+
+1. **Always Available**: The default agent is built into the system and always present
+2. **Universal Tool Access**: Has access to ALL tools (`tools: "*"`)
+3. **Automatic Fallback**: Used when a requested agent doesn't exist
+4. **Explicit Usage**: Can be explicitly called for general-purpose tasks
+
+### How It Works
+
+```typescript
+// Built-in definition in AgentLoader
+private readonly DEFAULT_AGENT: AgentDefinition = {
+  name: 'default',
+  description: 'Versatile assistant capable of handling any task...',
+  tools: '*',  // Access to all tools
+  model: undefined  // Uses system default
+};
+```
+
+### Usage Scenarios
+
+#### 1. Automatic Fallback
+When a non-existent agent is requested:
+```typescript
+// User requests agent that doesn't exist
+await executor.execute('Task', {
+  subagent_type: 'analyzer',  // This agent doesn't exist
+  prompt: 'Analyze the code structure'
+});
+// → System automatically uses default agent
+// → Logs: "Agent 'analyzer' not found, using default agent as fallback"
+```
+
+#### 2. Explicit Usage
+For general-purpose tasks without creating specific agents:
+```typescript
+// Explicitly use default agent
+await executor.execute('Task', {
+  subagent_type: 'default',
+  prompt: 'Find all TODO comments and create a summary'
+});
+// → Uses default agent for ad-hoc task
+```
+
+### Benefits
+
+- **Resilience**: System never fails due to missing agents
+- **Flexibility**: Quick tasks without creating specific agent files
+- **Development Speed**: Prototype without defining agents first
+- **Safety Net**: Ensures all delegated tasks can be handled
+
+### Default Agent Capabilities
+
+The default agent:
+- Can read, write, and manipulate files
+- Can search through codebases
+- Can delegate to other agents (if they exist)
+- Adapts its approach based on the task
+- Has access to all registered tools
+
+### Philosophy
+
+This aligns with the system principle: **"All tasks are handled by an agent"**. The default agent ensures this principle holds even when specific agents aren't defined, making the system more robust and user-friendly.
+
 ## Agent Execution
 
 **File**: `src/core/agent-executor.ts`

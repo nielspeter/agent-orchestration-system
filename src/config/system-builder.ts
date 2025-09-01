@@ -305,7 +305,7 @@ export class AgentSystemBuilder {
             // Add any server-specific env vars
             ...(serverConfig.env || {}),
           };
-          
+
           const transport = new StdioClientTransport({
             command: serverConfig.command,
             args: serverConfig.args,
