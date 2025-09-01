@@ -35,7 +35,7 @@ coverage-integration/
 # Conversation logs (may contain sensitive data)
 conversations/
 logs/
-agents/parallel-test-orchestrator.md
+examples/08-session-analyzer/agents/parallel-test-orchestrator.md
 
 # Temporary files
 tmp/

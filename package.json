@@ -25,6 +25,7 @@
     "example:mcp": "tsx examples/05-mcp-integration.ts",
     "example:werewolf": "tsx examples/06-werewolf-game.ts",
     "example:default-agent": "tsx examples/07-default-agent.ts",
+    "example:session-analyzer": "tsx examples/08-session-analyzer.ts",
     "clean": "rm -rf dist"
   },
   "dependencies": {

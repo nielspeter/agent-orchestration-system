@@ -12,12 +12,14 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import { AgentLoader } from '@/core/agent-loader';
 import { ToolRegistry } from '@/core/tool-registry';
+import { ToolLoader } from '@/core/tool-loader';
 import { AgentExecutor } from '@/core/agent-executor';
 import { TodoManager } from '@/core/todo-manager';
 import { LoggerFactory } from '@/core/conversation-logger';
 import { createListTool, createReadTool, createWriteTool } from '@/tools/file-tools';
 import { createTaskTool } from '@/tools/task-tool';
 import { createTodoWriteTool } from '@/tools/todowrite-tool';
+import { createShellTool } from '@/tools/shell-tool';
 import { BaseTool, ToolParameter, ToolResult, ToolSchema } from '@/types';
 import {
   Agent,
@@ -89,6 +91,7 @@ export class AgentSystemBuilder {
   protected config: Partial<SystemConfig>;
   protected customTools: BaseTool[] = [];
   protected mcpClients: MCPClientWrapper[] = [];
+  protected toolDirectories: string[] = [];
 
   constructor(initialConfig: Partial<SystemConfig> = {}) {
     this.config = { ...initialConfig };
@@ -172,6 +175,14 @@ export class AgentSystemBuilder {
   }
 
   /**
+   * Load tools from a directory containing scripts
+   */
+  withToolsFrom(...directories: string[]): this {
+    this.toolDirectories.push(...directories);
+    return this;
+  }
+
+  /**
    * Configure safety limits
    */
   withSafetyLimits(limits: Partial<SafetyConfig>): AgentSystemBuilder {
@@ -236,7 +247,12 @@ export class AgentSystemBuilder {
    * Generic method to set any configuration
    */
   with(overrides: Partial<SystemConfig>): AgentSystemBuilder {
-    return new AgentSystemBuilder(mergeConfigs(this.config, overrides));
+    const newBuilder = new AgentSystemBuilder(mergeConfigs(this.config, overrides));
+    // Preserve instance properties not in config
+    newBuilder.customTools = [...this.customTools];
+    newBuilder.mcpClients = [...this.mcpClients];
+    newBuilder.toolDirectories = [...this.toolDirectories];
+    return newBuilder;
   }
 
   /**
@@ -282,12 +298,33 @@ export class AgentSystemBuilder {
           toolRegistry.register(createTodoWriteTool(todoManager));
           break;
         }
+        case 'shell':
+          toolRegistry.register(createShellTool());
+          break;
       }
     }
 
     // Register custom tools
     for (const tool of this.customTools) {
       toolRegistry.register(tool);
+    }
+
+    // Load tools from directories
+    for (const directory of this.toolDirectories) {
+      console.log(`Loading tools from directory: ${directory}`);
+      const toolLoader = new ToolLoader(directory, logger);
+      const toolNames = await toolLoader.listTools();
+      console.log(`Found ${toolNames.length} tool(s): ${toolNames.join(', ')}`);
+      
+      for (const toolName of toolNames) {
+        try {
+          const tool = await toolLoader.loadTool(toolName);
+          toolRegistry.register(tool);
+          console.log(`✓ Loaded tool: ${toolName} from ${directory}`);
+        } catch (error) {
+          console.error(`Failed to load tool ${toolName}:`, error);
+        }
+      }
     }
 
     // Initialize MCP servers if configured
@@ -519,6 +556,7 @@ export class TestConfigBuilder extends AgentSystemBuilder {
   protected mockTools: Map<string, (args: Record<string, unknown>) => Promise<ToolResult>> =
     new Map();
   protected recording: boolean = false;
+  protected toolDirectories: string[] = [];
 
   /**
    * Add a mock agent
@@ -562,6 +600,7 @@ export class TestConfigBuilder extends AgentSystemBuilder {
     testBuilder.mockAgents = this.mockAgents;
     testBuilder.mockTools = this.mockTools;
     testBuilder.recording = this.recording;
+    testBuilder.toolDirectories = this.toolDirectories;
     return testBuilder;
   }
 
