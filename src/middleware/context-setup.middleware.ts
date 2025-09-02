@@ -18,6 +18,11 @@ export function createContextSetupMiddleware(): Middleware {
       // Build enhanced system prompt with system-level instructions
       let systemPrompt = ctx.agent.description;
 
+      // Add session context if available
+      if (ctx.sessionId) {
+        systemPrompt = `## SESSION CONTEXT\nSession ID: ${ctx.sessionId}\n\n${systemPrompt}`;
+      }
+
       // Always add system-level instructions
       systemPrompt += '\n\n## SYSTEM INSTRUCTIONS';
 

@@ -84,7 +84,7 @@ export function createShellTool(): BaseTool {
           stderr?: string;
           code?: number;
         };
-        
+
         const errorMessage = execError.message || 'Command execution failed';
         const killed = execError.killed || false;
         const code = execError.code || 1;

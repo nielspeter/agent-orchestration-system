@@ -30,6 +30,7 @@ export interface MiddlewareContext {
   // Shared services
   logger: ConversationLogger;
   modelName: string;
+  sessionId?: string;
 
   // Control flow
   shouldContinue: boolean;

@@ -88,10 +88,14 @@ export class JsonlLogger {
   private currentParentUuid: string | null = null;
   private readonly eventChain: Map<string, string> = new Map(); // Maps event to its UUID
 
-  constructor(sessionId?: string, outputDir: string = 'conversations') {
+  constructor(outputDir: string = 'conversations', sessionId?: string) {
+    // Always use UUID for sessionId
     this.sessionId = sessionId || uuidv4();
+
+    // Prepend timestamp to filename for chronological sorting
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    this.filePath = path.join(process.cwd(), outputDir, `${timestamp}.jsonl`);
+    const filename = `${timestamp}-${this.sessionId}.jsonl`;
+    this.filePath = path.join(process.cwd(), outputDir, filename);
   }
 
   /**
@@ -394,5 +398,19 @@ export class JsonlLogger {
    */
   getFilePath(): string {
     return this.filePath;
+  }
+
+  /**
+   * Get the session ID
+   */
+  getSessionId(): string {
+    return this.sessionId;
+  }
+
+  /**
+   * Get just the filename (not full path)
+   */
+  getFilename(): string {
+    return path.basename(this.filePath);
   }
 }

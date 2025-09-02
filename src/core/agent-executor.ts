@@ -30,6 +30,7 @@ export class AgentExecutor {
   private readonly logger: ConversationLogger;
   private readonly provider: AnthropicProvider;
   private readonly pipeline: MiddlewarePipeline;
+  private readonly sessionId?: string;
 
   /**
    * Creates a new AgentExecutor instance
@@ -49,6 +50,7 @@ export class AgentExecutor {
     logger?: ConversationLogger,
     sessionId?: string
   ) {
+    this.sessionId = sessionId;
     this.logger = logger || LoggerFactory.createCombinedLogger(sessionId);
     const finalModelName = modelName || this.config.model;
     this.provider = new AnthropicProvider(finalModelName, this.logger);
@@ -146,6 +148,7 @@ export class AgentExecutor {
       modelName: this.provider.getModelName(),
       shouldContinue: true,
       result: undefined,
+      sessionId: this.sessionId,
     };
 
     // Main execution loop with timeout protection

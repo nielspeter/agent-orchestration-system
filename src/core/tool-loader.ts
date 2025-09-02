@@ -10,11 +10,14 @@ import { createShellTool } from '@/tools/shell-tool';
 interface ToolMetadata {
   name: string;
   description?: string;
-  parameters?: Record<string, {
-    type: string;
-    description?: string;
-    required?: boolean;
-  }>;
+  parameters?: Record<
+    string,
+    {
+      type: string;
+      description?: string;
+      required?: boolean;
+    }
+  >;
   returns?: string;
 }
 

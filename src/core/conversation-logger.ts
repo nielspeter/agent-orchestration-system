@@ -70,7 +70,7 @@ export class ConsoleLogger implements ConversationLogger {
 
   constructor(sessionId?: string) {
     this.sessionId = sessionId || uuidv4();
-    this.jsonlLogger = new JsonlLogger(this.sessionId);
+    this.jsonlLogger = new JsonlLogger('conversations', this.sessionId);
   }
 
   log(entry: LogEntry): void {
@@ -228,7 +228,7 @@ export class FileLogger implements ConversationLogger {
 
   constructor(conversationId?: string) {
     this.sessionId = conversationId || uuidv4();
-    this.jsonlLogger = new JsonlLogger(this.sessionId);
+    this.jsonlLogger = new JsonlLogger('conversations', this.sessionId);
   }
 
   log(entry: LogEntry): void {

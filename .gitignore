@@ -42,3 +42,4 @@ tmp/
 temp/
 *.tmp.env.test
 .env.test.local
+/examples/06-werewolf-game/werewolf-game.md

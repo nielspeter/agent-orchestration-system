@@ -8,27 +8,27 @@ export default {
   arrowParens: 'always',
   endOfLine: 'auto',
   useTabs: false,
-  
+
   // Override for specific file types
   overrides: [
     {
       files: '*.md',
       options: {
         printWidth: 80,
-        proseWrap: 'always'
-      }
+        proseWrap: 'always',
+      },
     },
     {
       files: ['*.json', '*.jsonc'],
       options: {
-        singleQuote: false
-      }
+        singleQuote: false,
+      },
     },
     {
       files: '*.yml',
       options: {
-        singleQuote: false
-      }
-    }
-  ]
+        singleQuote: false,
+      },
+    },
+  ],
 };

@@ -8,6 +8,7 @@
 
 import * as fs from 'fs/promises';
 import * as os from 'os';
+import { v4 as uuidv4 } from 'uuid';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import { AgentLoader } from '@/core/agent-loader';
@@ -20,6 +21,7 @@ import { createListTool, createReadTool, createWriteTool } from '@/tools/file-to
 import { createTaskTool } from '@/tools/task-tool';
 import { createTodoWriteTool } from '@/tools/todowrite-tool';
 import { createShellTool } from '@/tools/shell-tool';
+import { createGetSessionLogTool } from '@/tools/get-session-log-tool';
 import { BaseTool, ToolParameter, ToolResult, ToolSchema } from '@/types';
 import {
   Agent,
@@ -213,15 +215,23 @@ export class AgentSystemBuilder {
   }
 
   /**
-   * Set session ID
+   * Set session ID (auto-generates UUID if not provided)
    */
-  withSessionId(sessionId: string): AgentSystemBuilder {
+  withSessionId(sessionId?: string): AgentSystemBuilder {
     return this.with({
       session: {
         ...this.config.session,
-        sessionId,
+        sessionId: sessionId || uuidv4(),
       } as SessionConfig,
     });
+  }
+
+  /**
+   * Configure with a JsonlLogger instance
+   * Extracts session ID from the logger for use in session context
+   */
+  withLogger(logger: { getSessionId(): string }): AgentSystemBuilder {
+    return this.withSessionId(logger.getSessionId());
   }
 
   /**
@@ -260,6 +270,11 @@ export class AgentSystemBuilder {
    */
   async build(): Promise<BuildResult> {
     const resolvedConfig = resolveConfig(this.config);
+
+    // Ensure session has an ID (generate UUID if not set)
+    if (!resolvedConfig.session.sessionId) {
+      resolvedConfig.session.sessionId = uuidv4();
+    }
 
     // Create logger
     const logger = LoggerFactory.createCombinedLogger(resolvedConfig.session.sessionId);
@@ -302,6 +317,11 @@ export class AgentSystemBuilder {
           toolRegistry.register(createShellTool());
           break;
       }
+    }
+
+    // Register session log tool if session ID is configured
+    if (resolvedConfig.session.sessionId) {
+      toolRegistry.register(createGetSessionLogTool(resolvedConfig.session.sessionId));
     }
 
     // Register custom tools
@@ -426,7 +446,8 @@ export class AgentSystemBuilder {
       toolRegistry,
       resolvedConfig,
       resolvedConfig.model,
-      logger
+      logger,
+      resolvedConfig.session.sessionId
     );
 
     // Cleanup function
