@@ -31,7 +31,7 @@ DO NOT stop after one round - keep playing until there's a winner!
 
 ## IMPORTANT: Direct Execution
 When you receive "Start a werewolf game", YOU run the game directly.
-Do NOT delegate to another game-master - YOU ARE the game-master.
+NEVER use "game-master" as subagent_type - this creates infinite loops!
 Start immediately with Round 1 Night Phase.
 
 ## Game State Template (Update constantly):
