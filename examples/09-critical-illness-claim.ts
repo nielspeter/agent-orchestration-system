@@ -10,6 +10,8 @@
  */
 
 import { AgentSystemBuilder } from '@/config/system-builder';
+import * as fs from 'fs/promises';
+import * as path from 'path';
 import * as dotenv from 'dotenv';
 
 // Load environment variables from .env file
@@ -23,7 +25,7 @@ async function main() {
   const builder = AgentSystemBuilder.default()
     .withAgentsFrom('examples/09-critical-illness-claim/agents')
     .withToolsFrom('examples/09-critical-illness-claim/tools')
-    .withBuiltinTools('read', 'write', 'shell') // Include shell for script execution
+    // Use default builtin tools which includes: read, write, list, task, todowrite
     .withSafetyLimits({
       maxIterations: 30, // Allow sufficient iterations for complex workflow
       maxDepth: 8, // Allow deeper delegation chains
@@ -33,55 +35,34 @@ async function main() {
 
   const system = await builder.build();
 
-  // Sample claim notification data
-  const claimNotification = {
-    notification: {
-      id: 'NOTIF-2025-001',
-      type: 'critical_illness_claim',
-      content:
-        'Patient diagnosed with stage 3 lung cancer, requesting claim under critical illness policy',
-      timestamp: new Date().toISOString(),
-      claimantInfo: {
-        name: 'John Doe',
-        policyNumber: 'POL-12345',
-        contactInfo: 'john.doe@email.com, +1-555-0123',
-      },
-    },
-  };
+  // Load claim notification data from JSON file
+  const claimPath = path.join('examples/09-critical-illness-claim/claims/happy_path_claim.json');
+  const claimData = await fs.readFile(claimPath, 'utf-8');
+  const claimNotification = JSON.parse(claimData);
 
   try {
-    console.log('📋 Processing claim notification...\n');
+    console.log('📋 Processing claim notification from file: happy_path_claim.json\n');
     console.log('Claim Details:');
     console.log(`- Notification ID: ${claimNotification.notification.id}`);
     console.log(`- Policy Number: ${claimNotification.notification.claimantInfo.policyNumber}`);
     console.log(`- Claimant: ${claimNotification.notification.claimantInfo.name}`);
-    console.log(`- Type: ${claimNotification.notification.type}\n`);
+    console.log(`- Type: ${claimNotification.notification.type}`);
+    console.log(`- Documents: ${claimNotification.documents?.length || 0} files received\n`);
 
     // Process the claim through the orchestrator
     const result = await system.executor.execute(
       'claim-orchestrator',
-      `Process this critical illness claim notification and generate a complete audit trail:
+      `Process this critical illness claim notification:
 
-${JSON.stringify(claimNotification, null, 2)}
-
-Follow the complete workflow:
-1. Acknowledge receipt
-2. Categorize the notification
-3. Register the claim if it's a critical illness
-4. Verify documentation
-5. Assess coverage
-6. Process payment if approved
-7. Save the final result to claim-results.json with complete audit trail
-
-Important: Generate deterministic IDs and timestamps for testing consistency.`
+${JSON.stringify(claimNotification, null, 2)}`
     );
 
     console.log('\n✅ Claim Processing Complete!');
     console.log('================================');
     console.log(result);
 
-    // The orchestrator should have saved results to claim-results.json
-    console.log('\n📄 Results saved to: claim-results.json');
+    // The orchestrator should have saved results to the results directory
+    console.log('\n📄 Results saved to: examples/09-critical-illness-claim/results/claim-results.json');
     console.log('Check the file for complete audit trail and processing details.');
   } catch (error) {
     console.error('❌ Processing error:', error);

@@ -1,0 +1,318 @@
+{
+  "processId": "PROC-DE20A37E",
+  "timestamp": "2025-08-14T11:45:05.808386Z",
+  "workflowPath": [
+    "notification_received",
+    "categorization_performed",
+    "claim_registered",
+    "documentation_verified",
+    "coverage_assessed",
+    "payment_approved",
+    "payment_processed"
+  ],
+  "finalOutcome": "completed",
+  "details": {
+    "claimId": "CI-20250113-1D5C8",
+    "claimantName": "Jane Smith",
+    "policyNumber": "POL-54321",
+    "illness": "breast cancer",
+    "decision": "approved",
+    "notes": "Payment of 54,421,000 USD processed successfully. Critical illness claim approved for breast cancer diagnosis with complete documentation and valid policy coverage."
+  },
+  "auditTrail": [
+    {
+      "sequence": 1,
+      "timestamp": "2025-08-14T11:45:05.808386Z",
+      "agent": "claim-orchestrator",
+      "action": "WORKFLOW_START",
+      "target": null,
+      "decisionPoint": null,
+      "tool": null,
+      "input": {
+        "notification": {
+          "id": "NOTIF-001",
+          "type": "critical_illness_claim",
+          "content": "I am submitting a claim for my recent cancer diagnosis. I was diagnosed with stage 2 breast cancer on December 15, 2024.",
+          "claimantInfo": {
+            "name": "Jane Smith",
+            "policyNumber": "POL-54321",
+            "contactInfo": "jane.smith@email.com, +1-555-0123"
+          }
+        }
+      },
+      "output": null,
+      "reasoning": "Received critical illness notification from Jane Smith with complete claim data and medical documentation"
+    },
+    {
+      "sequence": 2,
+      "timestamp": "2025-08-14T11:45:05.808386Z",
+      "agent": "claim-orchestrator",
+      "action": "DELEGATE",
+      "target": "notification-categorization",
+      "decisionPoint": null,
+      "tool": null,
+      "input": {
+        "notification_id": "NOTIF-001",
+        "type": "critical_illness_claim",
+        "content": "I am submitting a claim for my recent cancer diagnosis. I was diagnosed with stage 2 breast cancer on December 15, 2024.",
+        "claimant_info": {
+          "name": "Jane Smith",
+          "policy_number": "POL-54321"
+        }
+      },
+      "output": {
+        "category": "critical_illness",
+        "subcategory": "cancer",
+        "confidence": 0.98,
+        "is_critical_illness": true,
+        "reasoning": "Notification explicitly mentions breast cancer diagnosis which is a covered critical illness condition"
+      },
+      "reasoning": "Delegated categorization to determine if notification is for critical illness claim"
+    },
+    {
+      "sequence": 3,
+      "timestamp": "2025-08-14T11:45:05.808386Z",
+      "agent": "claim-orchestrator",
+      "action": "DECISION",
+      "target": null,
+      "decisionPoint": "is_critical_illness",
+      "tool": null,
+      "input": {
+        "categorization_result": {
+          "is_critical_illness": true,
+          "confidence": 0.98
+        }
+      },
+      "output": {
+        "decision": "continue",
+        "next_step": "claim_registration"
+      },
+      "reasoning": "Breast cancer diagnosis is confirmed as critical illness condition"
+    },
+    {
+      "sequence": 4,
+      "timestamp": "2025-08-14T11:45:05.808386Z",
+      "agent": "claim-orchestrator",
+      "action": "DELEGATE",
+      "target": "claim-registration",
+      "decisionPoint": null,
+      "tool": "claim_id_generator",
+      "input": {
+        "claimant_name": "Jane Smith",
+        "policy_number": "POL-54321",
+        "notification_id": "NOTIF-001",
+        "illness_type": "cancer",
+        "diagnosis_date": "2024-12-15T00:00:00Z",
+        "contact_info": "jane.smith@email.com, +1-555-0123"
+      },
+      "output": {
+        "claim_id": "CI-20250113-1D5C8",
+        "registration_status": "success",
+        "registration_timestamp": "2025-08-14T11:45:05.808386Z",
+        "initial_assessment": "Valid claim for breast cancer diagnosis",
+        "next_step": "documentation_verification"
+      },
+      "reasoning": "Generated unique claim ID and registered claim successfully"
+    },
+    {
+      "sequence": 5,
+      "timestamp": "2025-08-14T11:45:05.808386Z",
+      "agent": "claim-orchestrator",
+      "action": "DELEGATE",
+      "target": "documentation-verification",
+      "decisionPoint": null,
+      "tool": null,
+      "input": {
+        "claim_id": "CI-20250113-1D5C8",
+        "required_documents": [
+          "medical_diagnosis_report",
+          "pathology_results",
+          "oncologist_statement",
+          "treatment_plan",
+          "hospital_admission_records",
+          "claim_form",
+          "id_proof",
+          "policy_document"
+        ],
+        "received_documents": [
+          {"type": "medical_diagnosis_report", "name": "diagnosis_report_smith.pdf", "status": "received"},
+          {"type": "pathology_results", "name": "pathology_smith.pdf", "status": "received"},
+          {"type": "oncologist_statement", "name": "oncologist_statement_smith.pdf", "status": "received"},
+          {"type": "treatment_plan", "name": "treatment_plan_smith.pdf", "status": "received"},
+          {"type": "hospital_admission_records", "name": "hospital_records_smith.pdf", "status": "received"},
+          {"type": "claim_form", "name": "claim_form_smith.pdf", "status": "received"},
+          {"type": "id_proof", "name": "id_smith.pdf", "status": "received"},
+          {"type": "policy_document", "name": "policy_smith.pdf", "status": "received"}
+        ]
+      },
+      "output": {
+        "verification_status": "complete",
+        "missing_documents": [],
+        "document_quality_score": 0.95,
+        "verification_notes": "All required documents received and verified. Medical documentation supports breast cancer diagnosis.",
+        "next_step": "policy_assessment"
+      },
+      "reasoning": "All required medical and claim documents present and verified"
+    },
+    {
+      "sequence": 6,
+      "timestamp": "2025-08-14T11:45:05.808386Z",
+      "agent": "claim-orchestrator",
+      "action": "DECISION",
+      "target": null,
+      "decisionPoint": "documentation_complete",
+      "tool": null,
+      "input": {
+        "verification_result": {
+          "verification_status": "complete",
+          "missing_documents": []
+        }
+      },
+      "output": {
+        "decision": "continue",
+        "next_step": "policy_assessment"
+      },
+      "reasoning": "Documentation verification confirmed all required documents received"
+    },
+    {
+      "sequence": 7,
+      "timestamp": "2025-08-14T11:45:05.808386Z",
+      "agent": "claim-orchestrator",
+      "action": "DELEGATE",
+      "target": "policy-assessment",
+      "decisionPoint": null,
+      "tool": "mock_external_services",
+      "input": {
+        "claim_id": "CI-20250113-1D5C8",
+        "policy_number": "POL-54321",
+        "illness": "breast cancer",
+        "diagnosis_date": "2024-12-15T00:00:00Z"
+      },
+      "output": {
+        "coverage_status": "covered",
+        "waiting_period_met": true,
+        "waiting_period_days": 702,
+        "benefit_amount": 54421000,
+        "currency": "USD",
+        "assessment_notes": "Breast cancer is covered under critical illness policy. Waiting period of 702 days exceeds required 90 days. No fraud indicators detected.",
+        "next_step": "payment_approval"
+      },
+      "reasoning": "Cancer is covered condition, waiting period exceeded, no fraud indicators"
+    },
+    {
+      "sequence": 8,
+      "timestamp": "2025-08-14T11:45:05.808386Z",
+      "agent": "claim-orchestrator",
+      "action": "DECISION",
+      "target": null,
+      "decisionPoint": "illness_covered",
+      "tool": null,
+      "input": {
+        "assessment_result": {
+          "coverage_status": "covered",
+          "benefit_amount": 54421000
+        }
+      },
+      "output": {
+        "decision": "continue",
+        "next_step": "payment_approval"
+      },
+      "reasoning": "Breast cancer is covered under policy, all eligibility criteria met"
+    },
+    {
+      "sequence": 9,
+      "timestamp": "2025-08-14T11:45:05.808386Z",
+      "agent": "claim-orchestrator",
+      "action": "DELEGATE",
+      "target": "payment-approval",
+      "decisionPoint": null,
+      "tool": "mock_external_services",
+      "input": {
+        "claim_id": "CI-20250113-1D5C8",
+        "policy_number": "POL-54321",
+        "claimant_name": "Jane Smith",
+        "benefit_amount": 54421000,
+        "currency": "USD",
+        "bank_details": {
+          "accountName": "Jane Smith",
+          "accountNumber": "9876543210",
+          "bankName": "National Trust Bank"
+        }
+      },
+      "output": {
+        "approval_status": "approved",
+        "approved_amount": 54421000,
+        "currency": "USD",
+        "approval_reference": "APP-20250814-001",
+        "approval_notes": "Payment approved for full sum assured. Bank account validated successfully.",
+        "next_step": "process_payment"
+      },
+      "reasoning": "Bank account validated, payment approved for full sum assured"
+    },
+    {
+      "sequence": 10,
+      "timestamp": "2025-08-14T11:45:05.808386Z",
+      "agent": "claim-orchestrator",
+      "action": "TOOL_USE",
+      "target": null,
+      "decisionPoint": null,
+      "tool": "mock_external_services.process_payment",
+      "input": {
+        "claim_id": "CI-20250113-1D5C8",
+        "amount": 54421000,
+        "bank_details": {
+          "accountName": "Jane Smith",
+          "accountNumber": "9876543210",
+          "bankName": "National Trust Bank"
+        }
+      },
+      "output": {
+        "status": "success",
+        "paymentReference": "PAY-CI-20250113-1D5C8-20250814134637",
+        "processedAmount": 54421000,
+        "currency": "USD",
+        "processingTime": "2025-01-13T10:30:00Z",
+        "expectedCreditDate": "2025-08-17T13:46:37.275900Z"
+      },
+      "reasoning": "Payment processed successfully to claimant's bank account"
+    },
+    {
+      "sequence": 11,
+      "timestamp": "2025-08-14T11:45:05.808386Z",
+      "agent": "claim-orchestrator",
+      "action": "DECISION",
+      "target": null,
+      "decisionPoint": "payment_approved",
+      "tool": null,
+      "input": {
+        "payment_result": {
+          "status": "success",
+          "processedAmount": 54421000
+        }
+      },
+      "output": {
+        "decision": "workflow_complete",
+        "final_outcome": "completed"
+      },
+      "reasoning": "Payment of 54,421,000 USD processed successfully"
+    },
+    {
+      "sequence": 12,
+      "timestamp": "2025-08-14T11:45:05.808386Z",
+      "agent": "claim-orchestrator",
+      "action": "WORKFLOW_END",
+      "target": null,
+      "decisionPoint": null,
+      "tool": null,
+      "input": null,
+      "output": {
+        "processId": "PROC-DE20A37E",
+        "finalOutcome": "completed",
+        "claimId": "CI-20250113-1D5C8",
+        "paymentAmount": 54421000,
+        "paymentReference": "PAY-CI-20250113-1D5C8-20250814134637"
+      },
+      "reasoning": "Critical illness claim for Jane Smith successfully processed with payment of 54,421,000 USD"
+    }
+  ]
+}

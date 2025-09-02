@@ -1,0 +1,56 @@
+{
+  "notification": {
+    "id": "NOTIF-004",
+    "type": "critical_illness_claim",
+    "content": "I am filing a claim for a recent heart attack I suffered. However, I should mention that I just started my policy 30 days ago, and the heart attack happened last week. I have all my medical documentation ready including ECG results and cardiologist reports.",
+    "timestamp": "2025-01-13T12:00:00Z",
+    "claimantInfo": {
+      "name": "Michael Brown",
+      "policyNumber": "POL-99999",
+      "contactInfo": "michael.brown@email.com, +1-555-0999"
+    }
+  },
+  "documents": [
+    {
+      "type": "medical_diagnosis_report",
+      "name": "diagnosis_report_brown.pdf",
+      "status": "received"
+    },
+    {
+      "type": "ECG_results",
+      "name": "ecg_brown.pdf",
+      "status": "received"
+    },
+    {
+      "type": "cardiologist_statement",
+      "name": "cardio_statement_brown.pdf",
+      "status": "received"
+    },
+    {
+      "type": "hospital_discharge_summary",
+      "name": "discharge_brown.pdf",
+      "status": "received"
+    },
+    {
+      "type": "claim_form",
+      "name": "claim_form_brown.pdf",
+      "status": "received"
+    },
+    {
+      "type": "id_proof",
+      "name": "id_brown.pdf",
+      "status": "received"
+    },
+    {
+      "type": "policy_document",
+      "name": "policy_brown.pdf",
+      "status": "received"
+    }
+  ],
+  "diagnosisDate": "2025-01-06T00:00:00Z",
+  "claimantBankDetails": {
+    "accountName": "Michael Brown",
+    "accountNumber": "4433221100",
+    "bankName": "State Bank"
+  }
+}

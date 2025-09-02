@@ -1,0 +1,260 @@
+{
+  "processId": "PROC-20250814115129.322167",
+  "timestamp": "2025-08-14T11:54:03.393440Z",
+  "workflowPath": [
+    "notification_received",
+    "categorization_performed",
+    "claim_registered",
+    "documentation_verified",
+    "communication_sent"
+  ],
+  "finalOutcome": "pending_docs",
+  "details": {
+    "claimId": "CI-20250113-01B2E",
+    "claimantName": "Robert Johnson",
+    "policyNumber": "POL-11111",
+    "illness": "stroke",
+    "decision": "Workflow suspended pending missing documentation",
+    "notes": "Critical illness claim for stroke registered successfully. Notification sent to claimant requesting missing critical documents: CT scan report, neurologist assessment, and rehabilitation plan. Workflow will resume upon receipt of complete documentation."
+  },
+  "auditTrail": [
+    {
+      "sequence": 1,
+      "timestamp": "2025-08-14T11:51:44.000000Z",
+      "agent": "claim-orchestrator",
+      "action": "WORKFLOW_START",
+      "target": null,
+      "decisionPoint": null,
+      "tool": null,
+      "input": {
+        "notification": {
+          "id": "NOTIF-003",
+          "type": "critical_illness_claim",
+          "content": "I am filing a claim for a recent stroke I suffered on January 2, 2025. I have been hospitalized and am currently in rehabilitation. I have some of my medical documents ready but am still waiting for others from the hospital.",
+          "timestamp": "2025-01-13T11:00:00Z",
+          "claimantInfo": {
+            "name": "Robert Johnson",
+            "policyNumber": "POL-11111",
+            "contactInfo": "robert.j@email.com, +1-555-0789"
+          }
+        },
+        "documents": [
+          {"type": "hospital_discharge_summary", "name": "discharge_johnson.pdf", "status": "received"},
+          {"type": "claim_form", "name": "claim_form_johnson.pdf", "status": "received"},
+          {"type": "id_proof", "name": "id_johnson.pdf", "status": "received"},
+          {"type": "CT_scan_report", "name": "ct_scan_johnson.pdf", "status": "pending"},
+          {"type": "neurologist_assessment", "name": "neuro_assessment_johnson.pdf", "status": "pending"},
+          {"type": "rehabilitation_plan", "name": "rehab_plan_johnson.pdf", "status": "pending"}
+        ],
+        "diagnosisDate": "2025-01-02T00:00:00Z"
+      },
+      "output": null,
+      "reasoning": "Initial receipt of critical illness claim notification for stroke case"
+    },
+    {
+      "sequence": 2,
+      "timestamp": "2025-08-14T11:51:58.283533Z",
+      "agent": "claim-orchestrator",
+      "action": "DELEGATE",
+      "target": "notification-categorization",
+      "decisionPoint": null,
+      "tool": null,
+      "input": {
+        "notification": {
+          "id": "NOTIF-003",
+          "type": "critical_illness_claim",
+          "content": "I am filing a claim for a recent stroke I suffered on January 2, 2025. I have been hospitalized and am currently in rehabilitation. I have some of my medical documents ready but am still waiting for others from the hospital.",
+          "timestamp": "2025-01-13T11:00:00Z",
+          "claimantInfo": {
+            "name": "Robert Johnson",
+            "policyNumber": "POL-11111",
+            "contactInfo": "robert.j@email.com, +1-555-0789"
+          }
+        }
+      },
+      "output": {
+        "category": "critical_illness",
+        "subcategory": "stroke",
+        "confidence": 0.95,
+        "reasoning": "Notification explicitly mentions stroke, which is a covered critical illness. Content indicates medical treatment and rehabilitation consistent with stroke recovery.",
+        "recommendation": "proceed_to_registration"
+      },
+      "reasoning": "Need to categorize the notification to determine if it qualifies as a critical illness claim"
+    },
+    {
+      "sequence": 3,
+      "timestamp": "2025-08-14T11:52:16.337280Z",
+      "agent": "claim-orchestrator",
+      "action": "DECISION",
+      "target": null,
+      "decisionPoint": "is_critical_illness",
+      "tool": null,
+      "input": {
+        "category": "critical_illness",
+        "subcategory": "stroke",
+        "confidence": 0.95,
+        "recommendation": "proceed_to_registration"
+      },
+      "output": "YES - Continue to claim registration",
+      "reasoning": "Categorization agent confirmed this is a critical illness claim for stroke with high confidence"
+    },
+    {
+      "sequence": 4,
+      "timestamp": "2025-08-14T11:52:35.347366Z",
+      "agent": "claim-orchestrator",
+      "action": "DELEGATE",
+      "target": "claim-registration",
+      "decisionPoint": null,
+      "tool": "claim_id_generator",
+      "input": {
+        "notification": {
+          "id": "NOTIF-003",
+          "type": "critical_illness_claim",
+          "claimantInfo": {
+            "name": "Robert Johnson",
+            "policyNumber": "POL-11111",
+            "contactInfo": "robert.j@email.com, +1-555-0789"
+          }
+        },
+        "categorization": {
+          "category": "critical_illness",
+          "subcategory": "stroke"
+        },
+        "diagnosisDate": "2025-01-02T00:00:00Z"
+      },
+      "output": {
+        "status": "registered",
+        "claimId": "CI-20250113-01B2E",
+        "registrationDate": "2025-08-14T11:52:35.347366Z",
+        "claimantName": "Robert Johnson",
+        "policyNumber": "POL-11111",
+        "illness": "stroke",
+        "diagnosisDate": "2025-01-02T00:00:00Z",
+        "notificationDate": "2025-01-13T11:00:00Z",
+        "waitingPeriod": {
+          "required": false,
+          "reason": "Stroke claims do not require waiting period"
+        },
+        "nextStep": "documentation_verification"
+      },
+      "reasoning": "Need to formally register the critical illness claim and generate claim ID"
+    },
+    {
+      "sequence": 5,
+      "timestamp": "2025-08-14T11:52:55.857635Z",
+      "agent": "claim-orchestrator",
+      "action": "DELEGATE",
+      "target": "documentation-verification",
+      "decisionPoint": null,
+      "tool": null,
+      "input": {
+        "claimId": "CI-20250113-01B2E",
+        "claimType": "stroke",
+        "documents": [
+          {"type": "hospital_discharge_summary", "name": "discharge_johnson.pdf", "status": "received"},
+          {"type": "claim_form", "name": "claim_form_johnson.pdf", "status": "received"},
+          {"type": "id_proof", "name": "id_johnson.pdf", "status": "received"},
+          {"type": "CT_scan_report", "name": "ct_scan_johnson.pdf", "status": "pending"},
+          {"type": "neurologist_assessment", "name": "neuro_assessment_johnson.pdf", "status": "pending"},
+          {"type": "rehabilitation_plan", "name": "rehab_plan_johnson.pdf", "status": "pending"}
+        ]
+      },
+      "output": {
+        "status": "incomplete",
+        "completeness": {
+          "received": 3,
+          "pending": 3,
+          "total_required": 6
+        },
+        "missing_documents": [
+          {
+            "type": "CT_scan_report",
+            "name": "ct_scan_johnson.pdf",
+            "status": "pending",
+            "importance": "critical",
+            "reason": "Required to confirm stroke diagnosis"
+          },
+          {
+            "type": "neurologist_assessment",
+            "name": "neuro_assessment_johnson.pdf",
+            "status": "pending",
+            "importance": "critical",
+            "reason": "Specialist assessment required for stroke severity determination"
+          },
+          {
+            "type": "rehabilitation_plan",
+            "name": "rehab_plan_johnson.pdf",
+            "status": "pending",
+            "importance": "standard",
+            "reason": "Required for ongoing care validation"
+          }
+        ],
+        "recommendation": "request_missing_documents"
+      },
+      "reasoning": "Need to verify if all required documentation is complete for stroke claim processing"
+    },
+    {
+      "sequence": 6,
+      "timestamp": "2025-08-14T11:53:22.651327Z",
+      "agent": "claim-orchestrator",
+      "action": "DECISION",
+      "target": null,
+      "decisionPoint": "documentation_complete",
+      "tool": null,
+      "input": {
+        "status": "incomplete",
+        "received": 3,
+        "pending": 3,
+        "recommendation": "request_missing_documents"
+      },
+      "output": "NO - Documentation is incomplete",
+      "reasoning": "Missing critical documents (CT scan, neurologist assessment) required for stroke claim processing"
+    },
+    {
+      "sequence": 7,
+      "timestamp": "2025-08-14T11:53:34.563792Z",
+      "agent": "claim-orchestrator",
+      "action": "DELEGATE",
+      "target": "communication",
+      "decisionPoint": null,
+      "tool": "mock_external_services",
+      "input": {
+        "claimId": "CI-20250113-01B2E",
+        "claimantInfo": {
+          "name": "Robert Johnson",
+          "contactInfo": "robert.j@email.com, +1-555-0789"
+        },
+        "communicationType": "missing_documents_request",
+        "message": "We have received your initial claim documentation. However, we still require your CT scan report, neurologist assessment, and rehabilitation plan to proceed with your claim. Please submit these documents at your earliest convenience.",
+        "missingDocuments": [
+          "CT scan report (ct_scan_johnson.pdf)",
+          "Neurologist assessment (neuro_assessment_johnson.pdf)",
+          "Rehabilitation plan (rehab_plan_johnson.pdf)"
+        ]
+      },
+      "output": {
+        "status": "sent",
+        "notificationId": "NOTIF-20250814135341",
+        "recipient": "robert.j@email.com",
+        "messageType": "missing_documents_request",
+        "deliveryStatus": "delivered",
+        "sentAt": "2025-08-14T13:53:41.198522Z",
+        "message": "We have received your initial claim documentation. However, we still require your CT scan report, neurologist assessment, and rehabilitation plan to proceed with your claim. Please submit these documents at your earliest convenience.",
+        "nextAction": "await_documentation"
+      },
+      "reasoning": "Need to notify claimant about missing documentation required to proceed with stroke claim"
+    },
+    {
+      "sequence": 8,
+      "timestamp": "2025-08-14T11:53:57.513688Z",
+      "agent": "claim-orchestrator",
+      "action": "WORKFLOW_END",
+      "target": null,
+      "decisionPoint": null,
+      "tool": null,
+      "input": null,
+      "output": "pending_docs",
+      "reasoning": "Critical illness claim CI-20250113-01B2E for Robert Johnson (stroke) registered successfully but workflow suspended pending receipt of missing documentation (CT scan report, neurologist assessment, rehabilitation plan)"
+    }
+  ]
+}
