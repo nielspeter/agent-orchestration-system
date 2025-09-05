@@ -93,7 +93,18 @@ async function customConfigExample() {
     .withModel('claude-3-5-haiku-latest')
     .withAgentsFrom(path.join(__dirname, '03-configuration', 'agents'))
     .withSafetyLimits({ maxIterations: 50 })
-    .withLogging({ verbose: true })
+    .withLogging({
+      display: 'both',
+      console: {
+        timestamps: true,
+        colors: true,
+        verbosity: 'verbose',
+      },
+      jsonl: {
+        enabled: true,
+        path: './conversations',
+      },
+    })
     .build();
 
   // Use the custom setup

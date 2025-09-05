@@ -81,14 +81,9 @@ export async function executeToolsSequentially(
 ): Promise<Message[]> {
   const results: Message[] = [];
 
-  ctx.logger.log({
-    timestamp: new Date().toISOString(),
-    agentName: ctx.agentName,
-    depth: ctx.executionContext.depth,
-    type: 'system',
-    content: `[SEQUENTIAL] Executing ${toolCalls.length} tool(s) sequentially`,
-    metadata: { tools: toolCalls.map((t) => t.function.name) },
-  });
+  ctx.logger.logSystemMessage(
+    `[SEQUENTIAL] Executing ${toolCalls.length} tool(s) sequentially: ${toolCalls.map((t) => t.function.name).join(', ')}`
+  );
 
   for (const toolCall of toolCalls) {
     const result = await executeSingleTool(toolCall, ctx, toolRegistry, executeDelegate);
@@ -109,14 +104,9 @@ export async function executeToolsConcurrently(
 ): Promise<Message[]> {
   const MAX_CONCURRENT = 10;
 
-  ctx.logger.log({
-    timestamp: new Date().toISOString(),
-    agentName: ctx.agentName,
-    depth: ctx.executionContext.depth,
-    type: 'system',
-    content: `[PARALLEL] Executing ${toolCalls.length} tool(s) in parallel (max ${MAX_CONCURRENT})`,
-    metadata: { tools: toolCalls.map((t) => t.function.name) },
-  });
+  ctx.logger.logSystemMessage(
+    `[PARALLEL] Executing ${toolCalls.length} tool(s) in parallel (max ${MAX_CONCURRENT}): ${toolCalls.map((t) => t.function.name).join(', ')}`
+  );
 
   const results: Message[] = [];
 
@@ -169,35 +159,14 @@ export async function executeSingleTool(
       result = await handleDelegation(args, ctx, executeDelegate);
     } else {
       // Regular tool execution
-      ctx.logger.log({
-        timestamp: new Date().toISOString(),
-        agentName: ctx.agentName,
-        depth: ctx.executionContext.depth,
-        type: 'tool',
-        content: `Executing ${tool.name}`,
-        metadata: {
-          toolName: tool.name,
-          args,
-        },
-      });
+      ctx.logger.logToolCall(ctx.agentName, tool.name, args);
 
       result = await tool.execute(args);
     }
 
     const toolExecutionTime = Date.now() - toolStartTime;
 
-    ctx.logger.log({
-      timestamp: new Date().toISOString(),
-      agentName: ctx.agentName,
-      depth: ctx.executionContext.depth,
-      type: 'result',
-      content: `${tool.name} completed in ${toolExecutionTime}ms`,
-      metadata: {
-        toolName: tool.name,
-        executionTime: toolExecutionTime,
-        result: result.error ? { error: result.error } : { success: true },
-      },
-    });
+    ctx.logger.logToolResult(ctx.agentName, tool.name, toolCall.id, result);
 
     return {
       role: 'tool',
@@ -229,19 +198,7 @@ async function handleDelegation(
   // PULL ARCHITECTURE: Don't pass parent messages to child agents
   // Child agents will use tools to gather the information they need
 
-  ctx.logger.log({
-    timestamp: new Date().toISOString(),
-    agentName: ctx.agentName,
-    depth: ctx.executionContext.depth,
-    type: 'delegation',
-    content: `[SIDECHAIN] Delegating to ${args.subagent_type}`,
-    metadata: {
-      subAgent: args.subagent_type,
-      toolName: 'Task',
-      prompt: args.prompt,
-      parentContextSize: 0,
-    },
-  });
+  ctx.logger.logDelegation(ctx.agentName, args.subagent_type, args.prompt);
 
   const subAgentResult = await executeDelegate(args.subagent_type, args.prompt, {
     ...ctx.executionContext,
@@ -263,14 +220,11 @@ function createErrorResult(
   ctx: MiddlewareContext,
   toolName?: string
 ): Message {
-  ctx.logger.log({
-    timestamp: new Date().toISOString(),
-    agentName: ctx.agentName,
-    depth: ctx.executionContext.depth,
-    type: 'error',
-    content: error,
-    metadata: toolName ? { toolName } : undefined,
-  });
+  if (toolName && ctx.agentName) {
+    ctx.logger.logToolError(ctx.agentName, toolName, 'unknown', new Error(error));
+  } else {
+    ctx.logger.logSystemMessage(`Error: ${error}`);
+  }
 
   return {
     role: 'tool',

@@ -2,7 +2,7 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import matter from 'gray-matter';
 import { AgentDefinition } from '../types';
-import { ConversationLogger } from './conversation-logger';
+import { AgentLogger } from './logging';
 
 export class AgentLoader {
   /**
@@ -40,19 +40,13 @@ you step in to ensure the task gets completed by returning useful results.`,
 
   constructor(
     private readonly agentsDir: string,
-    private readonly logger?: ConversationLogger
+    private readonly logger?: AgentLogger
   ) {}
 
   async loadAgent(name: string): Promise<AgentDefinition> {
     // Special case: return built-in default agent
     if (name === 'default') {
-      this.logger?.log({
-        timestamp: new Date().toISOString(),
-        agentName: 'system',
-        depth: 0,
-        type: 'system',
-        content: 'Using built-in default agent',
-      });
+      this.logger?.logSystemMessage('Using built-in default agent');
       return this.DEFAULT_AGENT;
     }
 
@@ -76,13 +70,9 @@ you step in to ensure the task gets completed by returning useful results.`,
       // Provide more helpful error messages
       if (error.code === 'ENOENT') {
         // FALLBACK: If agent not found, use default agent with enhanced context
-        this.logger?.log({
-          timestamp: new Date().toISOString(),
-          agentName: 'system',
-          depth: 0,
-          type: 'system',
-          content: `Agent '${name}' not found at ${agentPath}, using default agent as fallback`,
-        });
+        this.logger?.logSystemMessage(
+          `Agent '${name}' not found at ${agentPath}, using default agent as fallback`
+        );
 
         return {
           ...this.DEFAULT_AGENT,
@@ -115,13 +105,7 @@ you step in to ensure the task gets completed by returning useful results.`,
       // Other errors should be logged but still return default
       const errorMsg = `Failed to list agents: ${error}`;
       if (this.logger) {
-        this.logger.log({
-          timestamp: new Date().toISOString(),
-          agentName: 'AgentLoader',
-          depth: 0,
-          type: 'error',
-          content: errorMsg,
-        });
+        this.logger.logSystemMessage(errorMsg);
       } else {
         console.error(`❌ [AgentLoader] ERROR: ${errorMsg}`);
       }

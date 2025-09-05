@@ -62,7 +62,9 @@ ${JSON.stringify(claimNotification, null, 2)}`
     console.log(result);
 
     // The orchestrator should have saved results to the results directory
-    console.log('\n📄 Results saved to: examples/09-critical-illness-claim/results/claim-results.json');
+    console.log(
+      '\n📄 Results saved to: examples/09-critical-illness-claim/results/claim-results.json'
+    );
     console.log('Check the file for complete audit trail and processing details.');
   } catch (error) {
     console.error('❌ Processing error:', error);

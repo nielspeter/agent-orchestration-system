@@ -1,5 +1,5 @@
 import { AgentDefinition, BaseTool, ExecutionContext, Message } from '../types';
-import { ConversationLogger } from '../core/conversation-logger';
+import { AgentLogger } from '../core/logging';
 
 /**
  * Context object that flows through the middleware pipeline
@@ -28,7 +28,7 @@ export interface MiddlewareContext {
   result?: string;
 
   // Shared services
-  logger: ConversationLogger;
+  logger: AgentLogger;
   modelName: string;
   sessionId?: string;
 

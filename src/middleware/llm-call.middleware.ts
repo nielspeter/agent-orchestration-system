@@ -12,35 +12,17 @@ export function createLLMCallMiddleware(provider: AnthropicProvider): Middleware
     }
 
     // Log the call
-    ctx.logger.log({
-      timestamp: new Date().toISOString(),
-      agentName: ctx.agentName,
-      depth: ctx.executionContext.depth,
-      type: 'system',
-      content: `Calling ${provider.getModelName()} (iteration ${ctx.iteration})`,
-      metadata: {
-        messageCount: ctx.messages.length,
-        toolCount: ctx.tools.length,
-        willCacheCount: ctx.messages.length - 1,
-        parentContext: !!ctx.executionContext.parentMessages,
-      },
-    });
+    ctx.logger.logSystemMessage(`Calling ${provider.getModelName()} (iteration ${ctx.iteration})`);
 
     // Call LLM directly - no validation needed
     // Our code ensures tool results are always added immediately after tool calls
     ctx.response = await provider.complete(ctx.messages, ctx.tools);
 
     // Log response
-    ctx.logger.log({
-      timestamp: new Date().toISOString(),
-      agentName: ctx.agentName,
-      depth: ctx.executionContext.depth,
-      type: 'assistant',
-      content: ctx.response.content || '[No content, tool calls only]',
-      metadata: {
-        toolCallCount: ctx.response.tool_calls?.length || 0,
-      },
-    });
+    ctx.logger.logAssistantMessage(
+      ctx.agentName,
+      ctx.response.content || '[No content, tool calls only]'
+    );
 
     await next();
   };

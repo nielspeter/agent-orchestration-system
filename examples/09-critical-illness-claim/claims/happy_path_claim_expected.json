@@ -135,14 +135,26 @@
           "policy_document"
         ],
         "received_documents": [
-          {"type": "medical_diagnosis_report", "name": "diagnosis_report_smith.pdf", "status": "received"},
-          {"type": "pathology_results", "name": "pathology_smith.pdf", "status": "received"},
-          {"type": "oncologist_statement", "name": "oncologist_statement_smith.pdf", "status": "received"},
-          {"type": "treatment_plan", "name": "treatment_plan_smith.pdf", "status": "received"},
-          {"type": "hospital_admission_records", "name": "hospital_records_smith.pdf", "status": "received"},
-          {"type": "claim_form", "name": "claim_form_smith.pdf", "status": "received"},
-          {"type": "id_proof", "name": "id_smith.pdf", "status": "received"},
-          {"type": "policy_document", "name": "policy_smith.pdf", "status": "received"}
+          {
+            "type": "medical_diagnosis_report",
+            "name": "diagnosis_report_smith.pdf",
+            "status": "received"
+          },
+          { "type": "pathology_results", "name": "pathology_smith.pdf", "status": "received" },
+          {
+            "type": "oncologist_statement",
+            "name": "oncologist_statement_smith.pdf",
+            "status": "received"
+          },
+          { "type": "treatment_plan", "name": "treatment_plan_smith.pdf", "status": "received" },
+          {
+            "type": "hospital_admission_records",
+            "name": "hospital_records_smith.pdf",
+            "status": "received"
+          },
+          { "type": "claim_form", "name": "claim_form_smith.pdf", "status": "received" },
+          { "type": "id_proof", "name": "id_smith.pdf", "status": "received" },
+          { "type": "policy_document", "name": "policy_smith.pdf", "status": "received" }
         ]
       },
       "output": {

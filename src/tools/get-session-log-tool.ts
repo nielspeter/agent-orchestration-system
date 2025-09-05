@@ -75,7 +75,7 @@ export const createGetSessionLogTool = (currentSessionId?: string): Tool => ({
       } catch {
         return {
           content: null,
-          error: `Conversations directory not found`,
+          error: 'Conversations directory not found',
         };
       }
 

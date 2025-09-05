@@ -18,20 +18,7 @@ export function createErrorHandlerMiddleware(): Middleware {
       const errorStack = error instanceof Error ? error.stack : undefined;
 
       // Log the error with full context
-      ctx.logger.log({
-        timestamp: new Date().toISOString(),
-        agentName: ctx.agentName,
-        depth: ctx.executionContext.depth,
-        type: 'error',
-        content: `🚨 Middleware pipeline error: ${errorMessage}`,
-        metadata: {
-          error: errorMessage,
-          stack: errorStack,
-          iteration: ctx.iteration,
-          messageCount: ctx.messages.length,
-          hasResponse: !!ctx.response,
-        },
-      });
+      ctx.logger.logAgentError(ctx.agentName, new Error(errorMessage));
 
       // Set error state
       ctx.error = error instanceof Error ? error : new Error(errorMessage);

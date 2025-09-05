@@ -1,7 +1,8 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { BaseTool, Message, ToolCall } from '../types';
-import { ConversationLogger } from '../core/conversation-logger';
+import { AgentLogger } from '../core/logging';
 import { CacheMetricsCollector } from '../core/cache-metrics-collector';
+import { DEFAULT_MODEL } from '../config/constants';
 
 export interface CacheMetrics {
   inputTokens: number;
@@ -14,10 +15,10 @@ export interface CacheMetrics {
 export class AnthropicProvider {
   private readonly client: Anthropic;
   private readonly modelName: string;
-  private readonly logger?: ConversationLogger;
+  private readonly logger?: AgentLogger;
   private readonly metricsCollector: CacheMetricsCollector;
 
-  constructor(modelName: string = 'claude-3-5-haiku-latest', logger?: ConversationLogger) {
+  constructor(modelName: string = DEFAULT_MODEL, logger?: AgentLogger) {
     if (!modelName.startsWith('claude')) {
       throw new Error(`AnthropicProvider only supports Claude models, got: ${modelName}`);
     }
@@ -87,13 +88,7 @@ export class AnthropicProvider {
       return this.formatResponse(response);
     } catch (error) {
       if (this.logger) {
-        this.logger.log({
-          timestamp: new Date().toISOString(),
-          agentName: 'AnthropicProvider',
-          depth: 0,
-          type: 'error',
-          content: `API error: ${error}`,
-        });
+        this.logger.logSystemMessage(`API error: ${error}`);
       }
       throw error;
     }
@@ -313,17 +308,7 @@ export class AnthropicProvider {
         .join('\n');
 
       if (this.logger) {
-        this.logger.log({
-          timestamp: new Date().toISOString(),
-          agentName: 'AnthropicProvider',
-          depth: 0,
-          type: 'system',
-          content: cacheMetricsContent,
-          metadata: {
-            tokenCount: metrics.inputTokens + metrics.outputTokens,
-            cacheEfficiency: metrics.cacheReadTokens ? cacheEfficiency : 0,
-          },
-        });
+        this.logger.logSystemMessage(cacheMetricsContent);
       }
     }
   }

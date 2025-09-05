@@ -1,4 +1,4 @@
-import { ConversationLogger } from './conversation-logger';
+import { AgentLogger } from './logging';
 
 export interface DetailedCacheMetrics {
   // Request metadata
@@ -53,7 +53,7 @@ export class CacheMetricsCollector {
   private readonly sessionId = this.generateSessionId();
   private readonly sessionStart = Date.now();
 
-  constructor(private readonly logger?: ConversationLogger) {}
+  constructor(private readonly logger?: AgentLogger) {}
 
   /**
    * Record a cache metrics entry
@@ -113,20 +113,9 @@ export class CacheMetricsCollector {
 
     // Log metrics
     if (this.logger) {
-      this.logger.log({
-        timestamp,
-        agentName: 'CacheMetrics',
-        depth: 0,
-        type: 'system',
-        content: `Cache metrics: ${Math.round(savingsPercentage)}% savings, ${Math.round(hitRate * 100)}% hit rate`,
-        metadata: {
-          cacheHitRate: hitRate,
-          savingsPercentage: savingsPercentage,
-          totalCost: totalCost,
-          savings: savings,
-          responseTime: detailedMetrics.responseTimeMs,
-        },
-      });
+      this.logger.logSystemMessage(
+        `Cache metrics: ${Math.round(savingsPercentage)}% savings, ${Math.round(hitRate * 100)}% hit rate`
+      );
     }
   }
 
@@ -192,16 +181,9 @@ export class CacheMetricsCollector {
     const summary = this.getSessionSummary();
 
     if (this.logger && summary.totalRequests > 0) {
-      this.logger.log({
-        timestamp: new Date().toISOString(),
-        agentName: 'CacheMetrics',
-        depth: 0,
-        type: 'result',
-        content: `Session Summary: ${summary.totalRequests} requests, $${summary.totalSavings.toFixed(4)} saved (${Math.round((summary.totalSavings / (summary.totalCost + summary.totalSavings)) * 100)}%)`,
-        metadata: {
-          sessionSummary: summary,
-        },
-      });
+      this.logger.logSystemMessage(
+        `Session Summary: ${summary.totalRequests} requests, $${summary.totalSavings.toFixed(4)} saved (${Math.round((summary.totalSavings / (summary.totalCost + summary.totalSavings)) * 100)}%)`
+      );
     }
   }
 }

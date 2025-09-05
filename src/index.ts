@@ -7,7 +7,7 @@ import { AgentExecutor } from './core/agent-executor';
 import { createTaskTool } from './tools/task-tool';
 import { createListTool, createReadTool, createWriteTool } from './tools/file-tools';
 import { createTodoWriteTool } from './tools/todowrite-tool';
-import { LoggerFactory } from './core/conversation-logger';
+import { LoggerFactory } from './core/logging';
 import { TodoManager } from './core/todo-manager';
 import { DEFAULT_SYSTEM_CONFIG, ResolvedSystemConfig } from './config/types';
 

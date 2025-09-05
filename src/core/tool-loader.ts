@@ -1,7 +1,7 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { BaseTool, ToolResult } from '@/types';
-import { ConversationLogger } from './conversation-logger';
+import { AgentLogger } from './logging';
 import { createShellTool } from '@/tools/shell-tool';
 
 /**
@@ -38,7 +38,7 @@ export class ToolLoader {
 
   constructor(
     private readonly toolsDir: string,
-    private readonly logger?: ConversationLogger
+    private readonly logger?: AgentLogger
   ) {
     this.shellTool = createShellTool();
   }
@@ -73,13 +73,7 @@ export class ToolLoader {
     // Use provided name or fallback to filename
     const toolName = metadata.name || name;
 
-    this.logger?.log({
-      timestamp: new Date().toISOString(),
-      agentName: 'system',
-      depth: 0,
-      type: 'system',
-      content: `Loaded tool script: ${toolName} from ${scriptPath}`,
-    });
+    this.logger?.logSystemMessage(`Loaded tool script: ${toolName} from ${scriptPath}`);
 
     // Create a tool that executes the script
     return this.createScriptTool(toolName, scriptPath, metadata);

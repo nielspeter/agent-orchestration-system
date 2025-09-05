@@ -2,7 +2,7 @@ import { AgentLoader } from './agent-loader';
 import { ToolRegistry } from './tool-registry';
 import { AnthropicProvider } from '../llm/anthropic-provider';
 import { ExecutionContext } from '../types';
-import { ConversationLogger, LoggerFactory } from './conversation-logger';
+import { AgentLogger, LoggerFactory } from './logging';
 import { ResolvedSystemConfig } from '../config/types';
 import { MiddlewarePipeline } from '../middleware/pipeline';
 import { MiddlewareContext } from '../middleware/middleware-types';
@@ -27,7 +27,7 @@ import { createErrorHandlerMiddleware } from '../middleware/error-handler.middle
  * ```
  */
 export class AgentExecutor {
-  private readonly logger: ConversationLogger;
+  private readonly logger: AgentLogger;
   private readonly provider: AnthropicProvider;
   private readonly pipeline: MiddlewarePipeline;
   private readonly sessionId?: string;
@@ -47,7 +47,7 @@ export class AgentExecutor {
     private readonly toolRegistry: ToolRegistry,
     private readonly config: ResolvedSystemConfig,
     modelName?: string,
-    logger?: ConversationLogger,
+    logger?: AgentLogger,
     sessionId?: string
   ) {
     this.sessionId = sessionId;
@@ -94,9 +94,9 @@ export class AgentExecutor {
   async execute(agentName: string, prompt: string, context?: ExecutionContext): Promise<string> {
     const startTime = Date.now();
 
-    // Initialize JSONL logger with summary if first execution
-    if (!context && this.logger.initialize) {
-      await this.logger.initialize(
+    // Log agent execution start if first execution
+    if (!context) {
+      this.logger.logSystemMessage(
         `Agent Orchestration: ${agentName} - ${prompt.substring(0, 100)}`
       );
     }
@@ -112,30 +112,15 @@ export class AgentExecutor {
     };
 
     // Log execution start
-    this.logger.log({
-      timestamp: new Date().toISOString(),
+    this.logger.logAgentStart(
       agentName,
-      depth: execContext.depth,
-      type: 'system',
-      content: `Starting execution with ${this.provider.getModelName()}${execContext.parentAgent ? ` (delegated from ${execContext.parentAgent})` : ''}`,
-      metadata: {
-        parentAgent: execContext.parentAgent,
-        isSidechain: execContext.isSidechain,
-        model: this.provider.getModelName(),
-        hasParentContext: !!execContext.parentMessages,
-        parentMessageCount: execContext.parentMessages?.length || 0,
-      },
-    });
+      execContext.depth,
+      `Starting execution with ${this.provider.getModelName()}${execContext.parentAgent ? ` (delegated from ${execContext.parentAgent})` : ''}`
+    );
 
     // Add depth visualization
     const depthIndicator = '│ '.repeat(execContext.depth);
-    this.logger.log({
-      timestamp: new Date().toISOString(),
-      agentName,
-      depth: execContext.depth,
-      type: 'system',
-      content: `${depthIndicator}→ Starting ${agentName}`,
-    });
+    this.logger.logSystemMessage(`${depthIndicator}→ Starting ${agentName}`);
 
     // Create middleware context
     const middlewareContext: MiddlewareContext = {
@@ -186,23 +171,10 @@ export class AgentExecutor {
 
     // Log completion
     const totalTime = Date.now() - startTime;
-    this.logger.log({
-      timestamp: new Date().toISOString(),
-      agentName,
-      depth: execContext.depth,
-      type: 'result',
-      content: `Execution completed in ${totalTime}ms`,
-      metadata: {
-        executionTime: totalTime,
-        iterations: middlewareContext.iteration,
-        model: this.provider.getModelName(),
-        totalMessages: middlewareContext.messages.length,
-        cachedMessages: execContext.parentMessages?.length || 0,
-      },
-    });
+    this.logger.logAgentComplete(agentName, totalTime);
 
     // Flush logger
-    await this.logger.flush();
+    this.logger.flush();
 
     return middlewareContext.result || 'No response generated';
   }

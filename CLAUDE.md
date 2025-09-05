@@ -12,6 +12,12 @@ npm run lint         # Run ESLint
 npm run format       # Apply Prettier formatting
 ```
 
+**IMPORTANT**: After implementing any feature or making code changes, ALWAYS run:
+1. `npm run build` (tsc) - Ensure TypeScript compiles without errors
+2. `npm run lint` - Check for code quality issues
+
+These checks must pass before considering any feature complete.
+
 ### Testing
 ```bash
 npm test             # Run unit tests only (fast, no API)
@@ -86,6 +92,7 @@ When agent A delegates to agent B:
 - **USE type guards** - Proper runtime type checking with type predicates
 - **Keep it DRY** - This is an MVP/POC, avoid unnecessary abstractions
 - **Prefer explicit types** - Don't rely on inference for public APIs
+- **Follow YAGNI** - "You Aren't Gonna Need It" - Don't add functionality until it's actually needed
 
 **Documentation Best Practices**:
 - **Use Mermaid diagrams** - Prefer Mermaid diagrams over ASCII art in markdown files

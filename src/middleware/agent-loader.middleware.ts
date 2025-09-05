@@ -17,16 +17,9 @@ export function createAgentLoaderMiddleware(
     ctx.tools = toolRegistry.filterForAgent(ctx.agent);
 
     // Log
-    ctx.logger.log({
-      timestamp: new Date().toISOString(),
-      agentName: ctx.agentName,
-      depth: ctx.executionContext.depth,
-      type: 'system',
-      content: `Agent loaded: ${ctx.agent.name}`,
-      metadata: {
-        toolCount: Array.isArray(ctx.agent.tools) ? ctx.agent.tools.length : 'all',
-      },
-    });
+    ctx.logger.logSystemMessage(
+      `Agent loaded: ${ctx.agent.name} with ${Array.isArray(ctx.agent.tools) ? ctx.agent.tools.length : 'all'} tools`
+    );
 
     await next();
   };

@@ -44,19 +44,9 @@ export function createToolExecutionMiddleware(
     const toolGroups = groupToolsByConcurrency(toolCalls, toolRegistry);
 
     // Log execution strategy
-    ctx.logger.log({
-      timestamp: new Date().toISOString(),
-      agentName: ctx.agentName,
-      depth: ctx.executionContext.depth,
-      type: 'system',
-      content: `Executing ${toolCalls.length} tools in ${toolGroups.length} group(s)`,
-      metadata: {
-        groups: toolGroups.map((g) => ({
-          isConcurrent: g.isConcurrencySafe,
-          tools: g.tools.map((t) => t.function.name),
-        })),
-      },
-    });
+    ctx.logger.logSystemMessage(
+      `Executing ${toolCalls.length} tools in ${toolGroups.length} group(s)`
+    );
 
     // Execute tool groups with appropriate strategy
     for (const group of toolGroups) {
@@ -86,13 +76,7 @@ function validateToolCallIds(toolCalls: ToolCall[], ctx: MiddlewareContext): voi
 
   for (const toolCall of toolCalls) {
     if (seenIds.has(toolCall.id)) {
-      ctx.logger.log({
-        timestamp: new Date().toISOString(),
-        agentName: ctx.agentName,
-        depth: ctx.executionContext.depth,
-        type: 'system',
-        content: `⚠️ Duplicate tool call ID detected: ${toolCall.id}`,
-      });
+      ctx.logger.logSystemMessage(`⚠️ Duplicate tool call ID detected: ${toolCall.id}`);
     }
     seenIds.add(toolCall.id);
   }

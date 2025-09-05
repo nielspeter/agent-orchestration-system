@@ -7,7 +7,6 @@
  */
 
 import * as fs from 'fs/promises';
-import * as os from 'os';
 import { v4 as uuidv4 } from 'uuid';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
@@ -16,7 +15,7 @@ import { ToolRegistry } from '@/core/tool-registry';
 import { ToolLoader } from '@/core/tool-loader';
 import { AgentExecutor } from '@/core/agent-executor';
 import { TodoManager } from '@/core/todo-manager';
-import { LoggerFactory } from '@/core/conversation-logger';
+import { LoggerFactory } from '@/core/logging';
 import { createListTool, createReadTool, createWriteTool } from '@/tools/file-tools';
 import { createTaskTool } from '@/tools/task-tool';
 import { createTodoWriteTool } from '@/tools/todowrite-tool';
@@ -73,6 +72,10 @@ interface FileConfig {
     builtin?: string[];
   };
   mcpServers?: Record<string, MCPConfig['servers'][string]>;
+  logging?: {
+    display?: 'console' | 'jsonl' | 'both' | 'none';
+    verbosity?: 'minimal' | 'normal' | 'verbose';
+  };
 }
 
 /**
@@ -276,8 +279,11 @@ export class AgentSystemBuilder {
       resolvedConfig.session.sessionId = uuidv4();
     }
 
-    // Create logger
-    const logger = LoggerFactory.createCombinedLogger(resolvedConfig.session.sessionId);
+    // Create logger with resolved logging config
+    const logger = LoggerFactory.createFromConfig(
+      resolvedConfig.logging,
+      resolvedConfig.session.sessionId
+    );
 
     // Initialize agent loader
     const allAgentDirs = [
@@ -319,8 +325,9 @@ export class AgentSystemBuilder {
       }
     }
 
-    // Register session log tool if session ID is configured
-    if (resolvedConfig.session.sessionId) {
+    // Register session log tool only if we have builtin tools configured
+    // This prevents the tool from being registered in minimal configuration
+    if (resolvedConfig.session.sessionId && resolvedConfig.tools.builtin.length > 0) {
       toolRegistry.register(createGetSessionLogTool(resolvedConfig.session.sessionId));
     }
 
@@ -528,7 +535,24 @@ export class AgentSystemBuilder {
       };
     }
 
-    return new AgentSystemBuilder(systemConfig);
+    // Add logging config if provided
+    if (config.logging) {
+      systemConfig.logging = {
+        display: config.logging.display || 'both',
+        jsonl: {
+          enabled: true,
+          path: './conversations',
+        },
+        console: {
+          timestamps: true,
+          colors: true,
+          verbosity: config.logging.verbosity || 'normal',
+        },
+      };
+    }
+
+    const builder = new AgentSystemBuilder(systemConfig);
+    return builder;
   }
 
   /**
@@ -557,7 +581,18 @@ export class AgentSystemBuilder {
       agents: { directories: ['./agents'] },
       tools: { builtin: ['read', 'write', 'list', 'task', 'todowrite'] },
       caching: { enabled: true, maxCacheBlocks: 4, cacheTTLMinutes: 5 },
-      logging: { logDir: 'logs', verbose: true },
+      logging: {
+        display: 'both',
+        jsonl: {
+          enabled: true,
+          path: './conversations',
+        },
+        console: {
+          timestamps: true,
+          colors: true,
+          verbosity: 'verbose',
+        },
+      },
     });
   }
 

@@ -10,6 +10,10 @@
  */
 
 import { BaseTool } from '@/types';
+import type { LoggingConfig } from '@/core/logging';
+
+// Re-export LoggingConfig from logging module
+export type { LoggingConfig };
 
 /**
  * Agent definition
@@ -91,20 +95,6 @@ export interface CachingConfig {
   maxCacheBlocks: number;
   /** Cache TTL in minutes */
   cacheTTLMinutes: number;
-}
-
-/**
- * Logging configuration
- */
-export interface LoggingConfig {
-  /** Log directory path */
-  logDir: string;
-  /** Enable verbose logging */
-  verbose?: boolean;
-  /** Maximum log file size in MB */
-  maxLogFileSizeMB?: number;
-  /** Number of log files to keep */
-  maxLogFiles?: number;
 }
 
 /**
@@ -227,10 +217,16 @@ export const DEFAULT_SYSTEM_CONFIG: ResolvedSystemConfig = {
   },
 
   logging: {
-    logDir: 'logs',
-    verbose: false,
-    maxLogFileSizeMB: 10,
-    maxLogFiles: 5,
+    display: 'both',
+    jsonl: {
+      enabled: true,
+      path: './conversations',
+    },
+    console: {
+      timestamps: true,
+      colors: true,
+      verbosity: 'normal',
+    },
   },
 
   session: {
@@ -259,7 +255,18 @@ export const TEST_CONFIG_MINIMAL: SystemConfig = {
     maxDepth: 2,
   },
   caching: { enabled: false, maxCacheBlocks: 0, cacheTTLMinutes: 0 },
-  logging: { logDir: 'test-logs', verbose: false },
+  logging: {
+    display: 'none',
+    jsonl: {
+      enabled: false,
+      path: './test-logs',
+    },
+    console: {
+      timestamps: false,
+      colors: false,
+      verbosity: 'minimal',
+    },
+  },
 };
 
 /**

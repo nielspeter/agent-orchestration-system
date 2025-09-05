@@ -39,12 +39,20 @@
           }
         },
         "documents": [
-          {"type": "hospital_discharge_summary", "name": "discharge_johnson.pdf", "status": "received"},
-          {"type": "claim_form", "name": "claim_form_johnson.pdf", "status": "received"},
-          {"type": "id_proof", "name": "id_johnson.pdf", "status": "received"},
-          {"type": "CT_scan_report", "name": "ct_scan_johnson.pdf", "status": "pending"},
-          {"type": "neurologist_assessment", "name": "neuro_assessment_johnson.pdf", "status": "pending"},
-          {"type": "rehabilitation_plan", "name": "rehab_plan_johnson.pdf", "status": "pending"}
+          {
+            "type": "hospital_discharge_summary",
+            "name": "discharge_johnson.pdf",
+            "status": "received"
+          },
+          { "type": "claim_form", "name": "claim_form_johnson.pdf", "status": "received" },
+          { "type": "id_proof", "name": "id_johnson.pdf", "status": "received" },
+          { "type": "CT_scan_report", "name": "ct_scan_johnson.pdf", "status": "pending" },
+          {
+            "type": "neurologist_assessment",
+            "name": "neuro_assessment_johnson.pdf",
+            "status": "pending"
+          },
+          { "type": "rehabilitation_plan", "name": "rehab_plan_johnson.pdf", "status": "pending" }
         ],
         "diagnosisDate": "2025-01-02T00:00:00Z"
       },
@@ -151,12 +159,20 @@
         "claimId": "CI-20250113-01B2E",
         "claimType": "stroke",
         "documents": [
-          {"type": "hospital_discharge_summary", "name": "discharge_johnson.pdf", "status": "received"},
-          {"type": "claim_form", "name": "claim_form_johnson.pdf", "status": "received"},
-          {"type": "id_proof", "name": "id_johnson.pdf", "status": "received"},
-          {"type": "CT_scan_report", "name": "ct_scan_johnson.pdf", "status": "pending"},
-          {"type": "neurologist_assessment", "name": "neuro_assessment_johnson.pdf", "status": "pending"},
-          {"type": "rehabilitation_plan", "name": "rehab_plan_johnson.pdf", "status": "pending"}
+          {
+            "type": "hospital_discharge_summary",
+            "name": "discharge_johnson.pdf",
+            "status": "received"
+          },
+          { "type": "claim_form", "name": "claim_form_johnson.pdf", "status": "received" },
+          { "type": "id_proof", "name": "id_johnson.pdf", "status": "received" },
+          { "type": "CT_scan_report", "name": "ct_scan_johnson.pdf", "status": "pending" },
+          {
+            "type": "neurologist_assessment",
+            "name": "neuro_assessment_johnson.pdf",
+            "status": "pending"
+          },
+          { "type": "rehabilitation_plan", "name": "rehab_plan_johnson.pdf", "status": "pending" }
         ]
       },
       "output": {

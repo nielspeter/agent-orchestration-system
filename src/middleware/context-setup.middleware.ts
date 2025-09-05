@@ -79,13 +79,7 @@ Use these responses to coordinate the overall task completion.`;
 
     // Log user prompt (only on first iteration)
     if (ctx.iteration === 1) {
-      ctx.logger.log({
-        timestamp: new Date().toISOString(),
-        agentName: ctx.agentName,
-        depth: ctx.executionContext.depth,
-        type: 'user',
-        content: ctx.prompt,
-      });
+      ctx.logger.logUserMessage(ctx.prompt);
     }
 
     await next();

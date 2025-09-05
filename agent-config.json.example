@@ -29,5 +29,12 @@
     "maxDepth": 10,
     "maxIterations": 100,
     "timeout": 300000
+  },
+
+  "logging": {
+    "// display options": "console | jsonl | both | none",
+    "display": "both",
+    "// verbosity options": "minimal | normal | verbose",
+    "verbosity": "normal"
   }
 }

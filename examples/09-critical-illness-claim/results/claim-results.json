@@ -26,8 +26,8 @@
       "agent": "notification-categorization",
       "action": "WORKFLOW_START",
       "decisionPoint": "Initial Categorization",
-      "input": {"notification": {"id": "NOTIF-001", "type": "critical_illness_claim"}},
-      "output": {"isCriticalIllness": true, "category": "critical_illness"},
+      "input": { "notification": { "id": "NOTIF-001", "type": "critical_illness_claim" } },
+      "output": { "isCriticalIllness": true, "category": "critical_illness" },
       "reasoning": "Claim meets critical illness categorization criteria"
     },
     {
@@ -36,8 +36,8 @@
       "agent": "claim-registration",
       "action": "DELEGATE",
       "target": "claim-registration",
-      "input": {"claimId": "critical_illness-20250113-1D5C8"},
-      "output": {"status": "registered", "registrationSuccess": true},
+      "input": { "claimId": "critical_illness-20250113-1D5C8" },
+      "output": { "status": "registered", "registrationSuccess": true },
       "reasoning": "Claim successfully registered in system"
     },
     {
@@ -46,8 +46,8 @@
       "agent": "documentation-verification",
       "action": "DELEGATE",
       "target": "documentation-verification",
-      "input": {"documents": ["medical_diagnosis_report", "pathology_results"]},
-      "output": {"documentationComplete": true, "completenessPercentage": 100},
+      "input": { "documents": ["medical_diagnosis_report", "pathology_results"] },
+      "output": { "documentationComplete": true, "completenessPercentage": 100 },
       "reasoning": "All required documents verified and received"
     },
     {
@@ -56,8 +56,8 @@
       "agent": "policy-assessment",
       "action": "DECISION",
       "decisionPoint": "Coverage Evaluation",
-      "input": {"condition": "Stage 2 Breast Cancer"},
-      "output": {"coverageDecision": "covered", "recommendedAction": "approve"},
+      "input": { "condition": "Stage 2 Breast Cancer" },
+      "output": { "coverageDecision": "covered", "recommendedAction": "approve" },
       "reasoning": "Condition meets policy coverage requirements"
     },
     {
@@ -66,8 +66,8 @@
       "agent": "payment-approval",
       "action": "WORKFLOW_END",
       "decisionPoint": "Final Payment Approval",
-      "input": {"policyNumber": "POL-54321", "coverageAmount": 54421000},
-      "output": {"paymentApproved": true, "paymentAmount": 54421000},
+      "input": { "policyNumber": "POL-54321", "coverageAmount": 54421000 },
+      "output": { "paymentApproved": true, "paymentAmount": 54421000 },
       "reasoning": "Full claim amount approved and processed"
     }
   ]
