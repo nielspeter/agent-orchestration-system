@@ -17,6 +17,7 @@ import { AgentExecutor } from '@/core/agent-executor';
 import { TodoManager } from '@/core/todo-manager';
 import { LoggerFactory } from '@/core/logging';
 import { createListTool, createReadTool, createWriteTool } from '@/tools/file-tools';
+import { createGrepTool } from '@/tools/grep-tool';
 import { createTaskTool } from '@/tools/task-tool';
 import { createTodoWriteTool } from '@/tools/todowrite-tool';
 import { createShellTool } from '@/tools/shell-tool';
@@ -310,6 +311,9 @@ export class AgentSystemBuilder {
         case 'list':
           toolRegistry.register(createListTool());
           break;
+        case 'grep':
+          toolRegistry.register(createGrepTool());
+          break;
         case 'task':
           toolRegistry.register(await createTaskTool(agentLoader));
           break;
@@ -579,7 +583,7 @@ export class AgentSystemBuilder {
     return new AgentSystemBuilder({
       model: DEFAULT_SYSTEM_CONFIG.model,
       agents: { directories: ['./agents'] },
-      tools: { builtin: ['read', 'write', 'list', 'task', 'todowrite'] },
+      tools: { builtin: ['read', 'write', 'list', 'grep', 'task', 'todowrite'] },
       caching: { enabled: true, maxCacheBlocks: 4, cacheTTLMinutes: 5 },
       logging: {
         display: 'both',

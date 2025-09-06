@@ -47,14 +47,15 @@ The system uses a **Chain of Responsibility pattern** where each middleware hand
 1. **ErrorHandlerMiddleware** - Catches all errors, provides fallback responses
 2. **AgentLoaderMiddleware** - Loads agent from markdown, filters available tools
 3. **ContextSetupMiddleware** - Initializes conversation with system prompt
-4. **SafetyChecksMiddleware** - Enforces limits (maxIterations, maxDepth, token estimates)
-5. **LLMCallMiddleware** - Calls Anthropic API with ephemeral caching
-6. **ToolExecutionMiddleware** - Executes tools and handles agent delegation
+4. **ProviderSelectionMiddleware** - Selects LLM provider based on model (Anthropic, OpenRouter, etc.)
+5. **SafetyChecksMiddleware** - Enforces limits (maxIterations, maxDepth, token estimates)
+6. **LLMCallMiddleware** - Calls selected LLM provider with caching support
+7. **ToolExecutionMiddleware** - Executes tools and handles agent delegation
 
 ### Pull Architecture (Claude Code Style)
 When agent A delegates to agent B:
 - B receives **only the task**, not parent's conversation history
-- B uses tools (Read, Grep, List) to gather needed information
+- B uses tools (Read, Write, List, Grep, Task) to gather needed information
 - Anthropic's cache makes repeated reads efficient (90% cost savings)
 - Each agent maintains independent context
 
@@ -70,8 +71,7 @@ When agent A delegates to agent B:
 
 **Configuration via Builder Pattern**: `AgentSystemBuilder` provides fluent API with presets:
 - `.minimal()` - Just AgentExecutor, no tools
-- `.default()` - Standard tools (Read, Write, Task)  
-- `.default()` - All tools including MCP support
+- `.default()` - Standard tools (Read, Write, List, Grep, Task, TodoWrite)
 - `.forTest()` - Optimized for testing
 
 **Safety First**: Hard limits prevent runaway execution:
@@ -138,23 +138,35 @@ const result = response as ToolResult; // Avoid this!
 
 ### Known Issues & Limitations
 
-1. **Tight Coupling**: AgentExecutor directly instantiates AnthropicProvider (should use dependency injection)
+1. ~~**Tight Coupling**: AgentExecutor directly instantiates AnthropicProvider~~ ✅ FIXED - Now uses ProviderFactory
 2. **Console.log Usage**: 6 instances in production code (should use proper logger)
 3. **No Retry Logic**: API failures aren't retried
-4. **File Access**: No path restrictions on Read/Write tools
+4. **File Access**: No path restrictions on Read/Write/Grep tools
 5. **Large Files**: Several files >400 lines need splitting
 
 ### Environment Setup
 
-Required:
+Required (at least one):
 ```bash
-ANTHROPIC_API_KEY=your-key-here
+ANTHROPIC_API_KEY=your-key-here     # For Claude models
+OPENROUTER_API_KEY=your-key-here    # For OpenRouter models
 ```
 
 Optional:
 ```bash
 NODE_ENV=development|production
 DISABLE_PROMPT_CACHING=true  # Disable Anthropic caching
+```
+
+Multi-Provider Configuration:
+```bash
+# Copy and customize providers config
+cp providers-config.example.json providers-config.json
+
+# Models can be specified as:
+# - Direct: "claude-3-5-haiku-latest"
+# - Alias: "sonnet" (maps to claude-3-5-sonnet-latest)
+# - Provider prefix: "openrouter/llama-3.1-70b"
 ```
 
 For tests, create `.env.test` (not in git):

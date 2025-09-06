@@ -3,10 +3,12 @@
 A TypeScript implementation of Claude Code's agent orchestration system using **pull architecture** where child agents autonomously gather information via tools rather than inheriting parent context. Built with a **middleware pipeline architecture** (Chain of Responsibility pattern) and leverages Anthropic's ephemeral caching for efficiency.
 
 ## 🆕 Recent Updates
-- **Unified Configuration System**: New `AgentSystemBuilder` with fluent API
-- **MCP Support**: Integrated Model Context Protocol for external tool servers
-- **Comprehensive Testing**: Separate unit and integration test suites
-- **Enhanced Examples**: Streamlined, numbered examples demonstrating key features
+- **Multi-Provider Support**: Dynamic provider selection (Anthropic, OpenRouter) with model aliases
+- **Grep Tool**: Fast file searching using ripgrep for pattern matching
+- **Improved Error Handling**: Clear messages for missing API keys and unavailable models
+- **Logging Refactor**: Renamed from "conversations" to "logs" for clarity
+- **Provider Factory**: Automatic provider selection based on model name
+- **Fail-Fast Behavior**: Agents now fail immediately when required models are unavailable
 
 ## 🎯 Architecture Highlights
 
@@ -19,6 +21,7 @@ The monolithic 500-line `AgentExecutor` has been refactored into a clean pipelin
 - **ErrorHandlerMiddleware** - Global error boundary
 - **AgentLoaderMiddleware** - Loads agents and filters tools
 - **ContextSetupMiddleware** - Manages conversation context
+- **ProviderSelectionMiddleware** - Selects LLM provider (Anthropic, OpenRouter, etc.)
 - **SafetyChecksMiddleware** - Enforces limits (depth, iterations, tokens)
 - **LLMCallMiddleware** - Handles LLM communication
 - **ToolExecutionMiddleware** - Orchestrates tool execution
@@ -31,7 +34,7 @@ The monolithic 500-line `AgentExecutor` has been refactored into a clean pipelin
 ### Pull Architecture with Caching (Claude Code Style)
 When agent A delegates to agent B:
 1. B receives **minimal context** (~5-500 tokens) - just the task prompt
-2. B uses tools (Read, Grep, List) to **pull** information it needs
+2. B uses tools (Read, Write, List, Grep, Task) to **pull** information it needs
 3. Anthropic's cache makes "redundant" reads efficient (90% cost savings)
 4. Clean separation - each agent has independent context
 
@@ -41,9 +44,12 @@ When agent A delegates to agent B:
 # Install dependencies
 npm install
 
-# Set up Anthropic API key
+# Set up API keys (at least one required)
 cp .env.example .env
-# Edit .env with your ANTHROPIC_API_KEY
+# Edit .env with your ANTHROPIC_API_KEY or OPENROUTER_API_KEY
+
+# Optional: Configure providers
+cp providers-config.example.json providers-config.json
 
 # Build the project
 npm run build
@@ -294,7 +300,7 @@ npm run test:unit
 ```bash
 npm run test:integration
 ```
-- Requires real Anthropic API key
+- Requires real API key (Anthropic or OpenRouter)
 - Tests actual agent orchestration
 - Tests caching behavior
 - Tests parallel execution

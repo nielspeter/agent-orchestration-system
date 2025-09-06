@@ -36,8 +36,8 @@ coverage-integration/
 logs/
 
 # Temporary files
-tmp/
 temp/
+tmp/
+todos/
 *.tmp.env.test
 .env.test.local
-/examples/06-werewolf-game/werewolf-game.md

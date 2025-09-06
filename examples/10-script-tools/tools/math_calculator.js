@@ -7,7 +7,7 @@
  * @param {number} b - Second number
  */
 
-import {readFileSync} from 'fs';
+import { readFileSync } from 'fs';
 
 const input = JSON.parse(readFileSync(0, 'utf-8'));
 const { operation, a, b } = input;

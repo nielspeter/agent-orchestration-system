@@ -251,10 +251,7 @@
       "output": {
         "documentationComplete": false,
         "completenessPercentage": 89,
-        "missingDocuments": [
-          "attending_physician_statement",
-          "medical_bills_receipts"
-        ],
+        "missingDocuments": ["attending_physician_statement", "medical_bills_receipts"],
         "nextAction": "request_missing"
       },
       "reasoning": "Delegated to documentation-verification agent to check completeness. Agent found documentation 89% complete but missing attending physician statement and medical bills/receipts."
@@ -270,10 +267,7 @@
       "input": {
         "documentationComplete": false,
         "completenessPercentage": 89,
-        "missingDocuments": [
-          "attending_physician_statement",
-          "medical_bills_receipts"
-        ]
+        "missingDocuments": ["attending_physician_statement", "medical_bills_receipts"]
       },
       "output": "NO - Request missing documents",
       "reasoning": "Documentation verification shows 89% completeness but missing critical documents: attending physician statement and medical bills/receipts. Cannot proceed without complete documentation. Routing to communication agent."
@@ -293,10 +287,7 @@
           "policyNumber": "POL-54321",
           "contactInfo": "jane.smith@email.com, +1-555-0123"
         },
-        "missingDocuments": [
-          "attending_physician_statement",
-          "medical_bills_receipts"
-        ],
+        "missingDocuments": ["attending_physician_statement", "medical_bills_receipts"],
         "communicationType": "missing_documentation"
       },
       "output": {
