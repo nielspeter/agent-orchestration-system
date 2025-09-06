@@ -1,5 +1,6 @@
 ---
 name: orchestrator
+behavior: balanced
 tools: ["*"]
 ---
 

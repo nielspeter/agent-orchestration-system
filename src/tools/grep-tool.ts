@@ -1,5 +1,5 @@
 import { execSync } from 'child_process';
-import { BaseTool, ToolResult } from '../types';
+import { BaseTool, ToolResult } from '@/types';
 
 /**
  * Grep tool - Search for patterns in files using ripgrep

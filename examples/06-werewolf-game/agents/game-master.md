@@ -1,5 +1,6 @@
 ---
 name: game-master
+behavior: creative
 tools: ["*"]
 ---
 

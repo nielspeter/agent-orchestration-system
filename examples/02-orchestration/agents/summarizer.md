@@ -1,5 +1,6 @@
 ---
 name: summarizer
+behavior: precise
 tools: ["read"]
 ---
 

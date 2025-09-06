@@ -53,7 +53,7 @@ export class OpenAICompatibleProvider implements ILLMProvider {
         model: this.modelName,
         messages: openAIMessages,
         tools: openAITools,
-        temperature: 0.7,
+        temperature: 0.5, // Default 0.5 for better agent behavior
       });
 
       const choice = response.choices[0];

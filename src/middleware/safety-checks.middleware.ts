@@ -1,5 +1,5 @@
 import { Middleware } from './middleware-types';
-import { SafetyConfig } from '../config/types';
+import { SafetyConfig } from '@/config/types';
 
 /**
  * Performs safety checks (depth, iterations, tokens)
@@ -32,9 +32,14 @@ export function createSafetyChecksMiddleware(safetyLimits: SafetyConfig): Middle
 
     // Check token estimate
     const estimatedTokens = JSON.stringify(ctx.messages).length / 4;
-    const maxTokens = safetyLimits.maxTokensEstimate || safetyLimits.maxTokens || 100000;
+    // Use model's context length if available, otherwise fall back to config or default
+    const maxTokens =
+      ctx.modelConfig?.contextLength ||
+      safetyLimits.maxTokensEstimate ||
+      safetyLimits.maxTokens ||
+      100000;
     if (estimatedTokens > maxTokens) {
-      const msg = `Token limit estimate exceeded: ~${Math.round(estimatedTokens)} tokens`;
+      const msg = `Token limit estimate exceeded: ~${Math.round(estimatedTokens)} tokens (limit: ${maxTokens})`;
       console.warn(`⚠️ ${msg}`);
       ctx.logger.logSystemMessage(`🛑 Stopping: ${msg}`);
       ctx.result = `Task stopped: ${msg} (safety limit)`;

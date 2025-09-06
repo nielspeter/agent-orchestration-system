@@ -1,5 +1,6 @@
 ---
 name: text-analyzer
+behavior: precise
 tools: ["word_counter", "math_calculator"]
 ---
 

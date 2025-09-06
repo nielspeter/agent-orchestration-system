@@ -3,11 +3,11 @@
 A TypeScript implementation of Claude Code's agent orchestration system using **pull architecture** where child agents autonomously gather information via tools rather than inheriting parent context. Built with a **middleware pipeline architecture** (Chain of Responsibility pattern) and leverages Anthropic's ephemeral caching for efficiency.
 
 ## 🆕 Recent Updates
-- **Multi-Provider Support**: Dynamic provider selection (Anthropic, OpenRouter) with model aliases
+- **Behavior Presets**: Semantic temperature/top_p control (deterministic, precise, balanced, creative, exploratory)
+- **Multi-Provider Support**: Dynamic provider selection (Anthropic, OpenRouter) based on model patterns
 - **Grep Tool**: Fast file searching using ripgrep for pattern matching
 - **Improved Error Handling**: Clear messages for missing API keys and unavailable models
-- **Logging Refactor**: Renamed from "conversations" to "logs" for clarity
-- **Provider Factory**: Automatic provider selection based on model name
+- **Provider Factory**: Automatic provider selection with per-agent behavior configuration
 - **Fail-Fast Behavior**: Agents now fail immediately when required models are unavailable
 
 ## 🎯 Architecture Highlights
@@ -99,6 +99,25 @@ npx tsx examples/06-werewolf-game.ts
 # 4. Manage voting and eliminations
 # 5. Continue until one side wins
 ```
+
+## 🎨 Agent Behavior Configuration
+
+Agents can specify behavioral characteristics through presets that control temperature and top_p:
+
+```yaml
+# In agent markdown frontmatter
+---
+name: validator
+behavior: deterministic  # Uses preset for consistency
+---
+```
+
+Available presets (configured in `providers-config.json`):
+- **deterministic** (0.1/0.5): Validation, routing, business logic
+- **precise** (0.2/0.6): Code analysis, verification, structured outputs
+- **balanced** (0.5/0.85): Default - orchestration, tool use, reasoning
+- **creative** (0.7/0.95): Storytelling, game mastering, creative content
+- **exploratory** (0.9/0.98): Research, brainstorming, alternatives
 
 ## 📁 Project Structure
 

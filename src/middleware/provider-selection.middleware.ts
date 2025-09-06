@@ -15,13 +15,64 @@ export function createProviderSelectionMiddleware(
     const modelName = ctx.agent?.model || defaultModelName;
 
     try {
-      // Create provider using factory
-      ctx.provider = ProviderFactory.create(modelName, logger);
-      ctx.modelName = ctx.provider.getModelName();
+      // Resolve behavior settings from agent or defaults FIRST
+      let temperature: number | undefined;
+      let top_p: number | undefined;
+
+      // Check if agent has explicit temperature/top_p
+      if (ctx.agent?.temperature !== undefined) {
+        temperature = ctx.agent.temperature;
+      }
+      if (ctx.agent?.top_p !== undefined) {
+        top_p = ctx.agent.top_p;
+      }
+
+      // If not explicit, check for behavior preset
+      if (temperature === undefined || top_p === undefined) {
+        let preset;
+        if (ctx.agent?.behavior) {
+          preset = ProviderFactory.getBehaviorPreset(ctx.agent.behavior);
+          if (!preset) {
+            ctx.logger.logSystemMessage(
+              `Unknown behavior preset: ${ctx.agent.behavior}, using default`
+            );
+            preset = ProviderFactory.getDefaultBehavior();
+          }
+        } else {
+          preset = ProviderFactory.getDefaultBehavior();
+        }
+
+        // Use preset values if not explicitly overridden
+        temperature = temperature ?? preset.temperature;
+        top_p = top_p ?? preset.top_p;
+      }
+
+      ctx.behaviorSettings = { temperature, top_p };
+
+      // NOW create provider with the resolved behavior settings
+      const { provider, modelConfig } = ProviderFactory.createWithConfig(
+        modelName,
+        logger,
+        ctx.behaviorSettings
+      );
+      ctx.provider = provider;
+      ctx.modelConfig = modelConfig;
+      ctx.modelName = provider.getModelName();
 
       // Log if agent requested a different model
       if (ctx.agent?.model && ctx.agent.model !== defaultModelName) {
         ctx.logger.logSystemMessage(`Agent requested model: ${ctx.agent.model}`);
+      }
+
+      // Log behavior settings if different from default
+      const defaultBehavior = ProviderFactory.getDefaultBehavior();
+      if (
+        ctx.behaviorSettings.temperature !== defaultBehavior.temperature ||
+        ctx.behaviorSettings.top_p !== defaultBehavior.top_p
+      ) {
+        ctx.logger.logSystemMessage(
+          `Using behavior: temp=${ctx.behaviorSettings.temperature}, top_p=${ctx.behaviorSettings.top_p}`
+        );
       }
     } catch (error) {
       // If agent specifically requested a model, and it's not available, fail immediately

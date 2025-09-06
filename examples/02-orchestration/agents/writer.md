@@ -1,5 +1,6 @@
 ---
 name: writer
+behavior: creative
 tools: ["write"]
 ---
 

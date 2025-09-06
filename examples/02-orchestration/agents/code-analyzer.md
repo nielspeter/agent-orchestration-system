@@ -1,5 +1,6 @@
 ---
 name: code-analyzer
+behavior: precise
 tools: ["read", "list", "write"]
 ---
 

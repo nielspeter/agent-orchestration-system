@@ -1,6 +1,7 @@
 import { AgentDefinition, BaseTool, ExecutionContext, Message } from '@/types';
 import { AgentLogger } from '@/core/logging';
 import { ILLMProvider } from '@/llm/llm-provider.interface';
+import { ProviderWithConfig } from '@/llm/provider-factory';
 
 /**
  * Context object that flows through the middleware pipeline
@@ -18,6 +19,13 @@ export interface MiddlewareContext {
 
   // LLM Provider
   provider?: ILLMProvider;
+  modelConfig?: ProviderWithConfig['modelConfig'];
+
+  // Behavior settings (resolved from agent or defaults)
+  behaviorSettings?: {
+    temperature: number;
+    top_p: number;
+  };
 
   // Conversation state
   messages: Message[];

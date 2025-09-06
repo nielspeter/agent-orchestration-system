@@ -2,6 +2,7 @@
 name: communication
 description: Manages all notifications and communications to claimants
 model: claude-sonnet-4-0
+behavior: balanced
 tools: ["send_notification"]
 ---
 

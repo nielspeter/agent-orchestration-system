@@ -10,6 +10,7 @@ import { createTodoWriteTool } from './tools/todowrite-tool';
 import { LoggerFactory } from './core/logging';
 import { TodoManager } from './core/todo-manager';
 import { DEFAULT_SYSTEM_CONFIG, ResolvedSystemConfig } from './config/types';
+import { ProviderFactory } from './llm/provider-factory';
 
 // Load environment variables
 dotenv.config();
@@ -54,7 +55,7 @@ export class AgentOrchestrationSystem {
       this.agentLoader,
       this.toolRegistry,
       this.config,
-      config.modelName || 'claude-3-5-haiku-latest',
+      config.modelName || ProviderFactory.getDefaultModel(),
       logger
     );
   }
@@ -124,7 +125,7 @@ async function main() {
 
   const system = new AgentOrchestrationSystem({
     agentsDir: path.join(getDirname(import.meta.url), '../agents'),
-    modelName: process.env.MODEL || 'claude-3-5-haiku-latest',
+    modelName: process.env.MODEL || ProviderFactory.getDefaultModel(),
   });
 
   // Initialize async components

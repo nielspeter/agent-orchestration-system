@@ -76,33 +76,21 @@
                     "type": "string",
                     "description": "Model identifier"
                   },
-                  "aliases": {
-                    "type": "array",
-                    "items": {
-                      "type": "string"
-                    },
-                    "description": "Alternative names for this model"
-                  },
                   "contextLength": {
                     "type": "number",
                     "description": "Maximum context length in tokens"
                   },
-                  "capabilities": {
-                    "type": "array",
-                    "items": {
-                      "type": "string",
-                      "enum": [
-                        "chat",
-                        "functions",
-                        "vision",
-                        "caching",
-                        "reasoning",
-                        "long-context",
-                        "fast",
-                        "code"
-                      ]
-                    },
-                    "description": "Model capabilities"
+                  "maxOutputTokens": {
+                    "type": "number",
+                    "description": "Maximum tokens to generate in response",
+                    "default": 4096
+                  },
+                  "temperature": {
+                    "type": "number",
+                    "description": "Sampling temperature (0.0 to 1.0) - lower is more deterministic, better for agents",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "default": 0.5
                   },
                   "pricing": {
                     "type": "object",
@@ -136,13 +124,6 @@
           },
           "required": ["type", "apiKeyEnv", "models"]
         }
-      }
-    },
-    "modelAliases": {
-      "type": "object",
-      "description": "Model name aliases for convenience",
-      "additionalProperties": {
-        "type": "string"
       }
     },
     "modelPatterns": {

@@ -1,5 +1,6 @@
 ---
 name: villager
+behavior: creative
 tools: []
 ---
 

@@ -3,8 +3,38 @@
 
   "_comment": "This file configures all LLM providers and models. The defaultModel is used when no model is specified.",
   "defaultModel": "claude-3-5-haiku-latest",
+  "defaultBehavior": "balanced",
+  
+  "_comment2": "Behavior presets combine temperature and top_p for different agent types",
+  "behaviorPresets": {
+    "deterministic": {
+      "temperature": 0.1,
+      "top_p": 0.5,
+      "description": "Near-deterministic for validation, routing, business logic"
+    },
+    "precise": {
+      "temperature": 0.2,
+      "top_p": 0.6,
+      "description": "Code analysis, verification, structured outputs"
+    },
+    "balanced": {
+      "temperature": 0.5,
+      "top_p": 0.85,
+      "description": "Default orchestration, tool use, general reasoning"
+    },
+    "creative": {
+      "temperature": 0.7,
+      "top_p": 0.95,
+      "description": "Storytelling, game mastering, creative content"
+    },
+    "exploratory": {
+      "temperature": 0.9,
+      "top_p": 0.98,
+      "description": "Research, brainstorming, generating alternatives"
+    }
+  },
 
-  "_comment2": "The fallbackProvider is used when a model doesn't match any patterns or aliases",
+  "_comment3": "The fallbackProvider is used when a model doesn't match any patterns or aliases",
   "fallbackProvider": "openrouter",
 
   "providers": {
@@ -15,23 +45,20 @@
       "models": [
         {
           "id": "claude-opus-4-1",
-          "aliases": ["claude-opus-4-1", "opus"],
           "contextLength": 200000,
-          "capabilities": ["chat", "functions", "vision", "caching"],
+          "maxOutputTokens": 4096,
           "pricing": { "input": 0.015, "output": 0.075 }
         },
         {
           "id": "claude-sonnet-4-0",
-          "aliases": ["claude-sonnet-4-0", "sonnet"],
           "contextLength": 200000,
-          "capabilities": ["chat", "functions", "vision", "caching"],
+          "maxOutputTokens": 4096,
           "pricing": { "input": 0.003, "output": 0.015 }
         },
         {
           "id": "claude-3-5-haiku-latest",
-          "aliases": ["claude-3-5-haiku", "haiku"],
           "contextLength": 200000,
-          "capabilities": ["chat", "functions", "vision", "caching"],
+          "maxOutputTokens": 4096,
           "pricing": { "input": 0.0008, "output": 0.004 }
         }
       ]
@@ -49,16 +76,6 @@
         }
       ]
     }
-  },
-  "modelAliases": {
-    "fast": "groq/llama-3.1-8b-instant",
-    "cheap": "gpt-4o-mini",
-    "smart": "claude-3-5-sonnet-latest",
-    "sonnet": "claude-sonnet-4-0",
-    "vision": "gpt-4o",
-    "long": "gemini-1.5-pro",
-    "reasoning": "o1-preview",
-    "code": "x-ai/grok-code-fast-1"
   },
   "modelPatterns": [
     {

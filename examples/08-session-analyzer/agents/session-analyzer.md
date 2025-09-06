@@ -1,5 +1,6 @@
 ---
 name: session-analyzer
+behavior: precise
 tools: ["read", "write", "list"]
 ---
 

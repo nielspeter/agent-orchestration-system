@@ -36,6 +36,7 @@ Remember: You're the safety net of the system. When specialized agents aren't av
 you step in to ensure the task gets completed by returning useful results.`,
     tools: '*', // Access to all tools
     model: undefined, // Uses system default model
+    behavior: 'balanced', // Default balanced behavior
   };
 
   constructor(
@@ -65,6 +66,9 @@ you step in to ensure the task gets completed by returning useful results.`,
         description: description.trim(),
         tools: data.tools || [],
         model: data.model,
+        behavior: data.behavior,
+        temperature: data.temperature,
+        top_p: data.top_p,
       };
     } catch (error: any) {
       // Provide more helpful error messages

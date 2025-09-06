@@ -1,5 +1,6 @@
 ---
 name: validator
+behavior: deterministic
 tools: ["list", "task", "get_session_log"]
 ---
 

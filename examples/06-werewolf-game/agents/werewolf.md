@@ -1,5 +1,6 @@
 ---
 name: werewolf
+behavior: creative
 tools: []
 ---
 

@@ -2,6 +2,7 @@
 name: documentation-verification
 description: Verifies completeness of claim documentation
 model: claude-sonnet-4-0
+behavior: precise
 tools: ["get_policy_details"]
 ---
 

@@ -6,23 +6,68 @@ import { OpenAICompatibleConfig, OpenAICompatibleProvider } from './openai-compa
 import { AgentLogger } from '@/core/logging';
 
 // Simple config types - no over-engineering
+interface ModelConfig {
+  id: string;
+  contextLength?: number;
+  maxOutputTokens?: number;
+  pricing?: {
+    input: number;
+    output: number;
+  };
+}
+
+export interface BehaviorPreset {
+  temperature: number;
+  top_p: number;
+  description?: string;
+}
+
 interface ProviderConfig {
   type: 'native' | 'openai-compatible';
   baseURL?: string;
   apiKeyEnv: string;
   headers?: Record<string, string>;
+  models?: ModelConfig[];
 }
 
 interface ProvidersConfig {
   defaultModel?: string; // The default model to use
+  defaultBehavior?: string; // Default behavior preset
+  behaviorPresets?: Record<string, BehaviorPreset>;
   fallbackProvider: string; // Fallback when no pattern matches
   providers: Record<string, ProviderConfig>;
-  modelAliases?: Record<string, string>;
   modelPatterns?: Array<{ pattern: string; provider: string }>;
+}
+
+export interface ProviderWithConfig {
+  provider: ILLMProvider;
+  modelConfig?: ModelConfig;
 }
 
 export class ProviderFactory {
   private static config: ProvidersConfig | null = null;
+
+  static getDefaultModel(): string {
+    const config = this.loadConfig();
+    return config.defaultModel || 'claude-3-5-haiku-latest';
+  }
+
+  static getBehaviorPreset(name: string): BehaviorPreset | undefined {
+    const config = this.loadConfig();
+    return config.behaviorPresets?.[name];
+  }
+
+  static getDefaultBehavior(): BehaviorPreset {
+    const config = this.loadConfig();
+    const defaultName = config.defaultBehavior || 'balanced';
+    return (
+      config.behaviorPresets?.[defaultName] || {
+        temperature: 0.5,
+        top_p: 0.9,
+        description: 'Default balanced behavior',
+      }
+    );
+  }
 
   private static loadConfig(): ProvidersConfig {
     if (this.config) return this.config;
@@ -50,11 +95,12 @@ export class ProviderFactory {
     }
   }
 
-  static create(modelName: string, logger?: AgentLogger): ILLMProvider {
+  static createWithConfig(
+    modelName: string,
+    logger?: AgentLogger,
+    behaviorSettings?: { temperature: number; top_p: number }
+  ): ProviderWithConfig {
     const config = this.loadConfig();
-
-    // Check aliases
-    const resolvedModel = config.modelAliases?.[modelName] || modelName;
 
     // Find provider - simple pattern matching
     let providerName = config.fallbackProvider;
@@ -62,7 +108,7 @@ export class ProviderFactory {
     // Check patterns
     if (config.modelPatterns) {
       for (const pattern of config.modelPatterns) {
-        if (new RegExp(pattern.pattern).test(resolvedModel)) {
+        if (new RegExp(pattern.pattern).test(modelName)) {
           providerName = pattern.provider;
           break;
         }
@@ -70,8 +116,84 @@ export class ProviderFactory {
     }
 
     // Check if model has provider prefix (e.g., "groq/llama-70b")
-    if (resolvedModel.includes('/')) {
-      const prefix = resolvedModel.split('/')[0];
+    if (modelName.includes('/')) {
+      const prefix = modelName.split('/')[0];
+      if (config.providers[prefix]) {
+        providerName = prefix;
+      }
+    }
+
+    const providerConfig = config.providers[providerName];
+    if (!providerConfig) {
+      throw new Error(`Provider ${providerName} not configured`);
+    }
+
+    // Check if API key is available for this provider
+    const apiKey = process.env[providerConfig.apiKeyEnv];
+    if (!apiKey) {
+      // Provide helpful error message with exact steps to fix
+      throw new Error(
+        `Cannot use model "${modelName}" - missing API key.\n` +
+          `Please set the ${providerConfig.apiKeyEnv} environment variable.\n` +
+          `Example: export ${providerConfig.apiKeyEnv}=your-api-key-here`
+      );
+    }
+
+    // Find model config if available
+    let modelConfig: ModelConfig | undefined;
+    if (providerConfig.models) {
+      modelConfig = providerConfig.models.find((m) => m.id === modelName);
+    }
+
+    // Create provider
+    let provider: ILLMProvider;
+    if (providerConfig.type === 'native' && providerName === 'anthropic') {
+      provider = new AnthropicProvider(
+        modelName,
+        logger,
+        modelConfig?.pricing,
+        modelConfig?.maxOutputTokens,
+        behaviorSettings?.temperature,
+        behaviorSettings?.top_p
+      );
+    } else {
+      // Default to OpenAI-compatible
+      if (!providerConfig.baseURL) {
+        throw new Error(`Provider ${providerName} requires baseURL in config`);
+      }
+
+      const openAIConfig: OpenAICompatibleConfig = {
+        baseURL: providerConfig.baseURL,
+        apiKey,
+        defaultHeaders: providerConfig.headers,
+      };
+
+      provider = new OpenAICompatibleProvider(modelName, openAIConfig, logger);
+    }
+
+    return { provider, modelConfig };
+  }
+
+  // Backwards compatibility - keep the old method
+  static create(modelName: string, logger?: AgentLogger): ILLMProvider {
+    const config = this.loadConfig();
+
+    // Find provider - simple pattern matching
+    let providerName = config.fallbackProvider;
+
+    // Check patterns
+    if (config.modelPatterns) {
+      for (const pattern of config.modelPatterns) {
+        if (new RegExp(pattern.pattern).test(modelName)) {
+          providerName = pattern.provider;
+          break;
+        }
+      }
+    }
+
+    // Check if model has provider prefix (e.g., "groq/llama-70b")
+    if (modelName.includes('/')) {
+      const prefix = modelName.split('/')[0];
       if (config.providers[prefix]) {
         providerName = prefix;
       }
@@ -95,7 +217,7 @@ export class ProviderFactory {
 
     // Create provider
     if (providerConfig.type === 'native' && providerName === 'anthropic') {
-      return new AnthropicProvider(resolvedModel, logger);
+      return new AnthropicProvider(modelName, logger);
     }
 
     // Default to OpenAI-compatible
@@ -109,6 +231,8 @@ export class ProviderFactory {
       defaultHeaders: providerConfig.headers,
     };
 
-    return new OpenAICompatibleProvider(resolvedModel, openAIConfig, logger);
+    // Use default behavior for backwards compatibility
+    const defaultBehavior = this.getDefaultBehavior();
+    return this.createWithConfig(modelName, logger, defaultBehavior).provider;
   }
 }

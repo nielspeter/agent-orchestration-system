@@ -7,6 +7,9 @@ export interface AgentDefinition {
   description: string;
   tools: string[] | '*';
   model?: string;
+  behavior?: string; // Preset name like 'precise', 'creative'
+  temperature?: number; // Override preset
+  top_p?: number; // Override preset
 }
 
 export interface ToolParameter {

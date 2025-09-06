@@ -1,5 +1,6 @@
 ---
 name: seer
+behavior: creative
 tools: []
 ---
 

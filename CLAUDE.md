@@ -165,9 +165,32 @@ cp providers-config.example.json providers-config.json
 
 # Models can be specified as:
 # - Direct: "claude-3-5-haiku-latest"
-# - Alias: "sonnet" (maps to claude-3-5-sonnet-latest)
 # - Provider prefix: "openrouter/llama-3.1-70b"
 ```
+
+### Behavior Presets
+
+Agents can specify behavioral characteristics through presets that control temperature and top_p:
+
+```yaml
+# In agent markdown frontmatter
+---
+name: my-agent
+behavior: precise  # Uses preset
+# OR override specific values:
+temperature: 0.3
+top_p: 0.7
+---
+```
+
+Available presets in `providers-config.json`:
+- **deterministic** (0.1/0.5): Near-deterministic for validation, routing, business logic
+- **precise** (0.2/0.6): Code analysis, verification, structured outputs  
+- **balanced** (0.5/0.85): Default orchestration, tool use, general reasoning
+- **creative** (0.7/0.95): Storytelling, game mastering, creative content
+- **exploratory** (0.9/0.98): Research, brainstorming, generating alternatives
+
+The system applies: Agent settings → Preset → Default (balanced)
 
 For tests, create `.env.test` (not in git):
 ```bash

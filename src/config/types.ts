@@ -190,7 +190,7 @@ export interface ResolvedSystemConfig {
  * Default configuration values
  */
 export const DEFAULT_SYSTEM_CONFIG: ResolvedSystemConfig = {
-  model: 'claude-3-5-haiku-latest',
+  model: 'claude-3-5-haiku-latest', // Default, should be overridden by ProviderFactory.getDefaultModel()
 
   agents: {
     directories: ['./agents'],

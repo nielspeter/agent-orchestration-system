@@ -1,5 +1,10 @@
 import { AgentLogger } from './logging';
 
+export interface ModelPricing {
+  input: number; // Cost per 1K tokens
+  output: number; // Cost per 1K tokens
+}
+
 export interface DetailedCacheMetrics {
   // Request metadata
   timestamp: string;
@@ -57,8 +62,10 @@ export class CacheMetricsCollector {
 
   /**
    * Record a cache metrics entry
+   * @param metrics The metrics to record
+   * @param pricing Optional model-specific pricing (per 1K tokens)
    */
-  recordMetrics(metrics: Partial<DetailedCacheMetrics>): void {
+  recordMetrics(metrics: Partial<DetailedCacheMetrics>, pricing?: ModelPricing): void {
     const timestamp = new Date().toISOString();
     const requestId = this.generateRequestId();
 
@@ -68,11 +75,12 @@ export class CacheMetricsCollector {
     const hitRate = totalInputTokens > 0 ? (metrics.cacheReadTokens || 0) / totalInputTokens : 0;
     const missRate = 1 - hitRate;
 
-    // Cost calculations (approximate rates for Claude)
-    const inputRate = 0.000003; // $3 per 1M tokens
-    const outputRate = 0.000015; // $15 per 1M tokens
-    const cacheWriteRate = 0.000003; // Same as input
-    const cacheReadRate = 0.0000003; // 10% of input rate
+    // Cost calculations - use provided pricing or fall back to Sonnet defaults
+    // Convert from per-1K to per-token rates
+    const inputRate = pricing ? pricing.input / 1000 : 0.000003; // Default: $3 per 1M tokens
+    const outputRate = pricing ? pricing.output / 1000 : 0.000015; // Default: $15 per 1M tokens
+    const cacheWriteRate = inputRate; // Same as input
+    const cacheReadRate = inputRate * 0.1; // 10% of input rate
 
     const baseCost = totalInputTokens * inputRate + (metrics.outputTokens || 0) * outputRate;
     const cacheCreationCost = totalCreationTokens * cacheWriteRate;

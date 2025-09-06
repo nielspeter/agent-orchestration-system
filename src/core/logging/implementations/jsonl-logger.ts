@@ -178,7 +178,7 @@ export class JsonlLogger implements AgentLogger {
     event.requestId = `req_${uuidv4().substring(0, 12)}`;
     event.message = {
       role: 'assistant',
-      model: agent || 'claude-3-5-haiku-latest',
+      model: agent || 'unknown',
       content: [
         {
           type: 'text',
@@ -210,7 +210,7 @@ export class JsonlLogger implements AgentLogger {
 
     event.message = {
       role: 'assistant',
-      model: agent || 'claude-3-5-haiku-latest',
+      model: agent || 'unknown',
       content: [
         {
           type: 'tool_use',

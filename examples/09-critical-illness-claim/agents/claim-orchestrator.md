@@ -2,6 +2,7 @@
 name: claim-orchestrator
 description: Main controller for critical illness insurance claims workflow
 model: claude-sonnet-4-0
+behavior: balanced
 tools: ["Task", "claim_id_generator", "timestamp_generator", "Write"]
 ---
 

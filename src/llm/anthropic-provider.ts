@@ -1,7 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { BaseTool, Message, ToolCall } from '@/types';
 import { AgentLogger } from '@/core/logging';
-import { CacheMetricsCollector } from '@/core/cache-metrics-collector';
+import { CacheMetricsCollector, ModelPricing } from '@/core/cache-metrics-collector';
 import { ILLMProvider, UsageMetrics } from './llm-provider.interface';
 
 export interface CacheMetrics {
@@ -17,15 +17,30 @@ export class AnthropicProvider implements ILLMProvider {
   private readonly modelName: string;
   private readonly logger?: AgentLogger;
   private readonly metricsCollector: CacheMetricsCollector;
+  private readonly pricing?: ModelPricing;
+  private readonly maxOutputTokens: number;
+  private readonly temperature: number;
+  private readonly topP: number;
   private lastUsageMetrics: UsageMetrics | null = null;
 
-  constructor(modelName: string = 'claude-3-5-haiku-latest', logger?: AgentLogger) {
+  constructor(
+    modelName: string,
+    logger?: AgentLogger,
+    pricing?: ModelPricing,
+    maxOutputTokens?: number,
+    temperature?: number,
+    topP?: number
+  ) {
     if (!modelName.startsWith('claude')) {
       throw new Error(`AnthropicProvider only supports Claude models, got: ${modelName}`);
     }
 
     this.modelName = modelName;
     this.logger = logger;
+    this.pricing = pricing;
+    this.maxOutputTokens = maxOutputTokens || 4096;
+    this.temperature = temperature || 0.5; // Default 0.5 for better agent behavior
+    this.topP = topP || 0.9; // Default 0.9 for balanced behavior
     this.metricsCollector = new CacheMetricsCollector(logger);
 
     if (!process.env.ANTHROPIC_API_KEY) {
@@ -60,8 +75,9 @@ export class AnthropicProvider implements ILLMProvider {
       // Create the request params with proper typing
       const params: Anthropic.MessageCreateParams = {
         model: this.modelName,
-        max_tokens: 4096,
-        temperature: 0.7,
+        max_tokens: this.maxOutputTokens,
+        temperature: this.temperature,
+        top_p: this.topP,
         system: formattedSystem,
         messages: formattedMessages,
         tools: formattedTools,
@@ -377,15 +393,18 @@ export class AnthropicProvider implements ILLMProvider {
     totalCachedBlocks: number,
     responseTimeMs: number
   ): void {
-    this.metricsCollector.recordMetrics({
-      modelName: this.modelName,
-      inputTokens: usage.input_tokens || 0,
-      outputTokens: usage.output_tokens || 0,
-      cacheCreationTokens: usage.cache_creation_input_tokens || 0,
-      cacheReadTokens: usage.cache_read_input_tokens || 0,
-      totalCachedBlocks: totalCachedBlocks,
-      newCacheBlocks: usage.cache_creation_input_tokens ? 1 : 0, // Simplified
-      responseTimeMs: responseTimeMs,
-    });
+    this.metricsCollector.recordMetrics(
+      {
+        modelName: this.modelName,
+        inputTokens: usage.input_tokens || 0,
+        outputTokens: usage.output_tokens || 0,
+        cacheCreationTokens: usage.cache_creation_input_tokens || 0,
+        cacheReadTokens: usage.cache_read_input_tokens || 0,
+        totalCachedBlocks: totalCachedBlocks,
+        newCacheBlocks: usage.cache_creation_input_tokens ? 1 : 0, // Simplified
+        responseTimeMs: responseTimeMs,
+      },
+      this.pricing
+    );
   }
 }
