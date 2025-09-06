@@ -64,18 +64,18 @@ export const createGetSessionLogTool = (currentSessionId?: string): Tool => ({
       }
 
       // Find file containing the session ID
-      const conversationsDir = 'conversations';
+      const logsDir = 'logs';
 
       // Read directory to find file with this sessionId
       let sessionFile: string | undefined;
       try {
-        const files = await fs.readdir(conversationsDir);
+        const files = await fs.readdir(logsDir);
         // Look for files containing the sessionId UUID
         sessionFile = files.find((f) => f.includes(sessionId) && f.endsWith('.jsonl'));
       } catch {
         return {
           content: null,
-          error: 'Conversations directory not found',
+          error: 'Logs directory not found',
         };
       }
 
@@ -86,7 +86,7 @@ export const createGetSessionLogTool = (currentSessionId?: string): Tool => ({
         };
       }
 
-      const filePath = path.join(conversationsDir, sessionFile);
+      const filePath = path.join(logsDir, sessionFile);
 
       // Read and parse the JSONL file
       const content = await fs.readFile(filePath, 'utf-8');

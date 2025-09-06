@@ -7,9 +7,10 @@ parameters:
   account_name: string
 """
 
-import sys
 import json
+import sys
 from datetime import datetime
+
 
 def validate_bank_account(account_number, account_name):
     """

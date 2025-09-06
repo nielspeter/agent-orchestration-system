@@ -102,7 +102,7 @@ async function customConfigExample() {
       },
       jsonl: {
         enabled: true,
-        path: './conversations',
+        path: './logs',
       },
     })
     .build();

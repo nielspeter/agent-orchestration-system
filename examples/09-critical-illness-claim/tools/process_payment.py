@@ -10,9 +10,10 @@ parameters:
   bank_name: string
 """
 
-import sys
 import json
+import sys
 from datetime import datetime, timedelta
+
 
 def process_payment(claim_id, amount, bank_details):
     """

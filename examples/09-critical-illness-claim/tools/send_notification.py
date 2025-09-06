@@ -9,9 +9,10 @@ parameters:
   content: string
 """
 
-import sys
 import json
+import sys
 from datetime import datetime
+
 
 def send_notification(recipient, message_type, content):
     """

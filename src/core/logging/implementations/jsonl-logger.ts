@@ -89,7 +89,7 @@ export class JsonlLogger implements AgentLogger {
   private currentParentUuid: string | null = null;
   private readonly eventChain: Map<string, string> = new Map(); // Maps event to its UUID
 
-  constructor(outputDir: string = 'conversations', sessionId?: string) {
+  constructor(outputDir: string = 'logs', sessionId?: string) {
     // Always use UUID for sessionId
     this.sessionId = sessionId || uuidv4();
 

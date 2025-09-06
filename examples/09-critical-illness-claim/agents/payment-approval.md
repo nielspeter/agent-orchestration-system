@@ -1,7 +1,7 @@
 ---
 name: payment-approval
 description: Handles payment approval decisions for approved claims
-model: sonnet
+model: claude-sonnet-4-0
 tools: ["validate_bank_account", "check_fraud_indicators", "process_payment"]
 ---
 

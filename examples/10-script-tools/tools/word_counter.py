@@ -5,8 +5,8 @@ description: Count words in text
 parameters:
   text: string
 """
-import sys
 import json
+import sys
 
 data = json.load(sys.stdin)
 text = data.get('text', '')

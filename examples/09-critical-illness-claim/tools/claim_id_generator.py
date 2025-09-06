@@ -8,10 +8,11 @@ parameters:
   claim_type: string
 """
 
-import sys
-import json
 import hashlib
+import json
+import sys
 from datetime import datetime
+
 
 def generate_claim_id(policy_number, timestamp, claim_type="CI"):
     """

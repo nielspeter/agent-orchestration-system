@@ -532,10 +532,10 @@ const system = await AgentSystemBuilder.default()
 
 ```bash
 # Find recent conversation
-ls -lt conversations/*.jsonl | head -1
+ls -lt logs/*.jsonl | head -1
 
 # View formatted log
-cat conversations/2024-*.jsonl | jq '.'
+cat logs/2024-*.jsonl | jq '.'
 ```
 
 ### 3. Test with Minimal Tools

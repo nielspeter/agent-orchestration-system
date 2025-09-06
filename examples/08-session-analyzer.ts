@@ -17,10 +17,10 @@ import * as path from 'path';
 import * as readline from 'readline/promises';
 
 async function listSessions(): Promise<string[]> {
-  const conversationsDir = path.join(process.cwd(), 'conversations');
+  const logsDir = path.join(process.cwd(), 'logs');
 
   try {
-    const files = await fs.readdir(conversationsDir);
+    const files = await fs.readdir(logsDir);
     return files
       .filter((f) => f.endsWith('.jsonl'))
       .sort((a, b) => a.localeCompare(b))
@@ -31,8 +31,8 @@ async function listSessions(): Promise<string[]> {
 }
 
 async function formatSessionInfo(sessionFile: string): Promise<string> {
-  const conversationsDir = path.join(process.cwd(), 'conversations');
-  const filePath = path.join(conversationsDir, sessionFile);
+  const logsDir = path.join(process.cwd(), 'logs');
+  const filePath = path.join(logsDir, sessionFile);
 
   try {
     const stats = await fs.stat(filePath);
@@ -60,7 +60,7 @@ async function main() {
     const sessions = await listSessions();
 
     if (sessions.length === 0) {
-      console.log('❌ No session files found in conversations folder');
+      console.log('❌ No session files found in logs folder');
       await cleanup();
       return;
     }
@@ -130,7 +130,7 @@ async function main() {
       try {
         await executor.execute(
           'session-analyzer',
-          `Analyze the session file: conversations/${sessionFile} and create a comprehensive report with summary, flow diagram, and detailed message log.`
+          `Analyze the session file: logs/${sessionFile} and create a comprehensive report with summary, flow diagram, and detailed message log.`
         );
         const duration = ((Date.now() - startTime) / 1000).toFixed(1);
         console.log(`\n✅ Analysis complete in ${duration}s`);

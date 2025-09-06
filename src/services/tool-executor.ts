@@ -1,6 +1,6 @@
-import { ExecutionContext, Message, ToolCall, ToolResult } from '../types';
-import { ToolRegistry } from '../core/tool-registry';
-import { MiddlewareContext } from '../middleware/middleware-types';
+import { ExecutionContext, Message, ToolCall, ToolResult } from '@/types';
+import { ToolRegistry } from '@/core/tool-registry';
+import { MiddlewareContext } from '@/middleware/middleware-types';
 
 /**
  * Represents a group of tools that can be executed together
@@ -150,7 +150,6 @@ export async function executeSingleTool(
 
   try {
     const args = JSON.parse(toolCall.function.arguments);
-    const toolStartTime = Date.now();
 
     let result: ToolResult;
 
@@ -163,8 +162,6 @@ export async function executeSingleTool(
 
       result = await tool.execute(args);
     }
-
-    const toolExecutionTime = Date.now() - toolStartTime;
 
     ctx.logger.logToolResult(ctx.agentName, tool.name, toolCall.id, result);
 
@@ -196,7 +193,7 @@ async function handleDelegation(
   executeDelegate: ExecuteDelegate
 ): Promise<ToolResult> {
   // PULL ARCHITECTURE: Don't pass parent messages to child agents
-  // Child agents will use tools to gather the information they need
+  // will use tools to gather the information they need
 
   ctx.logger.logDelegation(ctx.agentName, args.subagent_type, args.prompt);
 

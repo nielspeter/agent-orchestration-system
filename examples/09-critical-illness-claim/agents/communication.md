@@ -1,7 +1,7 @@
 ---
 name: communication
 description: Manages all notifications and communications to claimants
-model: sonnet
+model: claude-sonnet-4-0
 tools: ["send_notification"]
 ---
 

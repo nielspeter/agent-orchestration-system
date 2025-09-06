@@ -15,8 +15,6 @@ export function createErrorHandlerMiddleware(): Middleware {
       await next();
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
-      const errorStack = error instanceof Error ? error.stack : undefined;
-
       // Log the error with full context
       ctx.logger.logAgentError(ctx.agentName, new Error(errorMessage));
 

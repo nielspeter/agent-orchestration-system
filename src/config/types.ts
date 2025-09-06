@@ -220,7 +220,7 @@ export const DEFAULT_SYSTEM_CONFIG: ResolvedSystemConfig = {
     display: 'both',
     jsonl: {
       enabled: true,
-      path: './conversations',
+      path: './logs',
     },
     console: {
       timestamps: true,
@@ -268,15 +268,6 @@ export const TEST_CONFIG_MINIMAL: SystemConfig = {
     },
   },
 };
-
-/**
- * Test configuration preset - with basic tools
- */
-export const TEST_CONFIG_WITH_TOOLS: SystemConfig = {
-  ...TEST_CONFIG_MINIMAL,
-  tools: { builtin: ['read', 'write'], custom: [] },
-};
-
 /**
  * Deep merge helper for objects
  */
@@ -355,13 +346,13 @@ export function resolveConfig(partial: Partial<SystemConfig>): ResolvedSystemCon
 
   // Ensure all required fields are present
   if (!merged.model) merged.model = DEFAULT_SYSTEM_CONFIG.model;
-  if (!merged.agents) merged.agents = DEFAULT_SYSTEM_CONFIG.agents;
-  if (!merged.tools) merged.tools = DEFAULT_SYSTEM_CONFIG.tools;
-  if (!merged.safety) merged.safety = DEFAULT_SYSTEM_CONFIG.safety;
-  if (!merged.caching) merged.caching = DEFAULT_SYSTEM_CONFIG.caching;
-  if (!merged.logging) merged.logging = DEFAULT_SYSTEM_CONFIG.logging;
-  if (!merged.session) merged.session = DEFAULT_SYSTEM_CONFIG.session;
-  if (!merged.todos) merged.todos = DEFAULT_SYSTEM_CONFIG.todos;
+  merged.agents ??= DEFAULT_SYSTEM_CONFIG.agents;
+  merged.tools ??= DEFAULT_SYSTEM_CONFIG.tools;
+  merged.safety ??= DEFAULT_SYSTEM_CONFIG.safety;
+  merged.caching ??= DEFAULT_SYSTEM_CONFIG.caching;
+  merged.logging ??= DEFAULT_SYSTEM_CONFIG.logging;
+  merged.session ??= DEFAULT_SYSTEM_CONFIG.session;
+  merged.todos ??= DEFAULT_SYSTEM_CONFIG.todos;
 
   return merged as ResolvedSystemConfig;
 }

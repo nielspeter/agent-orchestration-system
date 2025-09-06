@@ -8,9 +8,10 @@ parameters:
   amount: number
 """
 
-import sys
 import json
+import sys
 from datetime import datetime
+
 
 def check_fraud_indicators(claim_id, policy_number, amount):
     """

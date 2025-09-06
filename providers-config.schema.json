@@ -1,0 +1,172 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Provider Configuration",
+  "description": "Configuration for LLM providers and models",
+  "type": "object",
+  "properties": {
+    "_comment": {
+      "type": "string",
+      "description": "Comments for documentation"
+    },
+    "_comment2": {
+      "type": "string",
+      "description": "Additional comments"
+    },
+    "defaultModel": {
+      "type": "string",
+      "description": "Default model to use when none is specified"
+    },
+    "fallbackProvider": {
+      "type": "string",
+      "description": "Fallback provider to use when no pattern or alias matches the model"
+    },
+    "providers": {
+      "type": "object",
+      "description": "Provider definitions",
+      "patternProperties": {
+        "^[a-z0-9-]+$": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "enum": ["native", "openai-compatible"],
+              "description": "Provider implementation type"
+            },
+            "className": {
+              "type": "string",
+              "description": "Class name for native providers"
+            },
+            "baseURL": {
+              "type": "string",
+              "format": "uri",
+              "description": "API endpoint URL"
+            },
+            "apiKeyEnv": {
+              "type": "string",
+              "description": "Environment variable name for API key"
+            },
+            "enabled": {
+              "type": "boolean",
+              "default": true,
+              "description": "Whether this provider is enabled"
+            },
+            "optional": {
+              "type": "boolean",
+              "default": false,
+              "description": "Whether to fail if provider is not configured"
+            },
+            "headers": {
+              "type": "object",
+              "description": "Additional HTTP headers",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            "dynamicModels": {
+              "type": "boolean",
+              "default": false,
+              "description": "Whether provider supports any model dynamically"
+            },
+            "models": {
+              "type": "array",
+              "description": "Available models for this provider",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "description": "Model identifier"
+                  },
+                  "aliases": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Alternative names for this model"
+                  },
+                  "contextLength": {
+                    "type": "number",
+                    "description": "Maximum context length in tokens"
+                  },
+                  "capabilities": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "chat",
+                        "functions",
+                        "vision",
+                        "caching",
+                        "reasoning",
+                        "long-context",
+                        "fast",
+                        "code"
+                      ]
+                    },
+                    "description": "Model capabilities"
+                  },
+                  "pricing": {
+                    "type": "object",
+                    "properties": {
+                      "input": {
+                        "type": "number",
+                        "description": "Cost per 1K input tokens in USD"
+                      },
+                      "output": {
+                        "type": "number",
+                        "description": "Cost per 1K output tokens in USD"
+                      }
+                    },
+                    "description": "Pricing information"
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "Model description"
+                  },
+                  "examples": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Example model names for dynamic providers"
+                  }
+                },
+                "required": ["id"]
+              }
+            }
+          },
+          "required": ["type", "apiKeyEnv", "models"]
+        }
+      }
+    },
+    "modelAliases": {
+      "type": "object",
+      "description": "Model name aliases for convenience",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "modelPatterns": {
+      "type": "array",
+      "description": "Patterns for matching models to providers",
+      "items": {
+        "type": "object",
+        "properties": {
+          "pattern": {
+            "type": "string",
+            "description": "Regular expression pattern"
+          },
+          "provider": {
+            "type": "string",
+            "description": "Provider to use for matching models"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of this pattern rule"
+          }
+        },
+        "required": ["pattern", "provider"]
+      }
+    }
+  },
+  "required": ["providers"]
+}

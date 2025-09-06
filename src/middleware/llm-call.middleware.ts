@@ -1,10 +1,9 @@
 import { Middleware } from './middleware-types';
-import { AnthropicProvider } from '../llm/anthropic-provider';
 
 /**
  * Calls the LLM and gets a response
  */
-export function createLLMCallMiddleware(provider: AnthropicProvider): Middleware {
+export function createLLMCallMiddleware(): Middleware {
   return async (ctx, next) => {
     if (!ctx.shouldContinue || !ctx.tools) {
       await next();
@@ -12,17 +11,26 @@ export function createLLMCallMiddleware(provider: AnthropicProvider): Middleware
     }
 
     // Log the call
-    ctx.logger.logSystemMessage(`Calling ${provider.getModelName()} (iteration ${ctx.iteration})`);
+    ctx.logger.logAgentIteration(ctx.agentName, ctx.iteration);
 
     // Call LLM directly - no validation needed
     // Our code ensures tool results are always added immediately after tool calls
-    ctx.response = await provider.complete(ctx.messages, ctx.tools);
+    if (!ctx.provider) {
+      throw new Error('No provider available in context');
+    }
+    ctx.response = await ctx.provider.complete(ctx.messages, ctx.tools);
 
     // Log response
-    ctx.logger.logAssistantMessage(
-      ctx.agentName,
-      ctx.response.content || '[No content, tool calls only]'
-    );
+    if (ctx.response.content) {
+      ctx.logger.logAssistantMessage(ctx.agentName, ctx.response.content);
+    }
+
+    // Log tool calls if any
+    if (ctx.response.tool_calls?.length) {
+      for (const toolCall of ctx.response.tool_calls) {
+        ctx.logger.logToolCall(ctx.agentName, toolCall.function.name, toolCall.function.arguments);
+      }
+    }
 
     await next();
   };

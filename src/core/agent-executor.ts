@@ -1,17 +1,17 @@
 import { AgentLoader } from './agent-loader';
 import { ToolRegistry } from './tool-registry';
-import { AnthropicProvider } from '../llm/anthropic-provider';
-import { ExecutionContext } from '../types';
+import { ExecutionContext } from '@/types';
 import { AgentLogger, LoggerFactory } from './logging';
-import { ResolvedSystemConfig } from '../config/types';
-import { MiddlewarePipeline } from '../middleware/pipeline';
-import { MiddlewareContext } from '../middleware/middleware-types';
-import { createAgentLoaderMiddleware } from '../middleware/agent-loader.middleware';
-import { createContextSetupMiddleware } from '../middleware/context-setup.middleware';
-import { createSafetyChecksMiddleware } from '../middleware/safety-checks.middleware';
-import { createLLMCallMiddleware } from '../middleware/llm-call.middleware';
-import { createToolExecutionMiddleware } from '../middleware/tool-execution.middleware';
-import { createErrorHandlerMiddleware } from '../middleware/error-handler.middleware';
+import { ResolvedSystemConfig } from '@/config/types';
+import { MiddlewarePipeline } from '@/middleware/pipeline';
+import { MiddlewareContext } from '@/middleware/middleware-types';
+import { createAgentLoaderMiddleware } from '@/middleware/agent-loader.middleware';
+import { createContextSetupMiddleware } from '@/middleware/context-setup.middleware';
+import { createSafetyChecksMiddleware } from '@/middleware/safety-checks.middleware';
+import { createProviderSelectionMiddleware } from '@/middleware/provider-selection.middleware';
+import { createLLMCallMiddleware } from '@/middleware/llm-call.middleware';
+import { createToolExecutionMiddleware } from '@/middleware/tool-execution.middleware';
+import { createErrorHandlerMiddleware } from '@/middleware/error-handler.middleware';
 
 /**
  * AgentExecutor - Core orchestration engine for agent-based task execution
@@ -28,7 +28,7 @@ import { createErrorHandlerMiddleware } from '../middleware/error-handler.middle
  */
 export class AgentExecutor {
   private readonly logger: AgentLogger;
-  private readonly provider: AnthropicProvider;
+  private readonly modelName: string;
   private readonly pipeline: MiddlewarePipeline;
   private readonly sessionId?: string;
 
@@ -52,8 +52,7 @@ export class AgentExecutor {
   ) {
     this.sessionId = sessionId;
     this.logger = logger || LoggerFactory.createCombinedLogger(sessionId);
-    const finalModelName = modelName || this.config.model;
-    this.provider = new AnthropicProvider(finalModelName, this.logger);
+    this.modelName = modelName || this.config.model;
 
     // Build the middleware pipeline
     this.pipeline = new MiddlewarePipeline();
@@ -67,17 +66,19 @@ export class AgentExecutor {
    * 1. ErrorHandler - Catches and handles all errors
    * 2. AgentLoader - Loads agent definition and filters tools
    * 3. ContextSetup - Initializes conversation context
-   * 4. SafetyChecks - Enforces execution limits
-   * 5. LLMCall - Communicates with the language model
-   * 6. ToolExecution - Executes tools and handles delegation
+   * 4. ProviderSelection - Selects appropriate LLM provider based on model
+   * 5. SafetyChecks - Enforces execution limits
+   * 6. LLMCall - Communicates with the language model
+   * 7. ToolExecution - Executes tools and handles delegation
    */
   private setupPipeline(): void {
     this.pipeline
       .use(createErrorHandlerMiddleware())
       .use(createAgentLoaderMiddleware(this.agentLoader, this.toolRegistry))
       .use(createContextSetupMiddleware())
+      .use(createProviderSelectionMiddleware(this.modelName, this.logger))
       .use(createSafetyChecksMiddleware(this.config.safety))
-      .use(createLLMCallMiddleware(this.provider))
+      .use(createLLMCallMiddleware())
       .use(createToolExecutionMiddleware(this.toolRegistry, this.execute.bind(this)));
   }
 
@@ -115,7 +116,7 @@ export class AgentExecutor {
     this.logger.logAgentStart(
       agentName,
       execContext.depth,
-      `Starting execution with ${this.provider.getModelName()}${execContext.parentAgent ? ` (delegated from ${execContext.parentAgent})` : ''}`
+      `Starting execution with ${this.modelName}${execContext.parentAgent ? ` (delegated from ${execContext.parentAgent})` : ''}`
     );
 
     // Add depth visualization
@@ -130,7 +131,7 @@ export class AgentExecutor {
       messages: [],
       iteration: 0,
       logger: this.logger,
-      modelName: this.provider.getModelName(),
+      modelName: this.modelName,
       shouldContinue: true,
       result: undefined,
       sessionId: this.sessionId,

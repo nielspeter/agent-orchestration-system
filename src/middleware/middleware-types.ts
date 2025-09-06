@@ -1,5 +1,6 @@
-import { AgentDefinition, BaseTool, ExecutionContext, Message } from '../types';
-import { AgentLogger } from '../core/logging';
+import { AgentDefinition, BaseTool, ExecutionContext, Message } from '@/types';
+import { AgentLogger } from '@/core/logging';
+import { ILLMProvider } from '@/llm/llm-provider.interface';
 
 /**
  * Context object that flows through the middleware pipeline
@@ -14,6 +15,9 @@ export interface MiddlewareContext {
   // Agent and tools
   agent?: AgentDefinition;
   tools?: BaseTool[];
+
+  // LLM Provider
+  provider?: ILLMProvider;
 
   // Conversation state
   messages: Message[];
@@ -45,11 +49,3 @@ export interface MiddlewareContext {
  * Similar to Express.js middleware
  */
 export type Middleware = (ctx: MiddlewareContext, next: () => Promise<void>) => Promise<void>;
-
-/**
- * Middleware that can be named for debugging
- */
-export interface NamedMiddleware {
-  name: string;
-  execute: Middleware;
-}

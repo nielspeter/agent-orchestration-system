@@ -9,8 +9,6 @@
  */
 
 import { AgentSystemBuilder } from '../src';
-import * as fs from 'fs/promises';
-import * as path from 'path';
 
 async function main() {
   console.log('🛠️  Script Tools Example');

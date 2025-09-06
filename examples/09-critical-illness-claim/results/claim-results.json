@@ -1,74 +1,328 @@
 {
   "processId": "PROC-DE20A37E",
-  "timestamp": "2025-09-01T21:21:04.079135Z",
+  "timestamp": "2025-01-13T09:00:00Z",
   "workflowPath": [
     "notification_received",
     "categorization_performed",
     "claim_registered",
     "documentation_verified",
-    "coverage_assessed",
-    "payment_approved",
-    "payment_processed"
+    "communication_sent"
   ],
-  "finalOutcome": "completed",
+  "finalOutcome": "pending_docs",
   "details": {
     "claimId": "critical_illness-20250113-1D5C8",
     "claimantName": "Jane Smith",
     "policyNumber": "POL-54321",
     "illness": "Stage 2 Breast Cancer",
-    "decision": "Fully Approved",
-    "notes": "Payment of 54,421,000 USD processed for critical illness claim"
+    "decision": "Documentation incomplete - awaiting attending physician statement and medical bills/receipts",
+    "notes": "Claim 89% complete with all cancer-specific documentation received. Missing general requirements: attending physician statement and medical bills/receipts. Communication sent to claimant with 14-day deadline (January 27, 2025)."
   },
   "auditTrail": [
     {
       "sequence": 1,
       "timestamp": "2025-01-13T09:00:00Z",
-      "agent": "notification-categorization",
+      "agent": "workflow-orchestrator",
       "action": "WORKFLOW_START",
-      "decisionPoint": "Initial Categorization",
-      "input": { "notification": { "id": "NOTIF-001", "type": "critical_illness_claim" } },
-      "output": { "isCriticalIllness": true, "category": "critical_illness" },
-      "reasoning": "Claim meets critical illness categorization criteria"
+      "target": null,
+      "decisionPoint": null,
+      "tool": null,
+      "input": {
+        "notification": {
+          "id": "NOTIF-001",
+          "type": "critical_illness_claim",
+          "content": "I am submitting a claim for my recent cancer diagnosis. I was diagnosed with stage 2 breast cancer on December 15, 2024. I have been a policyholder for 2 years and have all the necessary medical documentation including pathology reports, oncologist statements, and treatment plans.",
+          "timestamp": "2025-01-13T09:00:00Z",
+          "claimantInfo": {
+            "name": "Jane Smith",
+            "policyNumber": "POL-54321",
+            "contactInfo": "jane.smith@email.com, +1-555-0123"
+          }
+        },
+        "documents": [
+          {
+            "type": "medical_diagnosis_report",
+            "name": "diagnosis_report_smith.pdf",
+            "status": "received"
+          },
+          {
+            "type": "pathology_results",
+            "name": "pathology_smith.pdf",
+            "status": "received"
+          },
+          {
+            "type": "oncologist_statement",
+            "name": "oncologist_statement_smith.pdf",
+            "status": "received"
+          },
+          {
+            "type": "treatment_plan",
+            "name": "treatment_plan_smith.pdf",
+            "status": "received"
+          },
+          {
+            "type": "hospital_admission_records",
+            "name": "hospital_records_smith.pdf",
+            "status": "received"
+          },
+          {
+            "type": "claim_form",
+            "name": "claim_form_smith.pdf",
+            "status": "received"
+          },
+          {
+            "type": "id_proof",
+            "name": "id_smith.pdf",
+            "status": "received"
+          },
+          {
+            "type": "policy_document",
+            "name": "policy_smith.pdf",
+            "status": "received"
+          }
+        ],
+        "diagnosisDate": "2024-12-15T00:00:00Z",
+        "claimantBankDetails": {
+          "accountName": "Jane Smith",
+          "accountNumber": "9876543210",
+          "bankName": "National Trust Bank"
+        }
+      },
+      "output": null,
+      "reasoning": "Received critical illness claim notification for Jane Smith with Stage 2 Breast Cancer diagnosis. Beginning workflow orchestration."
     },
     {
       "sequence": 2,
       "timestamp": "2025-01-13T09:00:00Z",
-      "agent": "claim-registration",
+      "agent": "workflow-orchestrator",
       "action": "DELEGATE",
-      "target": "claim-registration",
-      "input": { "claimId": "critical_illness-20250113-1D5C8" },
-      "output": { "status": "registered", "registrationSuccess": true },
-      "reasoning": "Claim successfully registered in system"
+      "target": "notification-categorization",
+      "decisionPoint": null,
+      "tool": "Task",
+      "input": {
+        "notification": {
+          "id": "NOTIF-001",
+          "type": "critical_illness_claim",
+          "content": "I am submitting a claim for my recent cancer diagnosis. I was diagnosed with stage 2 breast cancer on December 15, 2024. I have been a policyholder for 2 years and have all the necessary medical documentation including pathology reports, oncologist statements, and treatment plans.",
+          "timestamp": "2025-01-13T09:00:00Z",
+          "claimantInfo": {
+            "name": "Jane Smith",
+            "policyNumber": "POL-54321",
+            "contactInfo": "jane.smith@email.com, +1-555-0123"
+          }
+        }
+      },
+      "output": {
+        "isCriticalIllness": true,
+        "category": "critical_illness",
+        "confidence": "high",
+        "identifiedCondition": "Stage 2 Breast Cancer"
+      },
+      "reasoning": "Delegated to notification-categorization agent to determine if this is a critical illness claim. Agent confirmed it is a critical illness claim with high confidence."
     },
     {
       "sequence": 3,
       "timestamp": "2025-01-13T09:00:00Z",
-      "agent": "documentation-verification",
-      "action": "DELEGATE",
-      "target": "documentation-verification",
-      "input": { "documents": ["medical_diagnosis_report", "pathology_results"] },
-      "output": { "documentationComplete": true, "completenessPercentage": 100 },
-      "reasoning": "All required documents verified and received"
+      "agent": "workflow-orchestrator",
+      "action": "DECISION",
+      "target": null,
+      "decisionPoint": "Is Critical Illness?",
+      "tool": null,
+      "input": {
+        "isCriticalIllness": true,
+        "category": "critical_illness",
+        "confidence": "high",
+        "identifiedCondition": "Stage 2 Breast Cancer"
+      },
+      "output": "YES - Continue to registration",
+      "reasoning": "Categorization agent confirmed this is a critical illness claim with high confidence. Stage 2 Breast Cancer is a covered critical illness condition. Proceeding to claim registration."
     },
     {
       "sequence": 4,
       "timestamp": "2025-01-13T09:00:00Z",
-      "agent": "policy-assessment",
-      "action": "DECISION",
-      "decisionPoint": "Coverage Evaluation",
-      "input": { "condition": "Stage 2 Breast Cancer" },
-      "output": { "coverageDecision": "covered", "recommendedAction": "approve" },
-      "reasoning": "Condition meets policy coverage requirements"
+      "agent": "workflow-orchestrator",
+      "action": "TOOL_USE",
+      "target": null,
+      "decisionPoint": null,
+      "tool": "claim_id_generator",
+      "input": {
+        "policy_number": "POL-54321",
+        "timestamp": "2025-01-13T09:00:00Z",
+        "claim_type": "critical_illness"
+      },
+      "output": {
+        "success": true,
+        "claim_id": "critical_illness-20250113-1D5C8",
+        "policy_number": "POL-54321",
+        "timestamp": "2025-01-13T09:00:00Z",
+        "claim_type": "critical_illness"
+      },
+      "reasoning": "Generated unique claim ID for the critical illness claim using the claim_id_generator tool."
     },
     {
       "sequence": 5,
       "timestamp": "2025-01-13T09:00:00Z",
-      "agent": "payment-approval",
+      "agent": "workflow-orchestrator",
+      "action": "DELEGATE",
+      "target": "claim-registration",
+      "decisionPoint": null,
+      "tool": "Task",
+      "input": {
+        "claimId": "critical_illness-20250113-1D5C8",
+        "notification": {
+          "id": "NOTIF-001",
+          "type": "critical_illness_claim",
+          "content": "I am submitting a claim for my recent cancer diagnosis. I was diagnosed with stage 2 breast cancer on December 15, 2024. I have been a policyholder for 2 years and have all the necessary medical documentation including pathology reports, oncologist statements, and treatment plans.",
+          "timestamp": "2025-01-13T09:00:00Z",
+          "claimantInfo": {
+            "name": "Jane Smith",
+            "policyNumber": "POL-54321",
+            "contactInfo": "jane.smith@email.com, +1-555-0123"
+          }
+        },
+        "categorizationResult": {
+          "isCriticalIllness": true,
+          "category": "critical_illness",
+          "confidence": "high",
+          "identifiedCondition": "Stage 2 Breast Cancer"
+        }
+      },
+      "output": {
+        "claimId": "critical_illness-20250113-4EE75",
+        "registrationTimestamp": "2025-01-13T10:30:00Z",
+        "status": "registered",
+        "registrationSuccess": true,
+        "message": "Critical illness claim successfully registered for Jane Smith (POL-54321) with Stage 2 Breast Cancer diagnosis"
+      },
+      "reasoning": "Delegated to claim-registration agent to register the claim. Agent successfully registered the claim with all required information."
+    },
+    {
+      "sequence": 6,
+      "timestamp": "2025-01-13T09:00:00Z",
+      "agent": "workflow-orchestrator",
+      "action": "DELEGATE",
+      "target": "documentation-verification",
+      "decisionPoint": null,
+      "tool": "Task",
+      "input": {
+        "claimId": "critical_illness-20250113-1D5C8",
+        "documents": [
+          {
+            "type": "medical_diagnosis_report",
+            "name": "diagnosis_report_smith.pdf",
+            "status": "received"
+          },
+          {
+            "type": "pathology_results",
+            "name": "pathology_smith.pdf",
+            "status": "received"
+          },
+          {
+            "type": "oncologist_statement",
+            "name": "oncologist_statement_smith.pdf",
+            "status": "received"
+          },
+          {
+            "type": "treatment_plan",
+            "name": "treatment_plan_smith.pdf",
+            "status": "received"
+          },
+          {
+            "type": "hospital_admission_records",
+            "name": "hospital_records_smith.pdf",
+            "status": "received"
+          },
+          {
+            "type": "claim_form",
+            "name": "claim_form_smith.pdf",
+            "status": "received"
+          },
+          {
+            "type": "id_proof",
+            "name": "id_smith.pdf",
+            "status": "received"
+          },
+          {
+            "type": "policy_document",
+            "name": "policy_smith.pdf",
+            "status": "received"
+          }
+        ]
+      },
+      "output": {
+        "documentationComplete": false,
+        "completenessPercentage": 89,
+        "missingDocuments": [
+          "attending_physician_statement",
+          "medical_bills_receipts"
+        ],
+        "nextAction": "request_missing"
+      },
+      "reasoning": "Delegated to documentation-verification agent to check completeness. Agent found documentation 89% complete but missing attending physician statement and medical bills/receipts."
+    },
+    {
+      "sequence": 7,
+      "timestamp": "2025-01-13T09:00:00Z",
+      "agent": "workflow-orchestrator",
+      "action": "DECISION",
+      "target": null,
+      "decisionPoint": "Documentation Complete?",
+      "tool": null,
+      "input": {
+        "documentationComplete": false,
+        "completenessPercentage": 89,
+        "missingDocuments": [
+          "attending_physician_statement",
+          "medical_bills_receipts"
+        ]
+      },
+      "output": "NO - Request missing documents",
+      "reasoning": "Documentation verification shows 89% completeness but missing critical documents: attending physician statement and medical bills/receipts. Cannot proceed without complete documentation. Routing to communication agent."
+    },
+    {
+      "sequence": 8,
+      "timestamp": "2025-01-13T09:00:00Z",
+      "agent": "workflow-orchestrator",
+      "action": "DELEGATE",
+      "target": "communication",
+      "decisionPoint": null,
+      "tool": "Task",
+      "input": {
+        "claimId": "critical_illness-20250113-1D5C8",
+        "claimantInfo": {
+          "name": "Jane Smith",
+          "policyNumber": "POL-54321",
+          "contactInfo": "jane.smith@email.com, +1-555-0123"
+        },
+        "missingDocuments": [
+          "attending_physician_statement",
+          "medical_bills_receipts"
+        ],
+        "communicationType": "missing_documentation"
+      },
+      "output": {
+        "messageId": "NOTIF-20250905221840",
+        "deliveryStatus": "Successfully delivered",
+        "sentTimestamp": "2025-09-05T22:18:40Z",
+        "responseDeadline": "January 27, 2025",
+        "requiresResponse": true
+      },
+      "reasoning": "Delegated to communication agent to notify claimant about missing documents. Agent successfully sent notification with 14-day deadline for document submission."
+    },
+    {
+      "sequence": 9,
+      "timestamp": "2025-01-13T09:00:00Z",
+      "agent": "workflow-orchestrator",
       "action": "WORKFLOW_END",
-      "decisionPoint": "Final Payment Approval",
-      "input": { "policyNumber": "POL-54321", "coverageAmount": 54421000 },
-      "output": { "paymentApproved": true, "paymentAmount": 54421000 },
-      "reasoning": "Full claim amount approved and processed"
+      "target": null,
+      "decisionPoint": null,
+      "tool": null,
+      "input": null,
+      "output": {
+        "finalOutcome": "pending_docs",
+        "status": "Awaiting documentation",
+        "nextSteps": "Claimant has 14 days to submit missing documents"
+      },
+      "reasoning": "Workflow completed with status 'pending_docs'. Claim cannot proceed until missing documentation is received. Communication sent to claimant with clear instructions and deadline."
     }
   ]
 }

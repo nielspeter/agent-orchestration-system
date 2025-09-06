@@ -9,9 +9,10 @@ parameters:
   date2: string
 """
 
-import sys
 import json
+import sys
 from datetime import datetime, timezone
+
 
 def generate_timestamp():
     """

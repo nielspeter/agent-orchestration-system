@@ -6,9 +6,10 @@ parameters:
   policy_number: string
 """
 
-import sys
 import json
+import sys
 from datetime import datetime, timedelta
+
 
 def get_policy_details(policy_number):
     """

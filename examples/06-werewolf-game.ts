@@ -78,7 +78,7 @@ async function main() {
       // Get the actual session ID from the system config
       const sessionId = system.config.session.sessionId;
       console.log(`\n💾 Session ID: ${sessionId}`);
-      console.log(`📁 Log saved to: conversations/[timestamp]-${sessionId}.jsonl`);
+      console.log(`📁 Log saved to: logs/[timestamp]-${sessionId}.jsonl`);
     } else {
       console.log('\n⚠️  Could not parse verification results');
       console.log(verificationResult);

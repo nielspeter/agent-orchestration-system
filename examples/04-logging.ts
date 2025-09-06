@@ -27,7 +27,7 @@ async function testWithLogging() {
       },
       jsonl: {
         enabled: true,
-        path: './conversations',
+        path: './logs',
       },
     }) // Enable detailed logging
     .withSessionId('logging-demo')
@@ -95,7 +95,7 @@ async function testWithLogging() {
 
   console.log('\n' + '='.repeat(60));
   console.log('✅ All tests completed!');
-  console.log('\n📁 Check the "conversations" directory for the full audit log in JSON format.');
+  console.log('\n📁 Check the "logs" directory for the full audit log in JSON format.');
 
   // Clean up
   await cleanup();

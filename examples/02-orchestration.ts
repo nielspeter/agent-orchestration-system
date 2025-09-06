@@ -72,7 +72,7 @@ async function testTrueOrchestration() {
   }
 
   console.log('\n' + '='.repeat(70));
-  console.log('📁 Check conversations/true-orchestration-demo-*.json for the full audit trail');
+  console.log('📁 Check logs/true-orchestration-demo-*.jsonl for the full audit trail');
   console.log('\nNotice how the delegation decisions were made by the LLM,');
   console.log("not by our code. The orchestration emerged from the agent's reasoning!");
 

@@ -9,7 +9,7 @@ export class LoggerFactory {
     display: 'console',
     jsonl: {
       enabled: true,
-      path: './conversations',
+      path: './logs',
     },
     console: {
       timestamps: true,
@@ -65,7 +65,7 @@ export class LoggerFactory {
         display: 'both',
         jsonl: {
           enabled: true,
-          path: './conversations',
+          path: './logs',
         },
       },
       sessionId

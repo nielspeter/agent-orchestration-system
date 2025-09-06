@@ -1,7 +1,7 @@
 ---
 name: policy-assessment
 description: Evaluates if the claimed illness is covered by the policy
-model: sonnet
+model: claude-sonnet-4-0
 tools: ["get_policy_details", "check_fraud_indicators"]
 ---
 

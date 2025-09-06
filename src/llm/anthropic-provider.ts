@@ -1,8 +1,8 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { BaseTool, Message, ToolCall } from '../types';
-import { AgentLogger } from '../core/logging';
-import { CacheMetricsCollector } from '../core/cache-metrics-collector';
-import { DEFAULT_MODEL } from '../config/constants';
+import { BaseTool, Message, ToolCall } from '@/types';
+import { AgentLogger } from '@/core/logging';
+import { CacheMetricsCollector } from '@/core/cache-metrics-collector';
+import { ILLMProvider, UsageMetrics } from './llm-provider.interface';
 
 export interface CacheMetrics {
   inputTokens: number;
@@ -12,13 +12,14 @@ export interface CacheMetrics {
   totalCost?: number;
 }
 
-export class AnthropicProvider {
+export class AnthropicProvider implements ILLMProvider {
   private readonly client: Anthropic;
   private readonly modelName: string;
   private readonly logger?: AgentLogger;
   private readonly metricsCollector: CacheMetricsCollector;
+  private lastUsageMetrics: UsageMetrics | null = null;
 
-  constructor(modelName: string = DEFAULT_MODEL, logger?: AgentLogger) {
+  constructor(modelName: string = 'claude-3-5-haiku-latest', logger?: AgentLogger) {
     if (!modelName.startsWith('claude')) {
       throw new Error(`AnthropicProvider only supports Claude models, got: ${modelName}`);
     }
@@ -78,6 +79,15 @@ export class AnthropicProvider {
         const responseTime = Date.now() - startTime;
         this.recordDetailedMetrics(response.usage, totalCachedBlocks, responseTime);
 
+        // Store for interface compliance
+        this.lastUsageMetrics = {
+          promptTokens: response.usage.input_tokens,
+          completionTokens: response.usage.output_tokens,
+          totalTokens: response.usage.input_tokens + response.usage.output_tokens,
+          promptCacheHitTokens: response.usage.cache_read_input_tokens || undefined,
+          promptCacheMissTokens: response.usage.cache_creation_input_tokens || undefined,
+        };
+
         // Also log traditional metrics for backward compatibility
         if (this.logger) {
           this.logCacheMetrics(response.usage);
@@ -88,7 +98,10 @@ export class AnthropicProvider {
       return this.formatResponse(response);
     } catch (error) {
       if (this.logger) {
-        this.logger.logSystemMessage(`API error: ${error}`);
+        this.logger.logAgentError(
+          'AnthropicProvider',
+          error instanceof Error ? error : new Error(String(error))
+        );
       }
       throw error;
     }
@@ -317,6 +330,14 @@ export class AnthropicProvider {
     return this.modelName;
   }
 
+  supportsStreaming(): boolean {
+    return false; // POC: Keep it simple
+  }
+
+  getLastUsageMetrics(): UsageMetrics | null {
+    return this.lastUsageMetrics;
+  }
+
   /**
    * Count total cached blocks in the request
    */
@@ -366,19 +387,5 @@ export class AnthropicProvider {
       newCacheBlocks: usage.cache_creation_input_tokens ? 1 : 0, // Simplified
       responseTimeMs: responseTimeMs,
     });
-  }
-
-  /**
-   * Get cache metrics summary
-   */
-  getCacheMetricsSummary() {
-    return this.metricsCollector.getSessionSummary();
-  }
-
-  /**
-   * Log periodic cache summary
-   */
-  logCacheSummary() {
-    this.metricsCollector.logPeriodicSummary();
   }
 }

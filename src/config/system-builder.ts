@@ -541,7 +541,7 @@ export class AgentSystemBuilder {
         display: config.logging.display || 'both',
         jsonl: {
           enabled: true,
-          path: './conversations',
+          path: './logs',
         },
         console: {
           timestamps: true,
@@ -585,7 +585,7 @@ export class AgentSystemBuilder {
         display: 'both',
         jsonl: {
           enabled: true,
-          path: './conversations',
+          path: './logs',
         },
         console: {
           timestamps: true,
