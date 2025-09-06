@@ -137,7 +137,7 @@ async function main() {
     'Analyze the file src/core/agent-executor.ts and create a summary of how it works'
   );
 
-  console.log(result);
+  console.info(result);
 }
 
 // Run if this is the main module

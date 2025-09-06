@@ -4,7 +4,7 @@
   "_comment": "This file configures all LLM providers and models. The defaultModel is used when no model is specified.",
   "defaultModel": "claude-3-5-haiku-latest",
   "defaultBehavior": "balanced",
-  
+
   "_comment2": "Behavior presets combine temperature and top_p for different agent types",
   "behaviorPresets": {
     "deterministic": {

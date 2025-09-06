@@ -342,16 +342,16 @@ export class AgentSystemBuilder {
 
     // Load tools from directories
     for (const directory of this.toolDirectories) {
-      console.log(`Loading tools from directory: ${directory}`);
+      console.info(`Loading tools from directory: ${directory}`);
       const toolLoader = new ToolLoader(directory, logger);
       const toolNames = await toolLoader.listTools();
-      console.log(`Found ${toolNames.length} tool(s): ${toolNames.join(', ')}`);
+      console.info(`Found ${toolNames.length} tool(s): ${toolNames.join(', ')}`);
 
       for (const toolName of toolNames) {
         try {
           const tool = await toolLoader.loadTool(toolName);
           toolRegistry.register(tool);
-          console.log(`✓ Loaded tool: ${toolName} from ${directory}`);
+          console.info(`✓ Loaded tool: ${toolName} from ${directory}`);
         } catch (error) {
           console.error(`Failed to load tool ${toolName}:`, error);
         }
@@ -362,7 +362,7 @@ export class AgentSystemBuilder {
     if (resolvedConfig.mcp?.servers) {
       for (const [serverName, serverConfig] of Object.entries(resolvedConfig.mcp.servers)) {
         try {
-          console.log(`Initializing MCP server: ${serverName}`);
+          console.info(`Initializing MCP server: ${serverName}`);
 
           // Create transport with clean environment
           // MCP servers should not inherit process environment variables
@@ -444,7 +444,7 @@ export class AgentSystemBuilder {
             serverName,
           });
 
-          console.log(`✓ MCP server ${serverName} connected with ${tools.length} tools`);
+          console.info(`✓ MCP server ${serverName} connected with ${tools.length} tools`);
         } catch (error) {
           console.error(`Failed to initialize MCP server ${serverName}:`, error);
         }

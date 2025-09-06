@@ -53,9 +53,23 @@ export default [
     },
   },
   {
-    files: ['**/*.test.ts', '**/*.spec.ts'],
+    files: ['**/*.test.ts', '**/*.spec.ts', 'tests/**/*.ts'],
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
+      'no-console': 'off',
+    },
+  },
+  {
+    // Examples need console.log for demonstration purposes
+    files: ['examples/**/*.ts'],
+    rules: {
+      'no-console': 'off',
+    },
+  },
+  {
+    // The console logger implementation legitimately uses console methods
+    files: ['src/core/logging/implementations/console-logger.ts'],
+    rules: {
       'no-console': 'off',
     },
   },

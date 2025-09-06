@@ -1,4 +1,4 @@
-import { describe, expect, test, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { ProviderFactory } from '@/llm/provider-factory';
 
 describe('Provider Factory - Essential Tests', () => {
@@ -35,17 +35,17 @@ describe('Provider Factory - Essential Tests', () => {
     // Set a test API key
     const originalKey = process.env.ANTHROPIC_API_KEY;
     process.env.ANTHROPIC_API_KEY = 'test-key';
-    
+
     const behaviorSettings = { temperature: 0.3, top_p: 0.7 };
     const result = ProviderFactory.createWithConfig(
       'claude-3-5-haiku-latest',
       undefined,
       behaviorSettings
     );
-    
+
     expect(result).toBeDefined();
     expect(result.provider).toBeDefined();
-    
+
     // Restore original key
     if (originalKey) {
       process.env.ANTHROPIC_API_KEY = originalKey;
@@ -60,11 +60,11 @@ describe('Provider Factory - Essential Tests', () => {
     const originalOpenRouterKey = process.env.OPENROUTER_API_KEY;
     delete process.env.ANTHROPIC_API_KEY;
     delete process.env.OPENROUTER_API_KEY;
-    
+
     expect(() => {
       ProviderFactory.createWithConfig('claude-3-5-haiku-latest');
     }).toThrow(/missing API key/);
-    
+
     // Restore if they existed
     if (originalAnthropicKey) process.env.ANTHROPIC_API_KEY = originalAnthropicKey;
     if (originalOpenRouterKey) process.env.OPENROUTER_API_KEY = originalOpenRouterKey;
@@ -72,7 +72,7 @@ describe('Provider Factory - Essential Tests', () => {
 
   test('all behavior presets are properly configured', () => {
     const presetNames = ['deterministic', 'precise', 'balanced', 'creative', 'exploratory'];
-    
+
     for (const name of presetNames) {
       const preset = ProviderFactory.getBehaviorPreset(name);
       expect(preset).toBeDefined();

@@ -1,15 +1,15 @@
-import { describe, expect, test, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { createGrepTool } from '@/tools/grep-tool';
 import { execSync } from 'child_process';
 
 // Mock execSync
 vi.mock('child_process', () => ({
-  execSync: vi.fn()
+  execSync: vi.fn(),
 }));
 
 describe('Grep Tool - Essential Tests', () => {
   let grepTool: any;
-  
+
   beforeEach(() => {
     vi.clearAllMocks();
     grepTool = createGrepTool();
@@ -30,9 +30,9 @@ describe('Grep Tool - Essential Tests', () => {
   test('executes basic pattern search', async () => {
     const mockOutput = 'file1.ts:10:const test = "hello"\nfile2.ts:20:function test() {}';
     (execSync as any).mockReturnValue(mockOutput);
-    
+
     const result = await grepTool.execute({ pattern: 'test' });
-    
+
     expect(result.content).toBeDefined();
     expect(result.content).toContain('file1.ts:10');
     expect(result.content).toContain('file2.ts:20');
@@ -46,9 +46,9 @@ describe('Grep Tool - Essential Tests', () => {
       error.status = 1;
       throw error;
     });
-    
+
     const result = await grepTool.execute({ pattern: 'nonexistent-pattern-xyz' });
-    
+
     expect(result.content).toBe('No matches found');
     expect(result.error).toBeUndefined();
   });
@@ -56,12 +56,12 @@ describe('Grep Tool - Essential Tests', () => {
   test('applies path filter correctly', async () => {
     const mockOutput = 'src/test.ts:1:match';
     (execSync as any).mockReturnValue(mockOutput);
-    
-    const result = await grepTool.execute({ 
+
+    const result = await grepTool.execute({
       pattern: 'test',
-      path: 'src'
+      path: 'src',
     });
-    
+
     expect(result.content).toBeDefined();
     expect(execSync).toHaveBeenCalled();
     const commandCall = (execSync as any).mock.calls[0][0];
@@ -72,9 +72,9 @@ describe('Grep Tool - Essential Tests', () => {
     (execSync as any).mockImplementation(() => {
       throw new Error('Command not found: rg');
     });
-    
+
     const result = await grepTool.execute({ pattern: 'test' });
-    
+
     expect(result.content).toBeNull();
     expect(result.error).toBeDefined();
     expect(result.error).toContain('Search failed');
@@ -82,12 +82,12 @@ describe('Grep Tool - Essential Tests', () => {
 
   test('builds command with correct flags', async () => {
     (execSync as any).mockReturnValue('');
-    
-    await grepTool.execute({ 
+
+    await grepTool.execute({
       pattern: 'test.*pattern',
-      path: 'src'
+      path: 'src',
     });
-    
+
     expect(execSync).toHaveBeenCalled();
     const commandCall = (execSync as any).mock.calls[0][0];
     expect(commandCall).toContain('rg');
@@ -100,11 +100,11 @@ describe('Grep Tool - Essential Tests', () => {
 
   test('escapes quotes in pattern', async () => {
     (execSync as any).mockReturnValue('');
-    
-    await grepTool.execute({ 
-      pattern: 'test"pattern'
+
+    await grepTool.execute({
+      pattern: 'test"pattern',
     });
-    
+
     expect(execSync).toHaveBeenCalled();
     const commandCall = (execSync as any).mock.calls[0][0];
     // Pattern should have escaped quotes - the command builder escapes quotes
