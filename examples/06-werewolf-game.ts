@@ -37,7 +37,7 @@ async function main() {
     console.log('🎮 Starting the game...\n');
 
     // The game-master is fully autonomous and knows how to run a game
-    const result = await system.executor.execute(
+    await system.executor.execute(
       'game-master',
       'Start a werewolf game and play it to completion. Use the default 5-player setup.'
     );
@@ -54,7 +54,7 @@ async function main() {
     );
 
     // Parse the verification result to extract the JSON
-    const jsonMatch = verificationResult.match(/```json\n([\s\S]*?)\n```/);
+    const jsonMatch = RegExp(/```json\n([\s\S]*?)\n```/).exec(verificationResult);
     if (jsonMatch) {
       const verification = JSON.parse(jsonMatch[1]);
 
@@ -69,7 +69,7 @@ async function main() {
       // Show test results
       console.log('Test Results:');
       for (const [testName, testResult] of Object.entries(
-        verification.testResults as Record<string, any>
+        verification.testResults as Record<string, { passed: boolean; details?: string }>
       )) {
         const icon = testResult.passed ? '✅' : '❌';
         console.log(`  ${icon} ${testName}: ${testResult.message || testResult.details}`);

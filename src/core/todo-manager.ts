@@ -1,7 +1,7 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as crypto from 'crypto';
-import { TodoItem } from '../tools/todowrite-tool';
+import { TodoItem } from '@/tools/todowrite-tool';
 
 export class TodoManager {
   private readonly todosDir: string;
@@ -55,7 +55,7 @@ export class TodoManager {
         console.warn('Invalid todo file format, starting fresh');
         this.todos = [];
       }
-    } catch (error) {
+    } catch {
       // File doesn't exist or is corrupted, start fresh
       this.todos = [];
     }

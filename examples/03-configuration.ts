@@ -128,7 +128,7 @@ async function main() {
     // Try loading from config file if it exists
     try {
       await fullConfigExample();
-    } catch (error) {
+    } catch {
       console.log('\n⚠️ Config file example skipped (no agent-config.json found)');
     }
   } catch (error) {

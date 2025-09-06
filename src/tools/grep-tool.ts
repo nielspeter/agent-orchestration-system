@@ -54,18 +54,19 @@ export const createGrepTool = (): BaseTool => ({
       return {
         content: limited.join('\n'),
       };
-    } catch (error: any) {
+    } catch (error) {
       // Exit code 1 means no matches found - this is not an error
-      if (error.status === 1) {
+      if (error && typeof error === 'object' && 'status' in error && error.status === 1) {
         return {
           content: 'No matches found',
         };
       }
 
       // Real errors (bad regex, path not found, etc)
+      const errorMessage = error instanceof Error ? error.message : String(error);
       return {
         content: null,
-        error: `Search failed: ${error.message}`,
+        error: `Search failed: ${errorMessage}`,
       };
     }
   },

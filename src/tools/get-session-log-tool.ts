@@ -103,7 +103,7 @@ export const createGetSessionLogTool = (currentSessionId?: string): Tool => ({
           }
 
           entries.push(entry);
-        } catch (error) {
+        } catch {
           console.warn(`Skipping malformed log entry: ${line.substring(0, 100)}...`);
         }
       }

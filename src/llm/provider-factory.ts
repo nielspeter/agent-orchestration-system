@@ -224,13 +224,6 @@ export class ProviderFactory {
     if (!providerConfig.baseURL) {
       throw new Error(`Provider ${providerName} requires baseURL in config`);
     }
-
-    const openAIConfig: OpenAICompatibleConfig = {
-      baseURL: providerConfig.baseURL,
-      apiKey,
-      defaultHeaders: providerConfig.headers,
-    };
-
     // Use default behavior for backwards compatibility
     const defaultBehavior = this.getDefaultBehavior();
     return this.createWithConfig(modelName, logger, defaultBehavior).provider;
