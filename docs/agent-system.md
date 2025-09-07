@@ -75,7 +75,7 @@ export class AgentLoader {
 Agents can be loaded from:
 1. **Individual files**: `agents/my-agent.md`
 2. **Directories**: `agents/` (all .md files)
-3. **Nested directories**: `examples/06-werewolf-game/agents/`
+3. **Nested directories**: `examples/werewolf-game/agents/`
 
 ```typescript
 // System builder configuration

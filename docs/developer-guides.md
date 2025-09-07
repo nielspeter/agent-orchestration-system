@@ -18,7 +18,7 @@ cp .env.example .env
 npm run build
 
 # Run a simple example
-npx tsx examples/01-quickstart.ts
+npx tsx examples/quickstart.ts
 ```
 
 ### 2. Your First Agent

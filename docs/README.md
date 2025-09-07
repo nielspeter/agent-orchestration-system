@@ -23,7 +23,6 @@ systems using middleware pipeline architecture and pull-based information gather
 ### Developer Resources
 
 - **[Developer Guides](./developer-guides.md)** ⭐ - Practical guides for creating agents, tools, and middleware
-- **[Documentation Plan](./DOCUMENTATION_PLAN.md)** - Roadmap for documentation development
 
 ## 🚀 Quick Navigation
 
@@ -41,9 +40,9 @@ systems using middleware pipeline architecture and pull-based information gather
 
 ### For Contributors
 
-1. Review [Documentation Plan](./DOCUMENTATION_PLAN.md) - Areas needing documentation
-2. Understand [Execution Flow](./execution-flow-diagram.md) - System internals
-3. Study all architecture docs for deep understanding
+1. Understand [Execution Flow](./execution-flow-diagram.md) - System internals
+2. Study all architecture docs for deep understanding
+3. Review existing docs for areas that need improvement
 
 ## 🎯 Key Concepts
 
@@ -66,7 +65,7 @@ Agents don't receive full context from parents. Instead, they:
 ### Middleware Pipeline Pattern
 
 ```
-Request → ErrorHandler → AgentLoader → ContextSetup → SafetyChecks → LLMCall → ToolExecution → Response
+Request → ErrorHandler → AgentLoader → ContextSetup → ProviderSelection → SafetyChecks → LLMCall → ToolExecution → Response
 ```
 
 Each middleware handles one concern, making the system modular and testable.

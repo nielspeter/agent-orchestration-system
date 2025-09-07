@@ -83,28 +83,20 @@ export class ToolRegistry {
 ### 1. Read Tool
 
 **Purpose**: Read files from the filesystem
-**File**: `src/tools/file-tools.ts`
+**File**: `src/tools/file.tool.ts`
 
 ```typescript
 {
   name: 'read',
-    description
-:
-  'Read a file from the filesystem',
-    inputSchema
-:
-  {
+  description: 'Read a file from the filesystem',
+  inputSchema: {
     type: 'object',
-      properties
-  :
-    {
+    properties: {
       path: {
-        type: 'string', description
-      :
-        'File path to read'
+        type: 'string',
+        description: 'File path to read'
       }
-    }
-  ,
+    },
     required: ['path']
   }
 }
@@ -124,30 +116,24 @@ export class ToolRegistry {
 ### 2. Write Tool
 
 **Purpose**: Write content to files
-**File**: `src/tools/file-tools.ts`
+**File**: `src/tools/file.tool.ts`
 
 ```typescript
 {
   name: 'write',
-    description
-:
-  'Write content to a file',
-    inputSchema
-:
-  {
+  description: 'Write content to a file',
+  inputSchema: {
     type: 'object',
-      properties
-  :
-    {
+    properties: {
       path: {
-        type: 'string'
-      }
-    ,
+        type: 'string',
+        description: 'File path to write'
+      },
       content: {
-        type: 'string'
+        type: 'string',
+        description: 'Content to write'
       }
-    }
-  ,
+    },
     required: ['path', 'content']
   }
 }
@@ -156,32 +142,25 @@ export class ToolRegistry {
 ### 3. List Tool
 
 **Purpose**: List directory contents
-**File**: `src/tools/file-tools.ts`
+**File**: `src/tools/file.tool.ts`
 
 ```typescript
 {
   name: 'list',
-    description
-:
-  'List files in a directory',
-    inputSchema
-:
-  {
+  description: 'List files in a directory',
+  inputSchema: {
     type: 'object',
-      properties
-  :
-    {
+    properties: {
       path: {
-        type: 'string'
-      }
-    ,
+        type: 'string',
+        description: 'Directory path to list'
+      },
       recursive: {
         type: 'boolean',
-      default:
-        false
+        default: false,
+        description: 'List recursively'
       }
-    }
-  ,
+    },
     required: ['path']
   }
 }
@@ -190,17 +169,13 @@ export class ToolRegistry {
 ### 4. Task Tool (Delegation)
 
 **Purpose**: Delegate tasks to other agents
-**File**: `src/tools/task-tool.ts`
+**File**: `src/tools/task.tool.ts`
 
 ```typescript
 {
   name: 'task',
-    description
-:
-  'Delegate a task to another agent',
-    inputSchema
-:
-  {
+  description: 'Delegate a task to another agent',
+  inputSchema: {
     type: 'object',
       properties
   :
@@ -233,7 +208,7 @@ export class ToolRegistry {
 ### 5. TodoWrite Tool
 
 **Purpose**: Manage task lists for complex workflows
-**File**: `src/tools/todowrite-tool.ts`
+**File**: `src/tools/todowrite.tool.ts`
 
 ```typescript
 interface TodoItem {
@@ -246,7 +221,7 @@ interface TodoItem {
 
 ## Tool Execution Flow
 
-**File**: `src/core/tool-executor.ts`, `src/services/tool-executor.ts`
+**File**: `src/tools/registry/executor.ts`, `src/tools/registry/executor-service.ts`
 
 ### 1. Tool Call Parsing
 
@@ -261,17 +236,11 @@ const toolCalls = response.tool_calls;
 Tools are executed in parallel groups based on dependencies:
 
 ```typescript
-async
-executeTools(toolCalls
-:
-ToolCall[]
-):
-Promise < ToolResult[] > {
+async executeTools(toolCalls: ToolCall[]): Promise<ToolResult[]> {
   const groups = this.groupToolCalls(toolCalls);
   const results = [];
 
-  for(const group of groups
-)
+  for (const group of groups)
 {
   // Execute group in parallel
   const groupResults = await Promise.all(
@@ -287,23 +256,15 @@ return results;
 ### 3. Individual Tool Execution
 
 ```typescript
-async
-executeTool(call
-:
-ToolCall
-):
-Promise < ToolResult > {
+async executeTool(call: ToolCall): Promise<ToolResult> {
   const tool = this.registry.get(call.name);
 
-  if(!
-tool
-)
-{
-  return {
-    success: false,
-    error: `Unknown tool: ${call.name}`
-  };
-}
+  if (!tool) {
+    return {
+      success: false,
+      error: `Unknown tool: ${call.name}`
+    };
+  }
 
 try {
   // Validate input against schema

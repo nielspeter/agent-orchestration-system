@@ -25,7 +25,8 @@ graph LR
     Request --> ErrorHandler
     ErrorHandler --> AgentLoader
     AgentLoader --> ContextSetup
-    ContextSetup --> SafetyChecks
+    ContextSetup --> ProviderSelection
+    ProviderSelection --> SafetyChecks
     SafetyChecks --> LLMCall
     LLMCall --> ToolExecution
     ToolExecution --> Response
@@ -33,6 +34,7 @@ graph LR
     ErrorHandler -.->|Error propagation| Response
     AgentLoader -.->|Error propagation| Response
     ContextSetup -.->|Error propagation| Response
+    ProviderSelection -.->|Error propagation| Response
     SafetyChecks -.->|Error propagation| Response
     LLMCall -.->|Error propagation| Response
     ToolExecution -.->|Error propagation| Response
@@ -99,7 +101,35 @@ export function createAgentLoaderMiddleware(
 - Manages conversation state
 - Handles context for delegated agents
 
-### 4. SafetyChecksMiddleware
+### 4. ProviderSelectionMiddleware
+
+**File**: `src/middleware/provider-selection.middleware.ts`
+**Purpose**: Selects the appropriate LLM provider based on model configuration
+
+```typescript
+export function createProviderSelectionMiddleware(
+  providerFactory: ProviderFactory
+): Middleware {
+  return async (ctx: MiddlewareContext, next: () => Promise<void>) => {
+    // Determine model from agent config or default
+    const model = ctx.agent?.model || ctx.executionContext.model;
+    
+    // Get appropriate provider for model
+    ctx.llmProvider = providerFactory.getProvider(model);
+    
+    await next();
+  };
+}
+```
+
+**Key responsibilities**:
+
+- Determines which model to use (agent-specific or default)
+- Selects correct provider (Anthropic, OpenRouter, etc.)
+- Handles multi-provider support
+- Applies behavior presets (temperature/top_p)
+
+### 5. SafetyChecksMiddleware
 
 **File**: `src/middleware/safety-checks.middleware.ts`
 **Purpose**: Enforces resource limits and prevents runaway execution
@@ -134,7 +164,7 @@ export function createSafetyChecksMiddleware(safetyLimits: SafetyConfig): Middle
 - `warnAtIteration`: Warning threshold (default: 5)
 - `maxTokensEstimate`: Pre-flight token check (default: 100000)
 
-### 5. LLMCallMiddleware
+### 6. LLMCallMiddleware
 
 **File**: `src/middleware/llm-call.middleware.ts`
 **Purpose**: Handles communication with the LLM provider
@@ -151,7 +181,7 @@ export function createLLMCallMiddleware(provider: AnthropicProvider): Middleware
 - Manages token counting
 - Processes LLM response
 
-### 6. ToolExecutionMiddleware
+### 7. ToolExecutionMiddleware
 
 **File**: `src/middleware/tool-execution.middleware.ts`
 **Purpose**: Executes tools requested by the LLM
@@ -270,13 +300,14 @@ graph TD
     A[User: 'Analyze this code'] --> B[ErrorHandler: Sets up error boundary]
     B --> C[AgentLoader: Loads code-analyzer.md agent]
     C --> D[ContextSetup: Creates system prompt]
-    D --> E[SafetyChecks: Verifies limits - iteration 1/10, depth 1/5]
-    E --> F[LLMCall: Sends to Claude with caching]
-    F --> G[ToolExecution: Executes Read tool on file]
-    G --> H{Task complete?}
-    H -->|No| I[Loop back to SafetyChecks for iteration 2]
-    I --> E
-    H -->|Yes| J[Response returned]
+    D --> E[ProviderSelection: Selects LLM provider based on model]
+    E --> F[SafetyChecks: Verifies limits - iteration 1/10, depth 1/5]
+    F --> G[LLMCall: Sends to Claude with caching]
+    G --> H[ToolExecution: Executes Read tool on file]
+    H --> I{Task complete?}
+    I -->|No| J[Loop back to SafetyChecks for iteration 2]
+    J --> F
+    I -->|Yes| K[Response returned]
 ```
 
 ## Common Patterns

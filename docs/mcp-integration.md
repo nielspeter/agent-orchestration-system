@@ -515,7 +515,7 @@ console.log(toolRegistry.list());
 
 - MCP configuration types: `src/config/types.ts` (MCPConfig, MCPServerConfig)
 - MCP initialization: `src/config/system-builder.ts` (lines 292-373)
-- MCP example: `examples/05-mcp-integration.ts`
+- MCP example: `examples/mcp-integration.ts`
 - MCP SDK types: `@modelcontextprotocol/sdk`
 
 ## Resources

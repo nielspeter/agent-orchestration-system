@@ -1,11 +1,13 @@
-# Agent CLI Tool Plan
+# Agent CLI Tool Plan (DRAFT - Not Yet Implemented)
+
+> **Note**: This document describes a planned feature that has not been implemented yet. The CLI tool described here is a proposal for future development.
 
 ## Goal
 Create a CLI tool that allows running agents from any directory without writing TypeScript setup code.
 
 ## Usage Examples
 ```bash
-# From examples/10-script-tools/ folder:
+# From examples/script-tools/ folder:
 agent -p "multiply 7 and 6"                    # Uses default agent
 agent -a text-analyzer -p "analyze this text"  # Uses specific agent
 agent --list-agents                            # Shows available agents
@@ -90,7 +92,7 @@ Options:
 - **Simple**: No TypeScript knowledge needed to use
 
 ## Testing
-From `examples/10-script-tools/`:
+From `examples/script-tools/`:
 ```bash
 # These should all work:
 npx agent -p "count words in 'hello world'"
