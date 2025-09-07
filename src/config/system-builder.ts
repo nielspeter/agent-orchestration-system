@@ -7,6 +7,7 @@
  */
 
 import * as fs from 'fs/promises';
+import * as fsSync from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
@@ -52,9 +53,10 @@ interface MCPClientWrapper {
  * Configuration object from file format
  */
 interface FileConfig {
-  model?: string;
+  model?: string; // Optional override for a specific run
   execution?: {
-    defaultModel?: string;
+    defaultModel?: string; // Default model from agent-config.json
+    defaultBehavior?: string; // Default behavior preset from agent-config.json
     maxIterations?: number;
     maxDepth?: number;
     warnAtIteration?: number;
@@ -270,10 +272,58 @@ export class AgentSystemBuilder {
   }
 
   /**
+   * Validate configuration before building
+   */
+  private async validateConfiguration(): Promise<void> {
+    // Skip validation for test configurations
+    if (process.env.NODE_ENV === 'test' || this.config.model === 'test-model') {
+      return;
+    }
+
+    const errors: string[] = [];
+
+    // Check API keys
+    if (!process.env.ANTHROPIC_API_KEY && !process.env.OPENROUTER_API_KEY) {
+      errors.push('No API keys found. Set ANTHROPIC_API_KEY or OPENROUTER_API_KEY');
+    }
+
+    // Check if any agents are configured
+    if (
+      this.config.agents?.directories?.length === 0 &&
+      (!this.config.agents?.agents || this.config.agents.agents.length === 0)
+    ) {
+      errors.push('No agents configured');
+    }
+
+    // Check agent directories exist
+    if (this.config.agents?.directories) {
+      for (const dir of this.config.agents.directories) {
+        if (!fsSync.existsSync(dir)) {
+          errors.push(`Agent directory not found: ${dir}`);
+        }
+      }
+    }
+
+    if (errors.length > 0) {
+      throw new Error(
+        `Configuration validation failed:\n${errors.map((e) => `  - ${e}`).join('\n')}`
+      );
+    }
+  }
+
+  /**
    * Build the executor with the current configuration
    */
   async build(): Promise<BuildResult> {
+    // Validate configuration first
+    await this.validateConfiguration();
+
     const resolvedConfig = resolveConfig(this.config);
+
+    // Use defaultModel if model is not specified
+    if (!resolvedConfig.model || resolvedConfig.model === '') {
+      resolvedConfig.model = resolvedConfig.defaultModel;
+    }
 
     // Ensure session has an ID (generate UUID if not set)
     if (!resolvedConfig.session.sessionId) {
@@ -501,8 +551,16 @@ export class AgentSystemBuilder {
     const systemConfig: Partial<SystemConfig> = {};
 
     // Map from file config format to our format
-    if (config.execution?.defaultModel || config.model) {
-      systemConfig.model = config.execution?.defaultModel || config.model;
+    if (config.model) {
+      systemConfig.model = config.model;
+    }
+
+    // Set defaultModel and defaultBehavior from execution config
+    if (config.execution?.defaultModel) {
+      systemConfig.defaultModel = config.execution.defaultModel;
+    }
+    if (config.execution?.defaultBehavior) {
+      systemConfig.defaultBehavior = config.execution.defaultBehavior;
     }
 
     if (config.agents) {
@@ -521,16 +579,33 @@ export class AgentSystemBuilder {
     }
 
     if (config.execution) {
-      systemConfig.safety = {
-        maxIterations: config.execution.maxIterations!,
-        maxDepth: config.execution.maxDepth!,
-        warnAtIteration: config.execution.warnAtIteration!,
-        maxTokensEstimate: config.execution.maxTokensEstimate!,
-      } as SafetyConfig;
+      // Only set safety config if values are provided
+      if (
+        config.execution.maxIterations !== undefined ||
+        config.execution.maxDepth !== undefined ||
+        config.execution.warnAtIteration !== undefined ||
+        config.execution.maxTokensEstimate !== undefined
+      ) {
+        systemConfig.safety = {} as SafetyConfig;
+        if (config.execution.maxIterations !== undefined) {
+          systemConfig.safety.maxIterations = config.execution.maxIterations;
+        }
+        if (config.execution.maxDepth !== undefined) {
+          systemConfig.safety.maxDepth = config.execution.maxDepth;
+        }
+        if (config.execution.warnAtIteration !== undefined) {
+          systemConfig.safety.warnAtIteration = config.execution.warnAtIteration;
+        }
+        if (config.execution.maxTokensEstimate !== undefined) {
+          systemConfig.safety.maxTokensEstimate = config.execution.maxTokensEstimate;
+        }
+      }
 
-      systemConfig.session = {
-        timeout: config.execution.timeout,
-      } as SessionConfig;
+      if (config.execution.timeout !== undefined) {
+        systemConfig.session = {
+          timeout: config.execution.timeout,
+        } as SessionConfig;
+      }
     }
 
     if (config.mcpServers) {
@@ -562,9 +637,12 @@ export class AgentSystemBuilder {
    * Factory method: Minimal configuration
    */
   static minimal(): AgentSystemBuilder {
+    const isTest = process.env.NODE_ENV === 'test';
     return new AgentSystemBuilder({
-      model: DEFAULT_SYSTEM_CONFIG.model,
-      agents: { directories: [] }, // Uses built-in default agent
+      model: isTest ? 'test-model' : DEFAULT_SYSTEM_CONFIG.model,
+      agents: isTest
+        ? { directories: ['tests/unit/test-agents'], agents: [] }
+        : { directories: [] }, // Uses built-in default agent
       tools: { builtin: [] },
       safety: {
         maxIterations: 10,
@@ -579,9 +657,12 @@ export class AgentSystemBuilder {
    * Factory method: Default configuration
    */
   static default(): AgentSystemBuilder {
+    const isTest = process.env.NODE_ENV === 'test';
     return new AgentSystemBuilder({
-      model: DEFAULT_SYSTEM_CONFIG.model,
-      agents: { directories: [] }, // Uses built-in default agent
+      model: isTest ? 'test-model' : DEFAULT_SYSTEM_CONFIG.model,
+      agents: isTest
+        ? { directories: ['tests/unit/test-agents'], agents: [] }
+        : { directories: [] }, // Uses built-in default agent
       tools: { builtin: ['read', 'write', 'list', 'grep', 'task', 'todowrite'] },
       caching: { enabled: true, maxCacheBlocks: 4, cacheTTLMinutes: 5 },
       logging: {

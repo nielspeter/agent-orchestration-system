@@ -13,7 +13,6 @@ import {
 import { LoggerFactory } from './logging';
 import { TodoManager } from '@/todos';
 import { DEFAULT_SYSTEM_CONFIG, ResolvedSystemConfig } from '@/config';
-import { ProviderFactory } from '@/providers';
 
 // Load environment variables
 dotenv.config();
@@ -58,7 +57,7 @@ export class AgentOrchestrationSystem {
       this.agentLoader,
       this.toolRegistry,
       this.config,
-      config.modelName || ProviderFactory.getDefaultModel(),
+      config.modelName || this.config.defaultModel || 'claude-3-5-haiku-latest',
       logger
     );
   }
@@ -128,7 +127,7 @@ async function main() {
 
   const system = new AgentOrchestrationSystem({
     agentsDir: path.join(getDirname(import.meta.url), '../agents'),
-    modelName: process.env.MODEL || ProviderFactory.getDefaultModel(),
+    modelName: process.env.MODEL || 'claude-3-5-haiku-latest',
   });
 
   // Initialize async components

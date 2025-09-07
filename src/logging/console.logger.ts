@@ -139,7 +139,12 @@ export class ConsoleLogger implements AgentLogger {
     let resultStr: string;
     if (typeof result === 'string') {
       resultStr = result;
-    } else if (result && typeof result === 'object' && 'error' in result) {
+    } else if (
+      result &&
+      typeof result === 'object' &&
+      'error' in result &&
+      (result as { error?: string }).error
+    ) {
       resultStr = `Error: ${(result as { error: string }).error}`;
     } else {
       resultStr = JSON.stringify(result, null, 2);

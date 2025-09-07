@@ -150,12 +150,36 @@ export class ToolLoader {
       metadata.parameters = {};
       const paramLines = paramsMatch[1].split('\n').filter((line) => line.trim());
       for (const line of paramLines) {
-        const [key, type] = line
-          .trim()
-          .split(':')
-          .map((s) => s.trim());
+        const colonIndex = line.indexOf(':');
+        if (colonIndex === -1) continue;
+
+        let key = line.substring(0, colonIndex).trim();
+        const rest = line.substring(colonIndex + 1).trim();
+
+        // Check if parameter is optional (ends with ?)
+        let required = true;
+        if (key.endsWith('?')) {
+          key = key.slice(0, -1).trim();
+          required = false;
+        }
+
+        // Parse type and optional description
+        // Format: "type" or "type - description"
+        const dashIndex = rest.indexOf(' - ');
+        let type: string;
+        let description: string;
+
+        if (dashIndex !== -1) {
+          type = rest.substring(0, dashIndex).trim();
+          description = rest.substring(dashIndex + 3).trim();
+        } else {
+          // Just type, no description
+          type = rest.trim();
+          description = `Parameter ${key}`;
+        }
+
         if (key && type) {
-          metadata.parameters[key] = { type, description: `Parameter ${key}` };
+          metadata.parameters[key] = { type, description, required };
         }
       }
     }
@@ -273,11 +297,26 @@ export class ToolLoader {
         }
 
         // Execute via shell tool
-        return await this.shellTool.execute({
+        const result = await this.shellTool.execute({
           command,
           timeout: 30000,
           parseJson: true, // Try to parse output as JSON
         });
+
+        // Check if the tool returned a success/error response
+        if (result.content && typeof result.content === 'object') {
+          const toolResponse = result.content as { success?: boolean; error?: string };
+
+          // If tool explicitly returned success: false, convert to error
+          if (toolResponse.success === false) {
+            return {
+              content: '',
+              error: toolResponse.error || 'Tool execution failed',
+            };
+          }
+        }
+
+        return result;
       },
 
       isConcurrencySafe: () => true, // Scripts can generally run in parallel

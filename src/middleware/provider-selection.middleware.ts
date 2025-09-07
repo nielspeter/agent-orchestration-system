@@ -8,6 +8,7 @@ import { AgentLogger } from '@/logging';
  */
 export function createProviderSelectionMiddleware(
   defaultModelName: string,
+  defaultBehaviorName: string,
   logger?: AgentLogger
 ): Middleware {
   return async (ctx, next) => {
@@ -27,19 +28,22 @@ export function createProviderSelectionMiddleware(
         top_p = ctx.agent.top_p;
       }
 
+      // Load providers config once
+      const providersConfig = ProviderFactory.loadProvidersConfig();
+
       // If not explicit, check for behavior preset
       if (temperature === undefined || top_p === undefined) {
         let preset;
         if (ctx.agent?.behavior) {
-          preset = ProviderFactory.getBehaviorPreset(ctx.agent.behavior);
+          preset = ProviderFactory.getBehaviorPreset(providersConfig, ctx.agent.behavior);
           if (!preset) {
             ctx.logger.logSystemMessage(
               `Unknown behavior preset: ${ctx.agent.behavior}, using default`
             );
-            preset = ProviderFactory.getDefaultBehavior();
+            preset = ProviderFactory.getDefaultBehavior(providersConfig, defaultBehaviorName);
           }
         } else {
-          preset = ProviderFactory.getDefaultBehavior();
+          preset = ProviderFactory.getDefaultBehavior(providersConfig, defaultBehaviorName);
         }
 
         // Use preset values if not explicitly overridden
@@ -52,6 +56,7 @@ export function createProviderSelectionMiddleware(
       // NOW create provider with the resolved behavior settings
       const { provider, modelConfig } = ProviderFactory.createWithConfig(
         modelName,
+        providersConfig,
         logger,
         ctx.behaviorSettings
       );
@@ -65,7 +70,10 @@ export function createProviderSelectionMiddleware(
       }
 
       // Log behavior settings if different from default
-      const defaultBehavior = ProviderFactory.getDefaultBehavior();
+      const defaultBehavior = ProviderFactory.getDefaultBehavior(
+        providersConfig,
+        defaultBehaviorName
+      );
       if (
         ctx.behaviorSettings.temperature !== defaultBehavior.temperature ||
         ctx.behaviorSettings.top_p !== defaultBehavior.top_p

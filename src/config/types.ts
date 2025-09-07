@@ -152,6 +152,10 @@ export interface TodoConfig {
 export interface SystemConfig {
   /** Model name to use */
   model?: string;
+  /** Default model to use when not specified */
+  defaultModel?: string;
+  /** Default behavior preset to use */
+  defaultBehavior?: string;
   /** Agent configuration */
   agents?: AgentConfig;
   /** Tool configuration */
@@ -176,6 +180,8 @@ export interface SystemConfig {
  */
 export interface ResolvedSystemConfig {
   model: string;
+  defaultModel: string;
+  defaultBehavior: string;
   agents: AgentConfig;
   tools: Required<ToolConfig>;
   safety: SafetyConfig;
@@ -190,7 +196,9 @@ export interface ResolvedSystemConfig {
  * Default configuration values
  */
 export const DEFAULT_SYSTEM_CONFIG: ResolvedSystemConfig = {
-  model: 'claude-3-5-haiku-latest', // Default, should be overridden by ProviderFactory.getDefaultModel()
+  model: '', // Will be set to defaultModel if not specified
+  defaultModel: 'claude-3-5-haiku-latest',
+  defaultBehavior: 'balanced',
 
   agents: {
     directories: [], // Empty by default - uses built-in default agent
@@ -246,7 +254,17 @@ export const DEFAULT_SYSTEM_CONFIG: ResolvedSystemConfig = {
  */
 export const TEST_CONFIG_MINIMAL: SystemConfig = {
   model: 'test-model',
-  agents: { directories: [] },
+  agents: {
+    directories: [],
+    // Add test agent to satisfy validation
+    agents: [
+      {
+        name: 'test-agent',
+        prompt: 'Test agent for unit tests',
+        tools: '*',
+      },
+    ],
+  },
   tools: { builtin: [], custom: [] },
   safety: {
     maxIterations: 3,
@@ -346,6 +364,8 @@ export function resolveConfig(partial: Partial<SystemConfig>): ResolvedSystemCon
 
   // Ensure all required fields are present
   if (!merged.model) merged.model = DEFAULT_SYSTEM_CONFIG.model;
+  if (!merged.defaultModel) merged.defaultModel = DEFAULT_SYSTEM_CONFIG.defaultModel;
+  if (!merged.defaultBehavior) merged.defaultBehavior = DEFAULT_SYSTEM_CONFIG.defaultBehavior;
   merged.agents ??= DEFAULT_SYSTEM_CONFIG.agents;
   merged.tools ??= DEFAULT_SYSTEM_CONFIG.tools;
   merged.safety ??= DEFAULT_SYSTEM_CONFIG.safety;

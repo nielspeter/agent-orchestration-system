@@ -2,11 +2,13 @@ import { describe, expect, test } from 'vitest';
 import { ProviderFactory } from '@/providers/provider-factory';
 
 describe('Behavior Presets - Essential Tests', () => {
+  const providersConfig = ProviderFactory.loadProvidersConfig();
+
   test('all presets have required temperature and top_p', () => {
     const presetNames = ['deterministic', 'precise', 'balanced', 'creative', 'exploratory'];
 
     for (const name of presetNames) {
-      const preset = ProviderFactory.getBehaviorPreset(name);
+      const preset = ProviderFactory.getBehaviorPreset(providersConfig, name);
       expect(preset).toBeDefined();
       expect(preset).toHaveProperty('temperature');
       expect(preset).toHaveProperty('top_p');
@@ -19,7 +21,7 @@ describe('Behavior Presets - Essential Tests', () => {
     const presetNames = ['deterministic', 'precise', 'balanced', 'creative', 'exploratory'];
 
     for (const name of presetNames) {
-      const preset = ProviderFactory.getBehaviorPreset(name);
+      const preset = ProviderFactory.getBehaviorPreset(providersConfig, name);
       expect(preset).toBeDefined();
       if (preset) {
         // Temperature should be between 0 and 2 (Anthropic limits)
@@ -34,25 +36,40 @@ describe('Behavior Presets - Essential Tests', () => {
   });
 
   test('presets have graduated temperature values', () => {
-    const deterministic = ProviderFactory.getBehaviorPreset('deterministic');
-    const precise = ProviderFactory.getBehaviorPreset('precise');
-    const balanced = ProviderFactory.getBehaviorPreset('balanced');
-    const creative = ProviderFactory.getBehaviorPreset('creative');
-    const exploratory = ProviderFactory.getBehaviorPreset('exploratory');
+    const deterministic = ProviderFactory.getBehaviorPreset(providersConfig, 'deterministic');
+    const precise = ProviderFactory.getBehaviorPreset(providersConfig, 'precise');
+    const balanced = ProviderFactory.getBehaviorPreset(providersConfig, 'balanced');
+    const creative = ProviderFactory.getBehaviorPreset(providersConfig, 'creative');
+    const exploratory = ProviderFactory.getBehaviorPreset(providersConfig, 'exploratory');
+
+    // Ensure all presets exist before comparing
+    expect(deterministic).toBeDefined();
+    expect(precise).toBeDefined();
+    expect(balanced).toBeDefined();
+    expect(creative).toBeDefined();
+    expect(exploratory).toBeDefined();
 
     // Temperature should increase progressively
-    expect(deterministic!.temperature).toBeLessThan(precise!.temperature);
-    expect(precise!.temperature).toBeLessThan(balanced!.temperature);
-    expect(balanced!.temperature).toBeLessThan(creative!.temperature);
-    expect(creative!.temperature).toBeLessThan(exploratory!.temperature);
+    if (deterministic && precise && balanced && creative && exploratory) {
+      expect(deterministic.temperature).toBeLessThan(precise.temperature);
+      expect(precise.temperature).toBeLessThan(balanced.temperature);
+      expect(balanced.temperature).toBeLessThan(creative.temperature);
+      expect(creative.temperature).toBeLessThan(exploratory.temperature);
+    }
   });
 
   test('presets have appropriate top_p values', () => {
-    const deterministic = ProviderFactory.getBehaviorPreset('deterministic');
-    const exploratory = ProviderFactory.getBehaviorPreset('exploratory');
+    const deterministic = ProviderFactory.getBehaviorPreset(providersConfig, 'deterministic');
+    const exploratory = ProviderFactory.getBehaviorPreset(providersConfig, 'exploratory');
+
+    // Ensure both presets exist
+    expect(deterministic).toBeDefined();
+    expect(exploratory).toBeDefined();
 
     // Deterministic should have lower top_p than exploratory
-    expect(deterministic!.top_p).toBeLessThan(exploratory!.top_p);
+    if (deterministic && exploratory) {
+      expect(deterministic.top_p).toBeLessThan(exploratory.top_p);
+    }
   });
 
   test('behavior resolution priority: direct > preset > default', () => {
@@ -74,13 +91,13 @@ describe('Behavior Presets - Essential Tests', () => {
       behavior: 'creative',
     };
 
-    const preset = ProviderFactory.getBehaviorPreset(agentWithPreset.behavior);
+    const preset = ProviderFactory.getBehaviorPreset(providersConfig, agentWithPreset.behavior);
     expect(preset).toBeDefined();
     expect(preset?.temperature).toBe(0.7);
     expect(preset?.top_p).toBe(0.95);
 
     // Test default behavior
-    const defaultBehavior = ProviderFactory.getDefaultBehavior();
+    const defaultBehavior = ProviderFactory.getDefaultBehavior(providersConfig);
     expect(defaultBehavior).toBeDefined();
     expect(defaultBehavior.temperature).toBe(0.5);
     expect(defaultBehavior.top_p).toBe(0.85);

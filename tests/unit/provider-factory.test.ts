@@ -2,33 +2,36 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { ProviderFactory } from '@/providers/provider-factory';
 
 describe('Provider Factory - Essential Tests', () => {
+  const providersConfig = ProviderFactory.loadProvidersConfig();
+
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   test('gets behavior preset correctly', () => {
-    const preset = ProviderFactory.getBehaviorPreset('creative');
+    const preset = ProviderFactory.getBehaviorPreset(providersConfig, 'creative');
     expect(preset).toBeDefined();
     expect(preset?.temperature).toBe(0.7);
     expect(preset?.top_p).toBe(0.95);
   });
 
   test('returns undefined for non-existent preset', () => {
-    const preset = ProviderFactory.getBehaviorPreset('non-existent');
+    const preset = ProviderFactory.getBehaviorPreset(providersConfig, 'non-existent');
     expect(preset).toBeUndefined();
   });
 
   test('gets default behavior', () => {
-    const defaultBehavior = ProviderFactory.getDefaultBehavior();
+    const defaultBehavior = ProviderFactory.getDefaultBehavior(providersConfig);
     expect(defaultBehavior).toBeDefined();
     expect(defaultBehavior.temperature).toBe(0.5);
     expect(defaultBehavior.top_p).toBe(0.85);
   });
 
-  test('gets default model', () => {
-    const defaultModel = ProviderFactory.getDefaultModel();
-    expect(defaultModel).toBeDefined();
-    expect(typeof defaultModel).toBe('string');
+  test('loads providers config', () => {
+    const config = ProviderFactory.loadProvidersConfig();
+    expect(config).toBeDefined();
+    expect(config.providers).toBeDefined();
+    expect(config.fallbackProvider).toBeDefined();
   });
 
   test('creates provider with custom behavior settings', () => {
@@ -39,6 +42,7 @@ describe('Provider Factory - Essential Tests', () => {
     const behaviorSettings = { temperature: 0.3, top_p: 0.7 };
     const result = ProviderFactory.createWithConfig(
       'claude-3-5-haiku-latest',
+      providersConfig,
       undefined,
       behaviorSettings
     );
@@ -62,7 +66,7 @@ describe('Provider Factory - Essential Tests', () => {
     delete process.env.OPENROUTER_API_KEY;
 
     expect(() => {
-      ProviderFactory.createWithConfig('claude-3-5-haiku-latest');
+      ProviderFactory.createWithConfig('claude-3-5-haiku-latest', providersConfig);
     }).toThrow(/missing API key/);
 
     // Restore if they existed
@@ -74,7 +78,7 @@ describe('Provider Factory - Essential Tests', () => {
     const presetNames = ['deterministic', 'precise', 'balanced', 'creative', 'exploratory'];
 
     for (const name of presetNames) {
-      const preset = ProviderFactory.getBehaviorPreset(name);
+      const preset = ProviderFactory.getBehaviorPreset(providersConfig, name);
       expect(preset).toBeDefined();
       expect(preset).toHaveProperty('temperature');
       expect(preset).toHaveProperty('top_p');

@@ -112,7 +112,7 @@ behavior: deterministic  # Uses preset for consistency
 ---
 ```
 
-Available presets (configured in `providers-config.json`):
+Available presets (catalog in `providers-config.json`, defaults in `agent-config.json`):
 - **deterministic** (0.1/0.5): Validation, routing, business logic
 - **precise** (0.2/0.6): Code analysis, verification, structured outputs
 - **balanced** (0.5/0.85): Default - orchestration, tool use, reasoning

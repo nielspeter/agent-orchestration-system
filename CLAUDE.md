@@ -183,7 +183,7 @@ top_p: 0.7
 ---
 ```
 
-Available presets in `providers-config.json`:
+Available presets in `providers-config.json` (default model and behavior are configured in `agent-config.json`):
 - **deterministic** (0.1/0.5): Near-deterministic for validation, routing, business logic
 - **precise** (0.2/0.6): Code analysis, verification, structured outputs  
 - **balanced** (0.5/0.85): Default orchestration, tool use, general reasoning

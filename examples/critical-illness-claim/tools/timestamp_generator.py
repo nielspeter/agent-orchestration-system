@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
 name: timestamp_generator
-description: Generate and format timestamps in ISO 8601 format
+description: Generate and format timestamps in ISO 8601 format. Operations: 'generate' (create current timestamp), 'format' (format existing timestamp), 'difference' (calculate days between dates)
 parameters:
-  operation: string
-  timestamp: string
-  date1: string
-  date2: string
+  operation: string - The operation to perform ('generate', 'format', or 'difference')
+  timestamp?: string - Timestamp to format (used with 'format' operation)
+  date1?: string - First date for difference calculation (used with 'difference' operation)
+  date2?: string - Second date for difference calculation (used with 'difference' operation)
 """
 
 import json

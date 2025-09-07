@@ -28,6 +28,43 @@ function validateArgs<T extends Record<string, unknown>>(
   return requiredFields.every((field) => field in args);
 }
 
+// Security: POC-level path validation (block only truly sensitive files)
+const BLOCKED_PATH_PATTERNS = [
+  /\.ssh\/id_[rd]sa/, // Private SSH keys
+  /\.aws\/credentials/, // AWS credentials
+  /\.env$/, // Root .env files (allow .env.example, .env.test)
+  /\/etc\/shadow/, // Password hashes
+  /\.gnupg\//, // GPG keys
+  /\.docker\/config\.json/, // Docker credentials
+  /\.kube\/config/, // Kubernetes credentials
+];
+
+// File size limits to prevent memory exhaustion
+const FILE_LIMITS = {
+  maxFileReadSize: 50 * 1024 * 1024, // 50MB (generous for source code)
+  maxReadLines: 10000, // 10K lines (most source files)
+  maxLineLength: 5000, // 5K chars per line
+  maxFileWriteSize: 10 * 1024 * 1024, // 10MB writes
+};
+
+/**
+ * Validates file path against security patterns
+ */
+function validatePath(filePath: string): void {
+  const resolved = path.resolve(filePath);
+
+  // Check blocked patterns
+  if (BLOCKED_PATH_PATTERNS.some((pattern) => pattern.test(resolved))) {
+    throw new Error(`Security: Access denied to sensitive file: ${filePath}`);
+  }
+
+  // Warn on potentially sensitive paths
+  const sensitivePaths = [/^\/etc/, /~\//, /\.git\//, /node_modules/];
+  if (sensitivePaths.some((pattern) => pattern.test(resolved))) {
+    console.warn(`⚠️ Accessing potentially sensitive path: ${filePath}`);
+  }
+}
+
 /**
  * Creates a Read tool for file system access
  *
@@ -60,8 +97,42 @@ export const createReadTool = (): BaseTool => ({
           error: 'Invalid arguments: path is required',
         };
       }
+
+      // Security check
+      validatePath(args.path);
+
+      // Check file size before reading
+      const stats = await fs.stat(args.path);
+      if (stats.size > FILE_LIMITS.maxFileReadSize) {
+        return {
+          content: null,
+          error: `File too large: ${(stats.size / 1024 / 1024).toFixed(1)}MB (max: ${FILE_LIMITS.maxFileReadSize / 1024 / 1024}MB)`,
+        };
+      }
+
+      // Read file
       const content = await fs.readFile(args.path, 'utf-8');
-      return { content };
+      const lines = content.split('\n');
+
+      // Check line count and truncate if needed
+      if (lines.length > FILE_LIMITS.maxReadLines) {
+        const truncated = lines.slice(0, FILE_LIMITS.maxReadLines);
+        truncated.push(
+          `\n... [File truncated - ${lines.length - FILE_LIMITS.maxReadLines} more lines]`
+        );
+        return {
+          content: truncated.join('\n'),
+        };
+      }
+
+      // Truncate very long lines
+      const processedLines = lines.map((line) =>
+        line.length > FILE_LIMITS.maxLineLength
+          ? line.slice(0, FILE_LIMITS.maxLineLength) + '... [line truncated]'
+          : line
+      );
+
+      return { content: processedLines.join('\n') };
     } catch (error) {
       return {
         content: null,
@@ -110,6 +181,18 @@ export const createWriteTool = (): BaseTool => ({
           error: 'Invalid arguments: path and content are required',
         };
       }
+
+      // Security check
+      validatePath(args.path);
+
+      // Check content size
+      if (args.content.length > FILE_LIMITS.maxFileWriteSize) {
+        return {
+          content: null,
+          error: `Content too large to write: ${(args.content.length / 1024 / 1024).toFixed(1)}MB (max: ${FILE_LIMITS.maxFileWriteSize / 1024 / 1024}MB)`,
+        };
+      }
+
       await fs.mkdir(path.dirname(args.path), { recursive: true });
       await fs.writeFile(args.path, args.content, 'utf-8');
 
@@ -165,6 +248,10 @@ export const createListTool = (): BaseTool => ({
           error: 'Invalid arguments: path is required',
         };
       }
+
+      // Security check (listing directories can also be sensitive)
+      validatePath(args.path);
+
       const files = await fs.readdir(args.path);
       return { content: files };
     } catch (error) {

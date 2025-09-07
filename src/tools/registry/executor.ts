@@ -14,6 +14,45 @@ export class ToolExecutor {
     private readonly config: ToolExecutorConfig = {}
   ) {}
 
+  /**
+   * Execute function with retry logic for transient failures
+   */
+  private async executeWithRetry<T>(
+    fn: () => Promise<T>,
+    retryCount: number = this.config.retryCount || 0
+  ): Promise<T> {
+    let lastError: unknown;
+    const maxAttempts = retryCount + 1;
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        return await fn();
+      } catch (error) {
+        lastError = error;
+
+        if (attempt === maxAttempts) {
+          throw error;
+        }
+
+        // Only retry on transient errors
+        const errorObj = error as { code?: string; status?: number };
+        const isRetryable =
+          errorObj.code === 'ECONNRESET' ||
+          errorObj.code === 'ETIMEDOUT' ||
+          (errorObj.status && errorObj.status >= 500);
+
+        if (!isRetryable) {
+          throw error;
+        }
+
+        const delay = 1000 * attempt; // Linear backoff
+        console.info(`⚠️ Retry ${attempt}/${retryCount} in ${delay}ms...`);
+        await new Promise((r) => setTimeout(r, delay));
+      }
+    }
+    throw lastError;
+  }
+
   async executeTools(toolUses: ToolUse[]): Promise<ToolOutput[]> {
     const results: ToolOutput[] = [];
 
@@ -29,9 +68,14 @@ export class ToolExecutor {
       }
 
       try {
-        const result = await this.executeWithTimeout(
-          () => tool.execute(toolUse.input),
-          (toolUse.input.timeout as number) || this.config.defaultTimeout || 5000
+        // Use retry wrapper around the timeout execution
+        const result = await this.executeWithRetry(
+          () =>
+            this.executeWithTimeout(
+              () => tool.execute(toolUse.input),
+              (toolUse.input.timeout as number) || this.config.defaultTimeout || 5000
+            ),
+          this.config.retryCount || 0
         );
 
         if (!result?.content) {

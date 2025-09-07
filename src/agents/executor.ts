@@ -76,7 +76,9 @@ export class AgentExecutor {
       .use(createErrorHandlerMiddleware())
       .use(createAgentLoaderMiddleware(this.agentLoader, this.toolRegistry))
       .use(createContextSetupMiddleware())
-      .use(createProviderSelectionMiddleware(this.modelName, this.logger))
+      .use(
+        createProviderSelectionMiddleware(this.modelName, this.config.defaultBehavior, this.logger)
+      )
       .use(createSafetyChecksMiddleware(this.config.safety))
       .use(createLLMCallMiddleware())
       .use(createToolExecutionMiddleware(this.toolRegistry, this.execute.bind(this)));
@@ -112,11 +114,11 @@ export class AgentExecutor {
       parentMessages: undefined,
     };
 
-    // Log execution start
+    // Log execution start (model will be determined after agent is loaded)
     this.logger.logAgentStart(
       agentName,
       execContext.depth,
-      `Starting execution with ${this.modelName}${execContext.parentAgent ? ` (delegated from ${execContext.parentAgent})` : ''}`
+      `Starting execution${execContext.parentAgent ? ` (delegated from ${execContext.parentAgent})` : ''}`
     );
 
     // Add depth visualization

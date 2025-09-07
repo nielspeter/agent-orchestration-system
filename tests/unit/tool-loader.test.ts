@@ -249,3 +249,128 @@ describe('ShellTool', () => {
     expect(result.error).toBeUndefined();
   });
 });
+
+describe('Tool error handling', () => {
+  const testDir = 'test-tools-temp';
+
+  beforeEach(async () => {
+    // Create test directory
+    await fs.mkdir(testDir, { recursive: true });
+  });
+
+  afterEach(async () => {
+    // Clean up test directory
+    await fs.rm(testDir, { recursive: true, force: true });
+  });
+
+  it('should convert success:false responses to errors', async () => {
+    // Create a Python tool that returns success: false
+    const toolContent = `#!/usr/bin/env python3
+"""
+name: error_test_tool
+description: Tool that returns errors for testing
+parameters:
+  operation: string
+"""
+import json
+import sys
+
+data = json.load(sys.stdin)
+if data.get('operation') == 'fail':
+    print(json.dumps({"success": False, "error": "Operation failed as requested"}))
+else:
+    print(json.dumps({"success": True, "result": "Operation succeeded"}))
+`;
+
+    await fs.writeFile(path.join(testDir, 'error_test_tool.py'), toolContent, {
+      mode: 0o755,
+    });
+
+    const loader = new ToolLoader(testDir);
+    const tool = await loader.loadTool('error_test_tool');
+
+    // Test successful operation
+    const successResult = await tool.execute({ operation: 'succeed' });
+    expect(successResult.error).toBeUndefined();
+    expect(successResult.content).toEqual({ success: true, result: 'Operation succeeded' });
+
+    // Test failed operation - should convert to error
+    const failResult = await tool.execute({ operation: 'fail' });
+    expect(failResult.error).toBe('Operation failed as requested');
+    expect(failResult.content).toBe('');
+  });
+
+  it('should handle missing error message in failed response', async () => {
+    // Create a tool that returns success: false without error message
+    const toolContent = `#!/usr/bin/env python3
+"""
+name: minimal_error_tool
+description: Tool that returns minimal error
+parameters:
+  fail: string
+"""
+import json
+import sys
+
+data = json.load(sys.stdin)
+print(json.dumps({"success": False}))
+`;
+
+    await fs.writeFile(path.join(testDir, 'minimal_error_tool.py'), toolContent, {
+      mode: 0o755,
+    });
+
+    const loader = new ToolLoader(testDir);
+    const tool = await loader.loadTool('minimal_error_tool');
+
+    const result = await tool.execute({ fail: 'yes' });
+    expect(result.error).toBe('Tool execution failed');
+    expect(result.content).toBe('');
+  });
+
+  it('should pass through successful responses unchanged', async () => {
+    // Create a tool that returns various successful responses
+    const toolContent = `#!/usr/bin/env python3
+"""
+name: success_tool
+description: Tool that returns success
+parameters:
+  type: string
+"""
+import json
+import sys
+
+data = json.load(sys.stdin)
+response_type = data.get('type', 'simple')
+
+if response_type == 'with_success_true':
+    print(json.dumps({"success": True, "data": "test data"}))
+elif response_type == 'without_success_field':
+    print(json.dumps({"data": "just data", "count": 42}))
+else:
+    print(json.dumps({"result": "simple result"}))
+`;
+
+    await fs.writeFile(path.join(testDir, 'success_tool.py'), toolContent, {
+      mode: 0o755,
+    });
+
+    const loader = new ToolLoader(testDir);
+    const tool = await loader.loadTool('success_tool');
+
+    // Test with explicit success: true
+    const result1 = await tool.execute({ type: 'with_success_true' });
+    expect(result1.error).toBeUndefined();
+    expect(result1.content).toEqual({ success: true, data: 'test data' });
+
+    // Test without success field (should pass through)
+    const result2 = await tool.execute({ type: 'without_success_field' });
+    expect(result2.error).toBeUndefined();
+    expect(result2.content).toEqual({ data: 'just data', count: 42 });
+
+    // Test simple response
+    const result3 = await tool.execute({ type: 'simple' });
+    expect(result3.error).toBeUndefined();
+    expect(result3.content).toEqual({ result: 'simple result' });
+  });
+});
