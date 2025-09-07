@@ -202,7 +202,7 @@ async function handleDelegation(
     depth: ctx.executionContext.depth + 1,
     parentAgent: ctx.agentName,
     isSidechain: true,
-    parentMessages: [], // Empty array - child starts fresh (Claude Code style)
+    parentMessages: [], // Empty array - child starts fresh (pull architecture)
   });
 
   return { content: subAgentResult };

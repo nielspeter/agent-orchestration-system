@@ -26,7 +26,7 @@ describe('Caching Integration Tests', () => {
     }
   });
 
-  describe('Claude Code Caching Strategy', () => {
+  describe('Caching Strategy', () => {
     test('parent reads should be cached for child agents', async () => {
       if (!buildResult) {
         console.log('Skipping - no API key');

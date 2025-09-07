@@ -22,7 +22,7 @@ dotenv.config();
  * Main orchestration system that coordinates agents, tools, and execution
  *
  * This class serves as the primary entry point for the agent orchestration system,
- * managing the lifecycle of agents, tools, and task execution with Claude Code's
+ * managing the lifecycle of agents, tools, and task execution with advanced
  * caching strategy and sophisticated prompting.
  */
 export class AgentOrchestrationSystem {

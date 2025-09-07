@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance for AI assistants when working with code in this repository.
 
 ## Essential Commands
 
@@ -52,7 +52,7 @@ The system uses a **Chain of Responsibility pattern** where each middleware hand
 6. **LLMCallMiddleware** - Calls selected LLM provider with caching support
 7. **ToolExecutionMiddleware** - Executes tools and handles agent delegation
 
-### Pull Architecture (Claude Code Style)
+### Pull Architecture
 When agent A delegates to agent B:
 - B receives **only the task**, not parent's conversation history
 - B uses tools (Read, Write, List, Grep, Task) to gather needed information

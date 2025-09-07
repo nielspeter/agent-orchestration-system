@@ -4,6 +4,16 @@
   "type": "module",
   "description": "Agent orchestration system where everything is an agent",
   "main": "dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nielspeter/agent-orchestration-system.git"
+  },
+  "bugs": {
+    "url": "https://github.com/nielspeter/agent-orchestration-system/issues"
+  },
+  "homepage": "https://github.com/nielspeter/agent-orchestration-system#readme",
+  "author": "",
+  "license": "MIT",
   "scripts": {
     "build": "tsc",
     "dev": "tsx src/index.ts",

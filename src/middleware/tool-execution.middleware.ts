@@ -61,7 +61,7 @@ export function createToolExecutionMiddleware(
     }
 
     // Key insight: We should only continue if the agent needs to process tool results
-    // and provide a response. Otherwise default to false like Claude Code.
+    // and provide a response. Otherwise default to false.
     ctx.shouldContinue = true; // Allow agent to see tool results and respond
 
     await next();

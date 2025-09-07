@@ -1,6 +1,6 @@
-# Agent Orchestration POC - Pull Architecture with Middleware Pipeline
+# Agent Orchestration System - Pull Architecture with Middleware Pipeline
 
-A TypeScript implementation of Claude Code's agent orchestration system using **pull architecture** where child agents autonomously gather information via tools rather than inheriting parent context. Built with a **middleware pipeline architecture** (Chain of Responsibility pattern) and leverages Anthropic's ephemeral caching for efficiency.
+A TypeScript implementation of an advanced agent orchestration system using **pull architecture** where child agents autonomously gather information via tools rather than inheriting parent context. Built with a **middleware pipeline architecture** (Chain of Responsibility pattern) and leverages Anthropic's ephemeral caching for efficiency.
 
 ## 🆕 Recent Updates
 - **Behavior Presets**: Semantic temperature/top_p control (deterministic, precise, balanced, creative, exploratory)
@@ -31,7 +31,7 @@ The monolithic 500-line `AgentExecutor` has been refactored into a clean pipelin
 - Agents are defined as markdown files with YAML frontmatter
 - Orchestration emerges through the `Task` tool for delegation
 
-### Pull Architecture with Caching (Claude Code Style)
+### Pull Architecture with Caching
 When agent A delegates to agent B:
 1. B receives **minimal context** (~5-500 tokens) - just the task prompt
 2. B uses tools (Read, Write, List, Grep, Task) to **pull** information it needs
@@ -279,8 +279,8 @@ export function createCustomMiddleware(): Middleware {
 
 ## 🎯 Key Design Decisions
 
-### Pull Architecture (Claude Code Style)
-Unlike traditional systems that pass full context to child agents, we implement Claude Code's "pull, don't push" architecture:
+### Pull Architecture
+Unlike traditional systems that pass full context to child agents, we implement a "pull, don't push" architecture:
 
 - **Minimal Context**: Child agents receive only the task prompt (~5-500 tokens)
 - **Tool-Based Discovery**: Agents use Read, Grep, List to gather what they need
@@ -291,7 +291,7 @@ Unlike traditional systems that pass full context to child agents, we implement 
 // Traditional (problematic)
 parentMessages: ctx.messages.slice() // 10,000+ tokens of confusion
 
-// Our approach (Claude Code style)
+// Our approach (pull architecture)
 parentMessages: []  // Clean slate, agent pulls what it needs
 ```
 

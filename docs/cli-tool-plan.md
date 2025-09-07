@@ -1,7 +1,7 @@
 # Agent CLI Tool Plan
 
 ## Goal
-Create a CLI tool similar to Claude Code that allows running agents from any directory without writing TypeScript setup code.
+Create a CLI tool that allows running agents from any directory without writing TypeScript setup code.
 
 ## Usage Examples
 ```bash
@@ -84,7 +84,7 @@ Options:
 
 ## Benefits
 - **Zero setup**: Just create agents/ and tools/ folders
-- **Familiar CLI**: Works like Claude Code
+- **Familiar CLI**: Intuitive command-line interface
 - **Portable**: Can run from any directory
 - **Discoverable**: --list-agents and --list-tools help explore
 - **Simple**: No TypeScript knowledge needed to use

@@ -2,7 +2,7 @@ import { Tool, ToolResult } from '../types';
 import { TodoManager } from '@/todos';
 
 /**
- * Todo item interface matching Claude Code's schema
+ * Todo item interface for task management
  */
 export interface TodoItem {
   content: string;
@@ -14,7 +14,6 @@ export interface TodoItem {
 
 /**
  * The TodoWrite tool - for task planning and progress tracking
- * Matches Claude Code's exact implementation and behavior
  */
 export const createTodoWriteTool = (todoManager: TodoManager): Tool => ({
   name: 'TodoWrite',

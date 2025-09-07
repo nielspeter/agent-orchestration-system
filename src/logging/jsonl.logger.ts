@@ -5,7 +5,7 @@ import { AgentLogger } from './types';
 import { ToolResult } from '@/base-types';
 
 /**
- * Claude Code compatible JSONL event structure
+ * JSONL event structure for conversation logging
  */
 export interface JsonlEvent {
   // Core identifiers
@@ -81,7 +81,7 @@ export interface JsonlEvent {
 }
 
 /**
- * JSONL Logger compatible with Claude Code's conversation format
+ * JSONL Logger for structured conversation logging
  */
 export class JsonlLogger implements AgentLogger {
   private readonly filePath: string;

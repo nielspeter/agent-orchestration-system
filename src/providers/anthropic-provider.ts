@@ -59,10 +59,10 @@ export class AnthropicProvider implements ILLMProvider {
     const systemMessages = messages.filter((m) => m.role === 'system');
     const conversationMessages = messages.filter((m) => m.role !== 'system');
 
-    // Format system messages with caching (Claude Code strategy)
+    // Format system messages with caching strategy
     const formattedSystem = this.formatSystemMessages(systemMessages);
 
-    // Format conversation messages with Claude Code's caching strategy
+    // Format conversation messages with caching strategy
     const formattedMessages = this.formatMessagesWithCaching(conversationMessages);
 
     // Convert tools to Anthropic format
@@ -124,7 +124,7 @@ export class AnthropicProvider implements ILLMProvider {
   }
 
   private isCachingEnabled(): boolean {
-    // Following Claude Code's Td() function logic
+    // Check if caching is enabled via environment variable
     return !process.env.DISABLE_PROMPT_CACHING;
   }
 
@@ -144,7 +144,7 @@ export class AnthropicProvider implements ILLMProvider {
       return combinedSystemText;
     }
 
-    // Claude Code strategy: Cache the system prompt as a single block
+    // Strategy: Cache the system prompt as a single block
     return [
       {
         type: 'text' as const,
@@ -160,7 +160,7 @@ export class AnthropicProvider implements ILLMProvider {
 
     for (let i = 0; i < messages.length; i++) {
       const msg = messages[i];
-      // Claude Code strategy: Only cache the LAST 2 messages to stay within 4 block limit
+      // Strategy: Only cache the LAST 2 messages to stay within 4 block limit
       // (system prompt = 1 block, last 2 messages = 2 blocks, total = 3 blocks)
       const shouldCacheThisMessage = cachingEnabled && i >= messages.length - 2;
 
