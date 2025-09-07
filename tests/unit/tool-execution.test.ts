@@ -29,7 +29,7 @@ describe('Tool Execution - Essential Tests', () => {
 
     // Tool registry should exist and handle missing tools
     expect(system.toolRegistry).toBeDefined();
-    const tool = system.toolRegistry.get('non-existent-tool');
+    const tool = system.toolRegistry.getTool('non-existent-tool');
     expect(tool).toBeUndefined();
   });
 

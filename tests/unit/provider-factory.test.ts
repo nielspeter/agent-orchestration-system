@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
-import { ProviderFactory } from '@/llm/provider-factory';
+import { ProviderFactory } from '@/providers/provider-factory';
 
 describe('Provider Factory - Essential Tests', () => {
   beforeEach(() => {

@@ -1,8 +1,8 @@
 import { beforeAll, describe, expect, test } from 'vitest';
-import { AgentLoader } from '@/core/agent-loader';
-import { ToolRegistry } from '@/core/tool-registry';
-import { createListTool, createReadTool, createWriteTool } from '@/tools/file-tools';
-import { createTaskTool } from '@/tools/task-tool';
+import { AgentLoader } from '@/agents/loader';
+import { ToolRegistry } from '@/tools/registry/registry';
+import { createListTool, createReadTool, createWriteTool } from '@/tools/file.tool';
+import { createTaskTool } from '@/tools/task.tool';
 
 describe('System Structure Tests', () => {
   let agentLoader: AgentLoader;
@@ -37,21 +37,21 @@ describe('System Structure Tests', () => {
           (Array.isArray(orchestrator.tools) && orchestrator.tools[0] === '*')
       ).toBe(true);
       expect(orchestrator.description).toBeDefined();
-      expect(orchestrator.description.length).toBeGreaterThan(0);
+      expect(orchestrator.description?.length).toBeGreaterThan(0);
     });
 
     test('should load code-analyzer agent', async () => {
       const analyzer = await agentLoader.loadAgent('code-analyzer');
       expect(analyzer.name).toBe('code-analyzer');
       expect(Array.isArray(analyzer.tools)).toBe(true);
-      expect(analyzer.tools).toContain('read');
-      expect(analyzer.tools).toContain('write');
+      expect(analyzer.tools).toContain('Read');
+      expect(analyzer.tools).toContain('Write');
     });
   });
 
   describe('Tool Registry', () => {
     test('should register and list tools', () => {
-      const tools = toolRegistry.list();
+      const tools = toolRegistry.getAllTools();
       const toolNames = tools.map((t) => t.name);
 
       expect(toolNames).toContain('Read');

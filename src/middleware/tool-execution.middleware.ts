@@ -1,12 +1,12 @@
 import { Middleware, MiddlewareContext } from './middleware-types';
-import { ToolRegistry } from '../core/tool-registry';
+import { ToolRegistry } from '../tools/registry/registry';
 import { ToolCall } from '../types';
 import {
   ExecuteDelegate,
   executeToolsConcurrently,
   executeToolsSequentially,
   groupToolsByConcurrency,
-} from '../services/tool-executor';
+} from '../tools/registry/executor-service';
 
 /**
  * Middleware that executes tool calls from LLM responses

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
-import { createGrepTool } from '@/tools/grep-tool';
+import { createGrepTool } from '@/tools/grep.tool';
 import { execSync } from 'child_process';
 
 // Mock execSync

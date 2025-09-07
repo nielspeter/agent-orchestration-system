@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { ToolLoader } from '@/core/tool-loader';
-import { createShellTool } from '@/tools/shell-tool';
+import { ToolLoader } from '@/tools/registry/loader';
+import { createShellTool } from '@/tools/shell.tool';
 
 describe('ToolLoader', () => {
   const testDir = 'test-tools-temp';

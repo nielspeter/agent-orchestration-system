@@ -10,19 +10,19 @@ import * as fs from 'fs/promises';
 import { v4 as uuidv4 } from 'uuid';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
-import { AgentLoader } from '@/core/agent-loader';
-import { ToolRegistry } from '@/core/tool-registry';
-import { ToolLoader } from '@/core/tool-loader';
-import { AgentExecutor } from '@/core/agent-executor';
-import { TodoManager } from '@/core/todo-manager';
-import { LoggerFactory } from '@/core/logging';
-import { createListTool, createReadTool, createWriteTool } from '@/tools/file-tools';
-import { createGrepTool } from '@/tools/grep-tool';
-import { createTaskTool } from '@/tools/task-tool';
-import { createTodoWriteTool } from '@/tools/todowrite-tool';
-import { createShellTool } from '@/tools/shell-tool';
-import { createGetSessionLogTool } from '@/tools/get-session-log-tool';
-import { BaseTool, ToolParameter, ToolResult, ToolSchema } from '@/types';
+import { AgentLoader } from '@/agents/loader';
+import { ToolRegistry } from '@/tools/registry/registry';
+import { ToolLoader } from '@/tools/registry/loader';
+import { AgentExecutor } from '@/agents/executor';
+import { TodoManager } from '@/todos/manager';
+import { LoggerFactory } from '@/logging';
+import { createListTool, createReadTool, createWriteTool } from '@/tools/file.tool';
+import { createGrepTool } from '@/tools/grep.tool';
+import { createTaskTool } from '@/tools/task.tool';
+import { createTodoWriteTool } from '@/tools/todowrite.tool';
+import { createShellTool } from '@/tools/shell.tool';
+import { createGetSessionLogTool } from '@/tools/get-session-log.tool';
+import { BaseTool, ToolParameter, ToolResult, ToolSchema } from '@/base-types';
 import {
   Agent,
   CachingConfig,
@@ -555,8 +555,7 @@ export class AgentSystemBuilder {
       };
     }
 
-    const builder = new AgentSystemBuilder(systemConfig);
-    return builder;
+    return new AgentSystemBuilder(systemConfig);
   }
 
   /**
@@ -565,7 +564,7 @@ export class AgentSystemBuilder {
   static minimal(): AgentSystemBuilder {
     return new AgentSystemBuilder({
       model: DEFAULT_SYSTEM_CONFIG.model,
-      agents: { directories: ['./agents'] },
+      agents: { directories: ['./templates/agents'] },
       tools: { builtin: [] },
       safety: {
         maxIterations: 10,
@@ -582,7 +581,7 @@ export class AgentSystemBuilder {
   static default(): AgentSystemBuilder {
     return new AgentSystemBuilder({
       model: DEFAULT_SYSTEM_CONFIG.model,
-      agents: { directories: ['./agents'] },
+      agents: { directories: ['./templates/agents'] },
       tools: { builtin: ['read', 'write', 'list', 'grep', 'task', 'todowrite'] },
       caching: { enabled: true, maxCacheBlocks: 4, cacheTTLMinutes: 5 },
       logging: {

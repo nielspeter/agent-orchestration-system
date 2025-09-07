@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { AgentSystemBuilder } from '@/config/system-builder';
-import { AgentExecutor } from '@/core/agent-executor';
+import { AgentExecutor } from '@/agents/executor';
 
 describe('Agent Executor - Essential Tests', () => {
   test('enforces iteration limit to prevent infinite loops', async () => {

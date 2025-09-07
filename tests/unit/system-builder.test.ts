@@ -21,14 +21,14 @@ describe('AgentSystemBuilder Tests', () => {
       expect(result.executor).toBeDefined();
       expect(result.config).toBeDefined();
       expect(result.toolRegistry).toBeDefined();
-      expect(result.toolRegistry.list()).toHaveLength(0);
+      expect(result.toolRegistry.getAllTools()).toHaveLength(0);
     });
 
     test('default() should create builder with file tools', async () => {
       const result = await AgentSystemBuilder.default().build();
       cleanup = result.cleanup;
 
-      const toolNames = result.toolRegistry.list().map((t) => t.name);
+      const toolNames = result.toolRegistry.getAllTools().map((t) => t.name);
       expect(toolNames).toContain('Read');
       expect(toolNames).toContain('Write');
       expect(toolNames).toContain('List');
@@ -40,7 +40,7 @@ describe('AgentSystemBuilder Tests', () => {
       const result = await AgentSystemBuilder.default().build();
       cleanup = result.cleanup;
 
-      const toolNames = result.toolRegistry.list().map((t) => t.name);
+      const toolNames = result.toolRegistry.getAllTools().map((t) => t.name);
       expect(toolNames).toContain('Read');
       expect(toolNames).toContain('Write');
       expect(toolNames).toContain('List');
@@ -114,7 +114,7 @@ describe('AgentSystemBuilder Tests', () => {
       const result = await AgentSystemBuilder.minimal().withDefaultTools().build();
       cleanup = result.cleanup;
 
-      const toolNames = result.toolRegistry.list().map((t) => t.name);
+      const toolNames = result.toolRegistry.getAllTools().map((t) => t.name);
       expect(toolNames).toContain('Read');
       expect(toolNames).toContain('Write');
       expect(toolNames).toContain('List');
@@ -125,7 +125,7 @@ describe('AgentSystemBuilder Tests', () => {
       const result = await AgentSystemBuilder.minimal().withTodoTool().build();
       cleanup = result.cleanup;
 
-      const toolNames = result.toolRegistry.list().map((t) => t.name);
+      const toolNames = result.toolRegistry.getAllTools().map((t) => t.name);
       expect(toolNames).toContain('TodoWrite');
     });
   });

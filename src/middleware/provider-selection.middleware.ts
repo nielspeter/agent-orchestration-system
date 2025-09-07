@@ -1,6 +1,6 @@
 import { Middleware } from './middleware-types';
-import { ProviderFactory } from '@/llm/provider-factory';
-import { AgentLogger } from '@/core/logging';
+import { ProviderFactory } from '@/providers/provider-factory';
+import { AgentLogger } from '@/logging';
 
 /**
  * Selects the appropriate provider based on model name

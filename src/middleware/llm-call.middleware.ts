@@ -28,7 +28,8 @@ export function createLLMCallMiddleware(): Middleware {
     // Log tool calls if any
     if (ctx.response.tool_calls?.length) {
       for (const toolCall of ctx.response.tool_calls) {
-        ctx.logger.logToolCall(ctx.agentName, toolCall.function.name, toolCall.function.arguments);
+        const args = JSON.parse(toolCall.function.arguments);
+        ctx.logger.logToolCall(ctx.agentName, toolCall.function.name, args);
       }
     }
 

@@ -1,16 +1,19 @@
 import * as path from 'path';
 import * as dotenv from 'dotenv';
-import { getDirname } from './utils/esm-helpers';
-import { AgentLoader } from './core/agent-loader';
-import { ToolRegistry } from './core/tool-registry';
-import { AgentExecutor } from './core/agent-executor';
-import { createTaskTool } from './tools/task-tool';
-import { createListTool, createReadTool, createWriteTool } from './tools/file-tools';
-import { createTodoWriteTool } from './tools/todowrite-tool';
-import { LoggerFactory } from './core/logging';
-import { TodoManager } from './core/todo-manager';
-import { DEFAULT_SYSTEM_CONFIG, ResolvedSystemConfig } from './config/types';
-import { ProviderFactory } from './llm/provider-factory';
+import { getDirname } from '@/lib';
+import { AgentExecutor, AgentLoader } from '@/agents';
+import {
+  createListTool,
+  createReadTool,
+  createTaskTool,
+  createTodoWriteTool,
+  createWriteTool,
+  ToolRegistry,
+} from '@/tools';
+import { LoggerFactory } from './logging';
+import { TodoManager } from '@/todos';
+import { DEFAULT_SYSTEM_CONFIG, ResolvedSystemConfig } from '@/config';
+import { ProviderFactory } from '@/providers';
 
 // Load environment variables
 dotenv.config();

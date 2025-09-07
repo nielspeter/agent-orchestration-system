@@ -39,7 +39,7 @@ maxTokens?: number    # Optional: Max response tokens
 
 ## Agent Loading
 
-**File**: `src/core/agent-loader.ts`
+**File**: `src/agents/loader.ts`
 
 ### Loading Process
 
@@ -507,7 +507,7 @@ tools: ["read", "write"]
 ## Related Files
 
 - Agent loader: `src/core/agent-loader.ts`
-- Agent executor: `src/core/agent-executor.ts`
+- Agent executor: `src/agents/executor.ts`
 - Agent middleware: `src/middleware/agent-loader.middleware.ts`
 - Agent examples: `agents/*.md`, `examples/*/agents/*.md`
 - Types: `src/core/types.ts` (Agent interface)

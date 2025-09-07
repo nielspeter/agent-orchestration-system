@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { AgentSystemBuilder } from '@/config/system-builder';
-import { ToolRegistry } from '@/core/tool-registry';
+import { ToolRegistry } from '@/tools/registry/registry';
 
 describe('Tool Registry - Essential Tests', () => {
   test('can register and retrieve tools', async () => {
@@ -11,7 +11,7 @@ describe('Tool Registry - Essential Tests', () => {
     expect(system.toolRegistry).toBeInstanceOf(ToolRegistry);
 
     // Should have some built-in tools registered
-    const tools = system.toolRegistry.list();
+    const tools = system.toolRegistry.getAllTools();
     expect(tools.length).toBeGreaterThan(0);
   });
 
@@ -21,7 +21,7 @@ describe('Tool Registry - Essential Tests', () => {
 
     // In real test would verify agent with "*" gets all tools
     // For POC, just verify registry exists
-    const allTools = system.toolRegistry.list();
+    const allTools = system.toolRegistry.getAllTools();
     expect(allTools).toBeDefined();
     expect(Array.isArray(allTools)).toBe(true);
   });
@@ -30,7 +30,7 @@ describe('Tool Registry - Essential Tests', () => {
     const builder = AgentSystemBuilder.minimal();
     const system = await builder.build();
 
-    const tool = system.toolRegistry.get('definitely-not-a-real-tool');
+    const tool = system.toolRegistry.getTool('definitely-not-a-real-tool');
     expect(tool).toBeUndefined();
   });
 
@@ -42,7 +42,7 @@ describe('Tool Registry - Essential Tests', () => {
     expect(system.toolRegistry.filterForAgent).toBeDefined();
 
     // For POC, just verify the registry can list tools
-    const allTools = system.toolRegistry.list();
+    const allTools = system.toolRegistry.getAllTools();
     expect(Array.isArray(allTools)).toBe(true);
   });
 

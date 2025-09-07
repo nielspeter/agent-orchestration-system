@@ -1,22 +1,5 @@
-export interface ToolInput {
-  [key: string]: unknown;
-}
+// Re-export the canonical tool types from main types file
+export type { BaseTool as Tool, ToolSchema, ToolResult, ToolOutput } from '../base-types';
 
-export interface ToolOutput {
-  content: Array<{ type: string; text: string }>;
-  isError?: boolean;
-}
-
-export interface Tool {
-  name: string;
-  description: string;
-  parameters: {
-    type: string;
-    properties?: Record<string, unknown>;
-    required?: string[];
-  };
-  execute: (input: ToolInput) => Promise<ToolOutput>;
-  isConcurrencySafe?: () => boolean;
-  category?: string;
-  metadata?: Record<string, unknown>;
-}
+// Tool-specific type aliases for clarity
+export type ToolInput = Record<string, unknown>;

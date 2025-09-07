@@ -1,6 +1,6 @@
 import { Middleware } from './middleware-types';
-import { AgentLoader } from '../core/agent-loader';
-import { ToolRegistry } from '../core/tool-registry';
+import { AgentLoader } from '@/agents';
+import { ToolRegistry } from '@/tools';
 
 /**
  * Loads the agent and filters available tools
@@ -12,6 +12,10 @@ export function createAgentLoaderMiddleware(
   return async (ctx, next) => {
     // Load agent
     ctx.agent = await agentLoader.loadAgent(ctx.agentName);
+
+    if (!ctx.agent) {
+      throw new Error(`Failed to load agent: ${ctx.agentName}`);
+    }
 
     // Filter tools for this agent
     ctx.tools = toolRegistry.filterForAgent(ctx.agent);

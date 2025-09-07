@@ -1,7 +1,8 @@
-import { AgentDefinition, BaseTool, ExecutionContext, Message } from '@/types';
-import { AgentLogger } from '@/core/logging';
-import { ILLMProvider } from '@/llm/llm-provider.interface';
-import { ProviderWithConfig } from '@/llm/provider-factory';
+import { BaseTool, ExecutionContext, Message } from '@/base-types';
+import { AgentDefinition } from '@/agents/types';
+import { AgentLogger } from '@/logging';
+import { ILLMProvider } from '@/providers/llm-provider.interface';
+import { ProviderWithConfig } from '@/providers/provider-factory';
 
 /**
  * Context object that flows through the middleware pipeline

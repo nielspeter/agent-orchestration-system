@@ -1,4 +1,4 @@
-import type { ConversationMessage, LLMProvider } from '../llm/types';
+import type { ConversationMessage, LLMProvider } from '@/providers';
 
 export interface ExecutionContext {
   agentId: string;

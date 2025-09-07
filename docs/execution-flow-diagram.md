@@ -45,7 +45,7 @@ sequenceDiagram
 
 ```
 I need you to:
-1. Analyze the src/core/agent-executor.ts file to understand how it works
+1. Analyze the src/agents/executor.ts file to understand how it works
 2. Identify any potential improvements or issues
 3. Create a summary of your findings
 4. Write a brief improvement proposal and save it as improvements.md
@@ -66,7 +66,7 @@ This is a complex task that will require multiple specialists.
 
 **Claude says:** "Now, I'll start by reading the file:"
 
-**Tool Use:** Read (src/core/agent-executor.ts)
+**Tool Use:** Read (src/agents/executor.ts)
 
 - Reads the AgentExecutor class file
 - Result: "Read completed in 1ms"
@@ -132,7 +132,7 @@ I'll provide a comprehensive analysis of the AgentExecutor class:
 #### User Request
 
 ```
-Analyze the file src/core/agent-executor.ts and provide:
+Analyze the file src/agents/executor.ts and provide:
 1. A brief overview of what this class does
 2. Key architectural patterns used
 3. Potential improvements
@@ -153,7 +153,7 @@ I'll help you analyze the agent-executor.ts file. I'll break this down into step
 Let's begin by reading the file:
 ```
 
-**Tool Use:** Read (src/core/agent-executor.ts)
+**Tool Use:** Read (src/agents/executor.ts)
 
 - Result: "Read completed in 1ms"
 

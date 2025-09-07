@@ -9,8 +9,8 @@
  * - Flexible: Support both programmatic and file-based config
  */
 
-import { BaseTool } from '@/types';
-import type { LoggingConfig } from '@/core/logging';
+import { BaseTool } from '@/base-types';
+import type { LoggingConfig } from '@/logging';
 
 // Re-export LoggingConfig from logging module
 export type { LoggingConfig };
@@ -193,7 +193,7 @@ export const DEFAULT_SYSTEM_CONFIG: ResolvedSystemConfig = {
   model: 'claude-3-5-haiku-latest', // Default, should be overridden by ProviderFactory.getDefaultModel()
 
   agents: {
-    directories: ['./agents'],
+    directories: ['./templates/agents'],
   },
 
   tools: {

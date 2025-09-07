@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { ProviderFactory } from '@/llm/provider-factory';
+import { ProviderFactory } from '@/providers/provider-factory';
 
 describe('Behavior Presets - Essential Tests', () => {
   test('all presets have required temperature and top_p', () => {

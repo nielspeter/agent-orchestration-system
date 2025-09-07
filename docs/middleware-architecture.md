@@ -343,4 +343,4 @@ async (ctx, next) => {
 - Pipeline implementation: `src/middleware/pipeline.ts`
 - Middleware types: `src/middleware/middleware-types.ts`
 - All middleware: `src/middleware/*.middleware.ts`
-- Pipeline setup: `src/core/agent-executor.ts`
+- Pipeline setup: `src/agents/executor.ts`

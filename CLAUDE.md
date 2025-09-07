@@ -32,12 +32,12 @@ npx vitest run tests/unit/specific.test.ts
 
 ### Examples
 ```bash
-npx tsx examples/01-quickstart.ts    # Basic agent execution
-npx tsx examples/02-orchestration.ts # Agent delegation demo
-npx tsx examples/03-configuration.ts # Config file usage
-npx tsx examples/04-logging.ts       # Logging features
-npx tsx examples/05-mcp-integration.ts # MCP tool server (time utilities)
-npx tsx examples/06-werewolf-game.ts # Autonomous multi-agent game
+npx tsx examples/quickstart.ts       # Basic agent execution
+npx tsx examples/orchestration.ts    # Agent delegation demo
+npx tsx examples/configuration.ts    # Config file usage
+npx tsx examples/logging.ts          # Logging features
+npx tsx examples/mcp-integration.ts  # MCP tool server (time utilities)
+npx tsx examples/werewolf-game.ts    # Autonomous multi-agent game
 ```
 
 ## Architecture Overview

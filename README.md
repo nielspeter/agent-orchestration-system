@@ -60,26 +60,26 @@ npm run test:unit     # Unit tests only (no API)
 npm run test:integration # Integration tests (requires API key)
 
 # Run examples
-npx tsx examples/01-quickstart.ts       # Simple quickstart
-npx tsx examples/02-orchestration.ts    # Agent orchestration
-npx tsx examples/03-configuration.ts    # Config file usage
-npx tsx examples/04-logging.ts          # Logging features
-npx tsx examples/05-mcp-integration.ts  # MCP server integration
-npx tsx examples/06-werewolf-game.ts    # Autonomous multi-agent game
+npx tsx examples/quickstart.ts          # Simple quickstart
+npx tsx examples/orchestration.ts       # Agent orchestration
+npx tsx examples/configuration.ts       # Config file usage
+npx tsx examples/logging.ts             # Logging features
+npx tsx examples/mcp-integration.ts     # MCP server support
+npx tsx examples/werewolf-game.ts       # Autonomous multi-agent game
 ```
 
 ## 🎮 Examples
 
-### Basic Agent Execution (01-quickstart.ts)
+### Basic Agent Execution (quickstart.ts)
 Simple demonstration of agent execution with file operations.
 
-### Agent Orchestration (02-orchestration.ts)
+### Agent Orchestration (orchestration.ts)
 Shows how agents delegate tasks to specialized sub-agents using the Task tool.
 
-### Configuration Files (03-configuration.ts)
+### Configuration Files (configuration.ts)
 Demonstrates loading agent system configuration from JSON files.
 
-### Werewolf Game - Autonomous Agents (06-werewolf-game.ts)
+### Werewolf Game - Autonomous Agents (werewolf-game.ts)
 A complex multi-agent game demonstrating true agent autonomy:
 - **Game-master agent** orchestrates the entire game independently
 - **Role agents** (werewolf, seer, villager) make strategic decisions
@@ -90,7 +90,7 @@ This example showcases how agents can be truly autonomous entities that receive 
 
 ```bash
 # Run the werewolf game
-npx tsx examples/06-werewolf-game.ts
+npx tsx examples/werewolf-game.ts
 
 # The game-master will:
 # 1. Set up players and roles
@@ -131,18 +131,26 @@ poc-typescript/
 │   │   ├── *.middleware.ts   # Individual middleware
 │   │   ├── middleware-types.ts # Middleware types
 │   │   └── pipeline.ts       # Pipeline executor
-│   ├── services/             # Business logic services
-│   │   └── tool-executor.ts  # Tool execution logic
-│   ├── core/                 # Core components
-│   │   ├── agent-executor.ts # Main executor with pipeline
-│   │   ├── agent-loader.ts   # Loads agents from markdown
-│   │   └── tool-registry.ts  # Tool management
-│   ├── tools/                # Available tools
-│   │   ├── task-tool.ts      # Delegation tool
-│   │   ├── file-tools.ts     # File operations
-│   │   └── todowrite-tool.ts # Todo management
-│   └── llm/                  # LLM providers
-│       └── anthropic-provider.ts # Anthropic with caching
+│   ├── agents/               # Agent domain
+│   │   ├── executor.ts       # Main executor with pipeline
+│   │   ├── loader.ts         # Loads agents from markdown
+│   │   └── types.ts          # Agent-specific types
+│   ├── tools/                # Tool domain
+│   │   ├── registry/         # Tool infrastructure
+│   │   │   ├── executor.ts   # Tool execution logic
+│   │   │   ├── loader.ts     # Tool loading
+│   │   │   └── registry.ts   # Tool management
+│   │   ├── task.tool.ts      # Delegation tool
+│   │   ├── file.tool.ts      # File operations
+│   │   ├── grep.tool.ts      # Pattern searching
+│   │   └── todowrite.tool.ts # Todo management
+│   ├── providers/            # LLM providers (renamed from llm/)
+│   │   ├── anthropic-provider.ts  # Anthropic with caching
+│   │   └── openai-compatible-provider.ts # OpenRouter support
+│   ├── logging/              # Logging (flattened from core/logging/)
+│   │   ├── console.logger.ts # Console output
+│   │   └── jsonl.logger.ts   # JSONL format
+│   └── lib/                  # Utilities (renamed from utils/)
 ├── agents/                   # Agent definitions (markdown)
 │   ├── orchestrator.md       # Main orchestrator
 │   ├── code-analyzer.md      # Code analysis specialist
@@ -152,13 +160,13 @@ poc-typescript/
 │   ├── integration/          # Integration tests (with API)
 │   └── README.md             # Testing documentation
 └── examples/                 # Example demonstrations
-    ├── 01-quickstart.ts      # Simple getting started
-    ├── 02-orchestration.ts   # Agent delegation
-    ├── 03-configuration.ts   # Config file usage
-    ├── 04-logging.ts         # Logging features
-    ├── 05-mcp-integration.ts # MCP server support
-    └── 06-werewolf-game/     # Autonomous multi-agent game
-        ├── 06-werewolf-game.ts     # Main game runner
+    ├── quickstart.ts         # Simple getting started
+    ├── orchestration.ts      # Agent delegation
+    ├── configuration.ts      # Config file usage
+    ├── logging.ts            # Logging features
+    ├── mcp-integration.ts    # MCP server support
+    └── werewolf-game/        # Autonomous multi-agent game
+        ├── werewolf-game.ts       # Main game runner
         └── agents/                 # Game agent definitions
             ├── game-master.md      # Autonomous game orchestrator
             ├── werewolf.md         # Werewolf role agent
