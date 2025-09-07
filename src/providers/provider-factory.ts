@@ -45,15 +45,33 @@ export interface ProviderWithConfig {
 }
 
 export class ProviderFactory {
-  private static cachedConfig: ProvidersConfig | null = null;
+  // Instance fields for testability
+  private cachedConfig: ProvidersConfig | null = null;
+  private configPath: string;
 
-  static loadProvidersConfig(): ProvidersConfig {
+  // Keep static cache for backward compatibility
+  private static cachedConfig: ProvidersConfig | null = null;
+  private static defaultInstance: ProviderFactory | null = null;
+
+  constructor(configPath = path.join(process.cwd(), 'providers-config.json')) {
+    this.configPath = configPath;
+  }
+
+  // Get or create default instance
+  private static getDefaultInstance(): ProviderFactory {
+    if (!this.defaultInstance) {
+      this.defaultInstance = new ProviderFactory();
+    }
+    return this.defaultInstance;
+  }
+
+  // Instance method for loading config
+  loadProvidersConfig(): ProvidersConfig {
     // Cache the config to avoid repeated file reads
     if (this.cachedConfig) return this.cachedConfig;
 
-    const configPath = path.join(process.cwd(), 'providers-config.json');
     try {
-      const configText = fs.readFileSync(configPath, 'utf-8');
+      const configText = fs.readFileSync(this.configPath, 'utf-8');
       const parsedConfig = JSON.parse(configText) as ProvidersConfig;
       // Remove defaultModel and defaultBehavior - these come from agent-config now
       delete parsedConfig.defaultModel;
@@ -76,14 +94,17 @@ export class ProviderFactory {
     }
   }
 
-  static getBehaviorPreset(
-    providersConfig: ProvidersConfig,
-    name: string
-  ): BehaviorPreset | undefined {
+  // Static method delegates to default instance (backward compatibility)
+  static loadProvidersConfig(): ProvidersConfig {
+    return this.getDefaultInstance().loadProvidersConfig();
+  }
+
+  // Instance methods
+  getBehaviorPreset(providersConfig: ProvidersConfig, name: string): BehaviorPreset | undefined {
     return providersConfig.behaviorPresets?.[name];
   }
 
-  static getDefaultBehavior(
+  getDefaultBehavior(
     providersConfig: ProvidersConfig,
     defaultBehaviorName?: string
   ): BehaviorPreset {
@@ -97,7 +118,7 @@ export class ProviderFactory {
     );
   }
 
-  static createWithConfig(
+  createWithConfig(
     modelName: string,
     providersConfig: ProvidersConfig,
     logger?: AgentLogger,
@@ -177,8 +198,7 @@ export class ProviderFactory {
     return { provider, modelConfig };
   }
 
-  // Backwards compatibility - keep the old method but require providersConfig
-  static create(
+  create(
     modelName: string,
     providersConfig: ProvidersConfig,
     logger?: AgentLogger,
@@ -187,5 +207,48 @@ export class ProviderFactory {
     // Use default behavior for backwards compatibility
     const defaultBehavior = this.getDefaultBehavior(providersConfig, defaultBehaviorName);
     return this.createWithConfig(modelName, providersConfig, logger, defaultBehavior).provider;
+  }
+
+  // Static methods delegate to default instance (backward compatibility)
+  static getBehaviorPreset(
+    providersConfig: ProvidersConfig,
+    name: string
+  ): BehaviorPreset | undefined {
+    return this.getDefaultInstance().getBehaviorPreset(providersConfig, name);
+  }
+
+  static getDefaultBehavior(
+    providersConfig: ProvidersConfig,
+    defaultBehaviorName?: string
+  ): BehaviorPreset {
+    return this.getDefaultInstance().getDefaultBehavior(providersConfig, defaultBehaviorName);
+  }
+
+  static createWithConfig(
+    modelName: string,
+    providersConfig: ProvidersConfig,
+    logger?: AgentLogger,
+    behaviorSettings?: { temperature: number; top_p: number }
+  ): ProviderWithConfig {
+    return this.getDefaultInstance().createWithConfig(
+      modelName,
+      providersConfig,
+      logger,
+      behaviorSettings
+    );
+  }
+
+  static create(
+    modelName: string,
+    providersConfig: ProvidersConfig,
+    logger?: AgentLogger,
+    defaultBehaviorName?: string
+  ): ILLMProvider {
+    return this.getDefaultInstance().create(
+      modelName,
+      providersConfig,
+      logger,
+      defaultBehaviorName
+    );
   }
 }

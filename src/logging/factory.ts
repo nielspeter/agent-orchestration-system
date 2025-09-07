@@ -5,6 +5,10 @@ import { JsonlLogger } from './jsonl.logger';
 import { v4 as uuidv4 } from 'uuid';
 
 export class LoggerFactory {
+  // Instance field for default config
+  private readonly defaultConfig: LoggingConfig;
+
+  // Static fields for backward compatibility
   private static readonly defaultConfig: LoggingConfig = {
     display: 'console',
     jsonl: {
@@ -17,8 +21,22 @@ export class LoggerFactory {
       verbosity: 'normal',
     },
   };
+  private static defaultInstance: LoggerFactory | null = null;
 
-  static createFromConfig(config?: Partial<LoggingConfig>, sessionId?: string): AgentLogger {
+  constructor(defaultConfig?: LoggingConfig) {
+    this.defaultConfig = defaultConfig || LoggerFactory.defaultConfig;
+  }
+
+  // Get or create default instance
+  private static getDefaultInstance(): LoggerFactory {
+    if (!this.defaultInstance) {
+      this.defaultInstance = new LoggerFactory();
+    }
+    return this.defaultInstance;
+  }
+
+  // Instance method
+  createFromConfig(config?: Partial<LoggingConfig>, sessionId?: string): AgentLogger {
     const finalConfig = this.mergeConfig(config);
     const sid = sessionId || uuidv4();
     const loggers: AgentLogger[] = [];
@@ -59,7 +77,7 @@ export class LoggerFactory {
    * Create a combined logger with both JSONL and Console output
    * This is the default for backward compatibility
    */
-  static createCombinedLogger(sessionId?: string): AgentLogger {
+  createCombinedLogger(sessionId?: string): AgentLogger {
     return this.createFromConfig(
       {
         display: 'both',
@@ -72,7 +90,7 @@ export class LoggerFactory {
     );
   }
 
-  private static mergeConfig(partial?: Partial<LoggingConfig>): LoggingConfig {
+  private mergeConfig(partial?: Partial<LoggingConfig>): LoggingConfig {
     if (!partial) return this.defaultConfig;
 
     return {
@@ -86,6 +104,15 @@ export class LoggerFactory {
         ...partial.console,
       },
     };
+  }
+
+  // Static methods delegate to default instance (backward compatibility)
+  static createFromConfig(config?: Partial<LoggingConfig>, sessionId?: string): AgentLogger {
+    return this.getDefaultInstance().createFromConfig(config, sessionId);
+  }
+
+  static createCombinedLogger(sessionId?: string): AgentLogger {
+    return this.getDefaultInstance().createCombinedLogger(sessionId);
   }
 }
 

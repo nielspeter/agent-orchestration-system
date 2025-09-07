@@ -2,14 +2,19 @@
 
 ## Executive Summary
 
-The default agent concept is **architecturally sound** but has **implementation flaws** that create inconsistencies and potential bugs. While the fallback pattern is valuable, the current implementation violates several SOLID principles and creates confusing behavior.
+The default agent concept is **architecturally sound** but has **implementation flaws** that create inconsistencies and
+potential bugs. While the fallback pattern is valuable, the current implementation violates several SOLID principles and
+creates confusing behavior.
 
 ## The Good ✅
 
 ### 1. **Conceptual Clarity**
-The idea that "everything is an agent" is elegant. Having a default agent as universal fallback ensures the system never fails due to missing agents - this is excellent defensive programming.
+
+The idea that "everything is an agent" is elegant. Having a default agent as universal fallback ensures the system never
+fails due to missing agents - this is excellent defensive programming.
 
 ### 2. **Graceful Degradation**
+
 ```typescript
 // Fallback chain works well:
 loadAgent('analyzer') → Not found → Use default agent
@@ -17,11 +22,13 @@ listAgents() → Always includes 'default'
 ```
 
 ### 3. **Universal Tool Access**
+
 The `tools: '*'` pattern for default agent is smart - it ensures the fallback can handle any task.
 
 ## The Bad ❌
 
 ### 1. **Hardcoded Agent Definition**
+
 ```typescript
 private readonly DEFAULT_AGENT: AgentDefinition = {
   name: 'default',
@@ -30,9 +37,11 @@ private readonly DEFAULT_AGENT: AgentDefinition = {
 }
 ```
 
-**Problem**: Agent definition embedded in loader violates Single Responsibility Principle. The loader should load, not define agents.
+**Problem**: Agent definition embedded in loader violates Single Responsibility Principle. The loader should load, not
+define agents.
 
 **Better approach**:
+
 ```typescript
 // agents/default.md
 ---
@@ -44,6 +53,7 @@ builtin: true
 ```
 
 ### 2. **Name Confusion**
+
 ```typescript
 // User calls: executor.execute('analyzer', prompt)
 // Agent receives: name='default' but context says 'invoked as analyzer'
@@ -56,6 +66,7 @@ return {
 **Problem**: The agent name changes mid-flight. This breaks tracing, logging, and agent self-awareness.
 
 **Better approach**:
+
 ```typescript
 return {
   ...this.DEFAULT_AGENT,
@@ -65,6 +76,7 @@ return {
 ```
 
 ### 3. **Implicit Behavior**
+
 ```typescript
 if (name === 'default') {
   return this.DEFAULT_AGENT; // Direct return
@@ -78,6 +90,7 @@ if (error.code === 'ENOENT') {
 **Problem**: Two different code paths return the default agent, making behavior hard to predict.
 
 ### 4. **Context Injection via String Concatenation**
+
 ```typescript
 description: 
   this.DEFAULT_AGENT.description +
@@ -89,11 +102,13 @@ description:
 ## The Ugly 🤔
 
 ### 1. **Testing Nightmare**
+
 - Default agent can't be mocked or replaced
 - Hardcoded definition makes unit testing difficult
 - No way to disable default agent for testing edge cases
 
 ### 2. **Inconsistent List Behavior**
+
 ```typescript
 listAgents(): ['default', 'agent1', 'agent2']
 // But 'default' doesn't exist as a file!
@@ -102,6 +117,7 @@ listAgents(): ['default', 'agent1', 'agent2']
 This violates the principle of least surprise.
 
 ### 3. **Error Handling Ambiguity**
+
 ```typescript
 catch (error: any) {
   if (error.code === 'ENOENT') {
@@ -113,6 +129,7 @@ catch (error: any) {
 ## Recommendations 🎯
 
 ### 1. **Externalize Default Agent**
+
 ```typescript
 class AgentLoader {
   constructor(
@@ -123,6 +140,7 @@ class AgentLoader {
 ```
 
 ### 2. **Explicit Fallback Configuration**
+
 ```typescript
 interface SystemConfig {
   enableDefaultFallback: boolean;
@@ -132,6 +150,7 @@ interface SystemConfig {
 ```
 
 ### 3. **Preserve Agent Identity**
+
 ```typescript
 interface AgentDefinition {
   name: string;
@@ -141,6 +160,7 @@ interface AgentDefinition {
 ```
 
 ### 4. **Separate Concerns**
+
 ```typescript
 // agent-resolver.ts - Finds agents
 // agent-loader.ts - Loads from disk
@@ -149,6 +169,7 @@ interface AgentDefinition {
 ```
 
 ### 5. **Better Error Messages**
+
 ```typescript
 if (!agent) {
   const available = await this.listAgents();
@@ -174,15 +195,18 @@ if (!agent) {
 
 **Score: 6/10**
 
-The default agent concept is **good architecture** with **poor implementation**. It solves real problems (resilience, fallback) but introduces technical debt through tight coupling and implicit behavior.
+The default agent concept is **good architecture** with **poor implementation**. It solves real problems (resilience,
+fallback) but introduces technical debt through tight coupling and implicit behavior.
 
 ### Priority Fixes:
+
 1. **HIGH**: Separate agent definition from loader
 2. **HIGH**: Preserve agent name through execution
 3. **MEDIUM**: Add configuration for fallback behavior
 4. **LOW**: Externalize default agent to file
 
 ### Code Smell Indicators:
+
 - 36-line hardcoded string ⚠️
 - Two return paths for same agent ⚠️
 - String concatenation for prompts ⚠️
@@ -226,6 +250,7 @@ class DefaultAgentFallback implements FallbackStrategy {
 ```
 
 This design:
+
 - Separates concerns properly
 - Makes testing easy
 - Preserves agent identity
