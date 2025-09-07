@@ -151,10 +151,6 @@ poc-typescript/
 │   │   ├── console.logger.ts # Console output
 │   │   └── jsonl.logger.ts   # JSONL format
 │   └── lib/                  # Utilities (renamed from utils/)
-├── agents/                   # Agent definitions (markdown)
-│   ├── orchestrator.md       # Main orchestrator
-│   ├── code-analyzer.md      # Code analysis specialist
-│   └── summarizer.md         # Summarization specialist
 ├── tests/                    # Comprehensive test suite
 │   ├── unit/                 # Unit tests (no API)
 │   ├── integration/          # Integration tests (with API)

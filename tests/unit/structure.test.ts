@@ -10,7 +10,7 @@ describe('System Structure Tests', () => {
 
   beforeAll(async () => {
     // Direct component creation - no API needed
-    agentLoader = new AgentLoader('./agents');
+    agentLoader = new AgentLoader('./tests/unit/test-agents');
     toolRegistry = new ToolRegistry();
 
     // Register tools to test the registry
