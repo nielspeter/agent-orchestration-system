@@ -1,5 +1,5 @@
 {
-  "name": "agent-orchestration-poc",
+  "name": "agent-orchestration-system",
   "version": "1.0.0",
   "type": "module",
   "description": "Agent orchestration system where everything is an agent",

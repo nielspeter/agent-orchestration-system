@@ -122,7 +122,7 @@ Available presets (configured in `providers-config.json`):
 ## 📁 Project Structure
 
 ```
-poc-typescript/
+agent-orchestration-system/
 ├── src/
 │   ├── config/               # Configuration system
 │   │   ├── system-builder.ts # Fluent API for configuration

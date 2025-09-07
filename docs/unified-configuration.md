@@ -19,7 +19,7 @@ multi-agent workflows to unit tests.
 ### Basic Usage
 
 ```typescript
-import {AgentSystemBuilder} from '@poc-typescript';
+import {AgentSystemBuilder} from 'agent-orchestration-system';
 
 // Simple setup
 const {executor, cleanup} = await new AgentSystemBuilder()
@@ -136,7 +136,7 @@ builder
 ### Unit Testing
 
 ```typescript
-import {TestConfigBuilder} from '@poc-typescript';
+import {TestConfigBuilder} from 'agent-orchestration-system';
 
 describe('MyAgent', () => {
   it('should handle task correctly', async () => {
@@ -161,7 +161,7 @@ describe('MyAgent', () => {
 ### Test Presets
 
 ```typescript
-import {TEST_CONFIG_MINIMAL, TEST_CONFIG_WITH_TOOLS} from '@poc-typescript/config/types';
+import {TEST_CONFIG_MINIMAL, TEST_CONFIG_WITH_TOOLS} from 'agent-orchestration-system/config/types';
 
 // Minimal test config
 const testExecutor = await AgentSystemBuilder
@@ -205,7 +205,7 @@ interface BuildResult {
 ### Complete Example
 
 ```typescript
-import {AgentSystemBuilder} from '@poc-typescript';
+import {AgentSystemBuilder} from 'agent-orchestration-system';
 
 async function main() {
   // Build a fully configured system

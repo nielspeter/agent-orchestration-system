@@ -134,7 +134,7 @@ The CLI will search for the following in order:
 ### Global Installation
 ```bash
 # Install globally
-npm install -g agent-orchestration-poc
+npm install -g agent-orchestration-system
 
 # Now usable anywhere
 agent -p "hello world"
@@ -142,7 +142,7 @@ agent -p "hello world"
 
 ### Local Development Mode
 ```bash
-# From poc-typescript root
+# From agent-orchestration-system root
 npm link
 
 # Now in any directory

@@ -7,7 +7,7 @@
 ```bash
 # Clone and install
 git clone <repo>
-cd poc-typescript
+cd agent-orchestration-system
 npm install
 
 # Configure environment
