@@ -17,6 +17,6 @@ The agents module handles loading and executing agent definitions from markdown 
 ```typescript
 import { AgentExecutor, AgentLoader } from '@/agents';
 
-const loader = new AgentLoader('./templates/agents');
+const loader = new AgentLoader('./agents'); // Or any directory with your agent definitions
 const executor = new AgentExecutor(/* ... */);
 ```

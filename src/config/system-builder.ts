@@ -564,7 +564,7 @@ export class AgentSystemBuilder {
   static minimal(): AgentSystemBuilder {
     return new AgentSystemBuilder({
       model: DEFAULT_SYSTEM_CONFIG.model,
-      agents: { directories: ['./templates/agents'] },
+      agents: { directories: [] }, // Uses built-in default agent
       tools: { builtin: [] },
       safety: {
         maxIterations: 10,
@@ -581,7 +581,7 @@ export class AgentSystemBuilder {
   static default(): AgentSystemBuilder {
     return new AgentSystemBuilder({
       model: DEFAULT_SYSTEM_CONFIG.model,
-      agents: { directories: ['./templates/agents'] },
+      agents: { directories: [] }, // Uses built-in default agent
       tools: { builtin: ['read', 'write', 'list', 'grep', 'task', 'todowrite'] },
       caching: { enabled: true, maxCacheBlocks: 4, cacheTTLMinutes: 5 },
       logging: {

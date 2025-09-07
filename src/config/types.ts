@@ -193,7 +193,7 @@ export const DEFAULT_SYSTEM_CONFIG: ResolvedSystemConfig = {
   model: 'claude-3-5-haiku-latest', // Default, should be overridden by ProviderFactory.getDefaultModel()
 
   agents: {
-    directories: ['./templates/agents'],
+    directories: [], // Empty by default - uses built-in default agent
   },
 
   tools: {
