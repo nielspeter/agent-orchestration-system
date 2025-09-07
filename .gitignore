@@ -38,6 +38,5 @@ logs/
 # Temporary files
 temp/
 tmp/
-todos/
 *.tmp.env.test
 .env.test.local

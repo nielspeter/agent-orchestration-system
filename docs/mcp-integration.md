@@ -2,11 +2,14 @@
 
 ## Overview
 
-The Model Context Protocol (MCP) is an open standard that enables seamless integration of external tools and services with AI systems. Our agent orchestration system fully supports MCP servers, allowing agents to access a wide variety of tools without modifying the core system.
+The Model Context Protocol (MCP) is an open standard that enables seamless integration of external tools and services
+with AI systems. Our agent orchestration system fully supports MCP servers, allowing agents to access a wide variety of
+tools without modifying the core system.
 
 ## What is MCP?
 
 MCP provides:
+
 - **Standardized tool interface** - Any MCP server exposes tools in a consistent format
 - **Language agnostic** - MCP servers can be written in any language
 - **Process isolation** - Tools run in separate processes for safety
@@ -88,6 +91,7 @@ interface MCPConfig {
 ### 1. Server Initialization
 
 When you configure an MCP server, the system:
+
 1. Spawns the server process using `StdioClientTransport`
 2. Establishes communication via standard input/output
 3. Discovers available tools from the server
@@ -96,6 +100,7 @@ When you configure an MCP server, the system:
 ### 2. Tool Naming
 
 MCP tools are namespaced with their server name:
+
 - Server: `filesystem`
 - Tool: `read_file`
 - Registered as: `filesystem.read_file`
@@ -187,13 +192,13 @@ const builder = AgentSystemBuilder.default()
     }
   });
 
-const { executor, toolRegistry, cleanup } = await builder.build();
+const {executor, toolRegistry, cleanup} = await builder.build();
 
 // Use time tools directly
 const getCurrentTime = toolRegistry.get('time.get_current_time');
 if (getCurrentTime) {
-  const result = await getCurrentTime.execute({ 
-    timezone: 'America/New_York' 
+  const result = await getCurrentTime.execute({
+    timezone: 'America/New_York'
   });
   console.log(result.content);
 }
@@ -354,7 +359,7 @@ MCP servers can fail to start:
 ```typescript
 try {
   const system = await builder
-    .withMCPServers({ /* ... */ })
+    .withMCPServers({ /* ... */})
     .build();
 } catch (error) {
   if (error.message.includes('MCP server')) {
@@ -385,7 +390,8 @@ tools: ["read", "write", "database.*"]
 Pass sensitive data via environment:
 
 ```typescript
-.withMCPServers({
+.
+withMCPServers({
   database: {
     command: "npx",
     args: ["-y", "@modelcontextprotocol/server-postgres"],
@@ -403,14 +409,15 @@ Pass sensitive data via environment:
 
 ```typescript
 const system = await AgentSystemBuilder.default()
-  .withLogging({ verbose: true })
-  .withMCPServers({ /* ... */ })
+  .withLogging({verbose: true})
+  .withMCPServers({ /* ... */})
   .build();
 ```
 
 ### Common Issues
 
 **MCP server fails to start**
+
 ```bash
 # Check if command exists
 which npx
@@ -420,6 +427,7 @@ npx -y @modelcontextprotocol/server-filesystem /tmp
 ```
 
 **Tools not appearing**
+
 ```typescript
 // Wait for server initialization
 const { toolRegistry } = await builder.build();
@@ -430,9 +438,11 @@ console.log(toolRegistry.list());
 ```
 
 **Permission errors**
+
 ```typescript
 // Ensure server has necessary permissions
-.withMCPServers({
+.
+withMCPServers({
   filesystem: {
     command: "npx",
     args: ["-y", "@modelcontextprotocol/server-filesystem", "."],
@@ -447,28 +457,34 @@ console.log(toolRegistry.list());
 ## Performance Considerations
 
 ### 1. Server Startup Time
+
 - MCP servers take time to initialize (typically 1-3 seconds)
 - Reuse system instances when possible
 
 ### 2. Process Overhead
+
 - Each MCP server runs in a separate process
 - Limit the number of concurrent MCP servers
 
 ### 3. Communication Overhead
+
 - Tool calls cross process boundaries
 - Batch operations when possible
 
 ## Security Considerations
 
 ### 1. Process Isolation
+
 - MCP servers run in separate processes
 - Crashes don't affect the main system
 
 ### 2. Restricted Access
+
 - Configure servers with minimal permissions
 - Use read-only mounts where possible
 
 ### 3. Input Validation
+
 - MCP tools validate inputs against schemas
 - Additional validation in agent prompts recommended
 

@@ -2,11 +2,14 @@
 
 ## Overview
 
-Agents are autonomous entities defined as markdown files with YAML frontmatter. They represent specialized capabilities that can be composed to solve complex tasks. The system treats "everything as an agent" - there's no special orchestrator class, just agents that can delegate to other agents.
+Agents are autonomous entities defined as markdown files with YAML frontmatter. They represent specialized capabilities
+that can be composed to solve complex tasks. The system treats "everything as an agent" - there's no special
+orchestrator class, just agents that can delegate to other agents.
 
 ## Agent Definition
 
 ### Structure
+
 Agents are markdown files with three parts:
 
 ```markdown
@@ -73,6 +76,7 @@ export class AgentLoader {
 ### Agent Discovery
 
 Agents can be loaded from:
+
 1. **Individual files**: `agents/my-agent.md`
 2. **Directories**: `agents/` (all .md files)
 3. **Nested directories**: `examples/werewolf-game/agents/`
@@ -89,7 +93,8 @@ const builder = AgentSystemBuilder.default()
 
 ### Overview
 
-The system includes a built-in **default agent** that serves as a fallback and general-purpose handler. This ensures all tasks can be executed even when specific agents aren't available.
+The system includes a built-in **default agent** that serves as a fallback and general-purpose handler. This ensures all
+tasks can be executed even when specific agents aren't available.
 
 ### Key Features
 
@@ -113,7 +118,9 @@ private readonly DEFAULT_AGENT: AgentDefinition = {
 ### Usage Scenarios
 
 #### 1. Automatic Fallback
+
 When a non-existent agent is requested:
+
 ```typescript
 // User requests agent that doesn't exist
 await executor.execute('Task', {
@@ -125,7 +132,9 @@ await executor.execute('Task', {
 ```
 
 #### 2. Explicit Usage
+
 For general-purpose tasks without creating specific agents:
+
 ```typescript
 // Explicitly use default agent
 await executor.execute('Task', {
@@ -145,6 +154,7 @@ await executor.execute('Task', {
 ### Default Agent Capabilities
 
 The default agent:
+
 - Can read, write, and manipulate files
 - Can search through codebases
 - Can delegate to other agents (if they exist)
@@ -153,7 +163,8 @@ The default agent:
 
 ### Philosophy
 
-This aligns with the system principle: **"All tasks are handled by an agent"**. The default agent ensures this principle holds even when specific agents aren't defined, making the system more robust and user-friendly.
+This aligns with the system principle: **"All tasks are handled by an agent"**. The default agent ensures this principle
+holds even when specific agents aren't defined, making the system more robust and user-friendly.
 
 ## Agent Execution
 
@@ -241,11 +252,13 @@ The game-master agent receives just "start a game" and handles everything autono
 ## Agent Communication
 
 ### Direct Invocation
+
 ```typescript
 const result = await executor.execute('analyzer', 'Analyze this code');
 ```
 
 ### Delegation via Task Tool
+
 ```json
 {
   "tool": "task",
@@ -267,6 +280,7 @@ graph LR
 ## Agent Patterns
 
 ### 1. Specialist Agent
+
 Focused on a single domain:
 
 ```markdown
@@ -282,6 +296,7 @@ You are an SQL expert. You can:
 ```
 
 ### 2. Orchestrator Agent
+
 Coordinates other agents:
 
 ```markdown
@@ -297,6 +312,7 @@ You coordinate complex tasks by delegating to specialists:
 ```
 
 ### 3. Tool-Focused Agent
+
 Primarily uses tools:
 
 ```markdown
@@ -312,6 +328,7 @@ You manage files and directories. You can:
 ```
 
 ### 4. Hybrid Agent
+
 Combines thinking and action:
 
 ```markdown
@@ -330,12 +347,14 @@ You debug code by:
 ## Agent Lifecycle
 
 ### 1. Initialization
+
 ```typescript
 // Agent loaded and validated
 const agent = await agentLoader.loadAgent('agents/my-agent.md');
 ```
 
 ### 2. Execution
+
 ```typescript
 // Multiple iterations until complete
 for (let i = 0; i < maxIterations; i++) {
@@ -349,6 +368,7 @@ for (let i = 0; i < maxIterations; i++) {
 ```
 
 ### 3. Cleanup
+
 ```typescript
 // Log final state
 logger.logCompletion(agentName, result);
@@ -357,6 +377,7 @@ logger.logCompletion(agentName, result);
 ## Agent Configuration Examples
 
 ### Minimal Agent
+
 ```yaml
 ---
 name: simple
@@ -366,6 +387,7 @@ You answer questions directly without tools.
 ```
 
 ### Full-Featured Agent
+
 ```yaml
 ---
 name: advanced
@@ -378,6 +400,7 @@ You have access to all tools and can handle complex tasks.
 ```
 
 ### Restricted Agent
+
 ```yaml
 ---
 name: reader
@@ -389,12 +412,14 @@ You can only read files, not modify them.
 ## Best Practices
 
 ### 1. Agent Design
+
 - **Single Responsibility**: Each agent should have one clear purpose
 - **Clear Instructions**: Detailed prompts with examples
 - **Tool Selection**: Only include necessary tools
 - **Error Handling**: Include fallback behaviors
 
 ### 2. Prompt Engineering
+
 ```markdown
 ## Your Role
 [Clear description of what the agent does]
@@ -410,16 +435,18 @@ You can only read files, not modify them.
 ```
 
 ### 3. Tool Access
+
 - Start with minimal tools
 - Add tools as needed
 - Use `["*"]` only for orchestrators
 - Consider security implications
 
 ### 4. Testing Agents
+
 ```typescript
 // Test with mock tools
 const builder = AgentSystemBuilder.forTest()
-  .withMockTool('read', async () => ({ success: true, output: 'mock data' }))
+  .withMockTool('read', async () => ({success: true, output: 'mock data'}))
   .withAgent('agents/my-agent.md');
 
 const result = await executor.execute('my-agent', 'test prompt');
@@ -428,21 +455,25 @@ const result = await executor.execute('my-agent', 'test prompt');
 ## Troubleshooting
 
 **Issue**: Agent not found
+
 - Check file path is correct
 - Verify .md extension
 - Ensure frontmatter has `name` field
 
 **Issue**: Tools not available
+
 - Check tools listed in frontmatter
 - Verify tools are registered
 - Use `["*"]` for all tools
 
 **Issue**: Agent loops infinitely
+
 - Check safety limits (maxIterations)
 - Verify termination conditions in prompt
 - Add explicit stop conditions
 
 **Issue**: Wrong agent behavior
+
 - Review prompt clarity
 - Add more specific examples
 - Check tool access permissions
@@ -450,13 +481,17 @@ const result = await executor.execute('my-agent', 'test prompt');
 ## Performance Optimization
 
 ### 1. Prompt Caching
+
 Anthropic's ephemeral cache reuses agent prompts:
+
 - First call: Full prompt sent
 - Subsequent calls: Cached prompt reused
 - 90% cost reduction on repeated calls
 
 ### 2. Agent Reuse
+
 Load agents once, execute multiple times:
+
 ```typescript
 const executor = await builder.build();
 // Reuse for multiple executions
@@ -465,7 +500,9 @@ await executor.execute('agent', 'task2');
 ```
 
 ### 3. Delegation Overhead
+
 Each delegation creates new context:
+
 - Increases depth counter
 - New conversation history
 - Additional LLM calls
@@ -474,7 +511,9 @@ Each delegation creates new context:
 ## Advanced Topics
 
 ### Dynamic Agent Creation
+
 Agents can be created at runtime:
+
 ```typescript
 const dynamicAgent = {
   name: 'dynamic',
@@ -484,7 +523,9 @@ const dynamicAgent = {
 ```
 
 ### Agent Composition
+
 Combine multiple agents:
+
 ```typescript
 // Meta-agent that coordinates others
 const metaAgent = {
@@ -495,7 +536,9 @@ const metaAgent = {
 ```
 
 ### Agent Versioning
+
 Track agent versions:
+
 ```yaml
 ---
 name: analyzer-v2
