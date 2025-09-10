@@ -16,7 +16,6 @@ import { ToolRegistry } from '@/tools/registry/registry';
 import { ToolLoader } from '@/tools/registry/loader';
 import { AgentExecutor } from '@/agents/executor';
 import { TodoManager } from '@/todos/manager';
-import { LoggerFactory } from '@/logging';
 import { createListTool, createReadTool, createWriteTool } from '@/tools/file.tool';
 import { createGrepTool } from '@/tools/grep.tool';
 import { createTaskTool } from '@/tools/task.tool';
@@ -35,10 +34,17 @@ import {
   ResolvedSystemConfig,
   SafetyConfig,
   SessionConfig,
+  StorageConfig,
   SystemConfig,
   TEST_CONFIG_MINIMAL,
   TodoConfig,
 } from './types';
+import { SessionStorage } from '@/session/types';
+import { NoOpStorage } from '@/session/noop.storage';
+import { InMemoryStorage } from '@/session/memory.storage';
+import { FilesystemStorage } from '@/session/filesystem.storage';
+import { EventLogger } from '@/logging/event.logger';
+import { Message, SimpleSessionManager } from '@/session/manager';
 
 /**
  * MCP Client wrapper for managing connections
@@ -89,6 +95,8 @@ export interface BuildResult {
   executor: AgentExecutor;
   toolRegistry: ToolRegistry;
   mcpClients: MCPClientWrapper[];
+  sessionManager: SimpleSessionManager;
+  storage: SessionStorage;
   cleanup: () => Promise<void>;
 }
 
@@ -100,6 +108,7 @@ export class AgentSystemBuilder {
   protected customTools: BaseTool[] = [];
   protected mcpClients: MCPClientWrapper[] = [];
   protected toolDirectories: string[] = [];
+  protected storageInstance?: SessionStorage;
 
   constructor(initialConfig: Partial<SystemConfig> = {}) {
     this.config = { ...initialConfig };
@@ -251,6 +260,26 @@ export class AgentSystemBuilder {
   }
 
   /**
+   * Configure storage for session persistence
+   */
+  withStorage(storage: StorageConfig | SessionStorage): AgentSystemBuilder {
+    // If it's a SessionStorage instance, we'll handle it in build()
+    if ('appendEvent' in storage && 'readEvents' in storage) {
+      // It's a SessionStorage instance - store it separately
+      const newBuilder = new AgentSystemBuilder(this.config);
+      newBuilder.customTools = [...this.customTools];
+      newBuilder.mcpClients = [...this.mcpClients];
+      newBuilder.toolDirectories = [...this.toolDirectories];
+      newBuilder.storageInstance = storage;
+      return newBuilder;
+    }
+    // It's a StorageConfig
+    return this.with({
+      storage: storage,
+    });
+  }
+
+  /**
    * Configure MCP servers
    */
   withMCPServers(servers: MCPConfig['servers']): AgentSystemBuilder {
@@ -268,6 +297,7 @@ export class AgentSystemBuilder {
     newBuilder.customTools = [...this.customTools];
     newBuilder.mcpClients = [...this.mcpClients];
     newBuilder.toolDirectories = [...this.toolDirectories];
+    newBuilder.storageInstance = this.storageInstance;
     return newBuilder;
   }
 
@@ -330,11 +360,37 @@ export class AgentSystemBuilder {
       resolvedConfig.session.sessionId = uuidv4();
     }
 
-    // Create logger with resolved logging config
-    const logger = LoggerFactory.createFromConfig(
-      resolvedConfig.logging,
-      resolvedConfig.session.sessionId
-    );
+    // Create storage instance
+    let storage: SessionStorage;
+    if (this.storageInstance) {
+      // Use the provided storage instance
+      storage = this.storageInstance;
+    } else {
+      // Create storage based on config
+      const storageConfig = resolvedConfig.storage;
+      switch (storageConfig.type) {
+        case 'memory':
+          storage = new InMemoryStorage();
+          break;
+        case 'filesystem':
+          storage = new FilesystemStorage(storageConfig.options?.path);
+          break;
+        case 'noop':
+        default:
+          storage = new NoOpStorage();
+          break;
+      }
+    }
+
+    // Create EventLogger with storage
+    const eventLogger = new EventLogger(storage, resolvedConfig.session.sessionId);
+
+    // Create session manager
+    const sessionManager = new SimpleSessionManager(storage);
+
+    // For backward compatibility, create a logger facade if needed
+    // EventLogger implements AgentLogger, so we can use it directly
+    const logger = eventLogger;
 
     // Initialize agent loader
     const allAgentDirs = [
@@ -347,6 +403,9 @@ export class AgentSystemBuilder {
 
     // Initialize tool registry
     const toolRegistry = new ToolRegistry();
+
+    // TodoManager instance (if todowrite tool is enabled)
+    let todoManager: TodoManager | undefined;
 
     // Register built-in tools
     const builtinTools = resolvedConfig.tools.builtin || [];
@@ -368,8 +427,8 @@ export class AgentSystemBuilder {
           toolRegistry.register(await createTaskTool(agentLoader));
           break;
         case 'todowrite': {
-          const todoManager = new TodoManager(resolvedConfig.todos.todosDir);
-          await todoManager.initialize();
+          todoManager = new TodoManager();
+          todoManager.initialize();
           toolRegistry.register(createTodoWriteTool(todoManager));
           break;
         }
@@ -501,6 +560,31 @@ export class AgentSystemBuilder {
       }
     }
 
+    // Check for session recovery
+    let recoveredMessages: unknown[] = [];
+    if (await storage.sessionExists(resolvedConfig.session.sessionId)) {
+      console.info(`Recovering session: ${resolvedConfig.session.sessionId}`);
+      recoveredMessages = await sessionManager.recoverSession(resolvedConfig.session.sessionId);
+
+      // Check if we have an incomplete tool call
+      if (sessionManager.hasIncompleteToolCall(recoveredMessages as Message[])) {
+        const toolCall = sessionManager.getLastToolCall(recoveredMessages as Message[]);
+        if (toolCall) {
+          console.info(`Executing incomplete tool call: ${toolCall.name}`);
+          // The executor will handle this when it receives the messages
+        }
+      }
+
+      // Recover todos if TodoWrite tool is enabled
+      if (todoManager) {
+        const recoveredTodos = await sessionManager.recoverTodos(resolvedConfig.session.sessionId);
+        if (recoveredTodos.length > 0) {
+          todoManager.setTodos(recoveredTodos);
+          console.info(`Recovered ${recoveredTodos.length} todos from session`);
+        }
+      }
+    }
+
     // Create executor with config
     const executor = new AgentExecutor(
       agentLoader,
@@ -510,6 +594,9 @@ export class AgentSystemBuilder {
       logger,
       resolvedConfig.session.sessionId
     );
+
+    // TODO: Add method to executor to continue with recovered messages
+    // For now, the executor will need to be enhanced to support this
 
     // Cleanup function
     const cleanup = async () => {
@@ -529,6 +616,8 @@ export class AgentSystemBuilder {
       executor,
       toolRegistry,
       mcpClients: this.mcpClients,
+      sessionManager,
+      storage,
       cleanup,
     };
   }

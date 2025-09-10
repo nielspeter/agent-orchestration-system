@@ -144,6 +144,19 @@ export interface TodoConfig {
 }
 
 /**
+ * Storage configuration for session persistence
+ */
+export interface StorageConfig {
+  /** Storage type: 'noop' | 'memory' | 'filesystem' */
+  type: 'noop' | 'memory' | 'filesystem';
+  /** Storage-specific options */
+  options?: {
+    /** Path for filesystem storage */
+    path?: string;
+  };
+}
+
+/**
  * Complete system configuration
  *
  * This is the main configuration interface that combines all sub-configurations.
@@ -172,6 +185,8 @@ export interface SystemConfig {
   session?: SessionConfig;
   /** Todo management configuration */
   todos?: TodoConfig;
+  /** Storage configuration */
+  storage?: StorageConfig;
 }
 
 /**
@@ -190,6 +205,7 @@ export interface ResolvedSystemConfig {
   mcp?: MCPConfig;
   session: SessionConfig;
   todos: TodoConfig;
+  storage: StorageConfig;
 }
 
 /**
@@ -247,6 +263,13 @@ export const DEFAULT_SYSTEM_CONFIG: ResolvedSystemConfig = {
     maxTodosPerSession: 50,
     autoCleanupAfterDays: 7,
   },
+
+  storage: {
+    type: 'noop', // NoOp storage by default (zero overhead)
+    options: {
+      path: '.agent-sessions', // Default path for filesystem storage
+    },
+  },
 };
 
 /**
@@ -284,6 +307,10 @@ export const TEST_CONFIG_MINIMAL: SystemConfig = {
       colors: false,
       verbosity: 'minimal',
     },
+  },
+  storage: {
+    type: 'noop',
+    options: {},
   },
 };
 /**
@@ -351,6 +378,11 @@ export function mergeConfigs(...configs: Partial<SystemConfig>[]): SystemConfig 
     if (config.todos !== undefined) {
       result.todos = deepMergeObjects<TodoConfig>(result.todos, config.todos);
     }
+
+    // Handle storage config
+    if (config.storage !== undefined) {
+      result.storage = deepMergeObjects<StorageConfig>(result.storage, config.storage);
+    }
   }
 
   return result as SystemConfig;
@@ -373,6 +405,7 @@ export function resolveConfig(partial: Partial<SystemConfig>): ResolvedSystemCon
   merged.logging ??= DEFAULT_SYSTEM_CONFIG.logging;
   merged.session ??= DEFAULT_SYSTEM_CONFIG.session;
   merged.todos ??= DEFAULT_SYSTEM_CONFIG.todos;
+  merged.storage ??= DEFAULT_SYSTEM_CONFIG.storage;
 
   return merged as ResolvedSystemConfig;
 }
