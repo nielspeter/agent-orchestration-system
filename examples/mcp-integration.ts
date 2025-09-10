@@ -1,22 +1,33 @@
 #!/usr/bin/env tsx
 /**
  * Demonstration of MCP server integration with time utilities
+ *
+ * This example shows how to use the builder pattern to configure MCP servers
+ * without relying on configuration files.
  */
 
-import * as path from 'path';
-import { fileURLToPath } from 'url';
 import { AgentSystemBuilder } from '../src';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 async function main() {
   console.log('🕐 MCP Time Server Demo\n');
 
   try {
-    // Setup with MCP servers from config file
-    // Note: This requires agent-config.json with MCP server configuration
-    const builder = await AgentSystemBuilder.fromConfigFile('./agent-config.json');
-    const { cleanup, toolRegistry } = await builder.withSessionId('mcp-time-demo').build();
+    // Setup MCP servers using the builder pattern
+    const builder = AgentSystemBuilder.minimal()
+      .withAgents({
+        name: 'time-demo',
+        prompt: 'You are a demo agent for testing MCP time tools.',
+        tools: ['time.get_current_time', 'time.convert_time'],
+      })
+      .withMCPServers({
+        time: {
+          command: 'uvx',
+          args: ['mcp-server-time', '--local-timezone=America/New_York'],
+        },
+      })
+      .withSessionId('mcp-time-demo');
+
+    const { cleanup, toolRegistry } = await builder.build();
 
     console.log('Available tools:');
     toolRegistry.getAllTools().forEach((tool) => {
@@ -72,4 +83,5 @@ async function main() {
   }
 }
 
+// Run the main demo
 main();
