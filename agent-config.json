@@ -20,5 +20,11 @@
     "maxDepth": 10,
     "maxIterations": 100,
     "timeout": 300000
+  },
+  "storage": {
+    "type": "noop",
+    "options": {
+      "path": ".agent-sessions"
+    }
   }
 }

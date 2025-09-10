@@ -1,31 +1,28 @@
-import * as fs from 'fs/promises';
-import * as path from 'path';
 import * as crypto from 'crypto';
 import { TodoItem } from '@/tools/todowrite.tool';
 
+/**
+ * Stateless Todo Manager
+ *
+ * Holds todos in memory only. No filesystem persistence.
+ * Todos are persisted as tool_call events in the session storage.
+ * On recovery, todos are reconstructed from the last TodoWrite event.
+ */
 export class TodoManager {
-  private readonly todosDir: string;
-  private readonly todosFile: string;
   private todos: TodoItem[] = [];
 
-  constructor(baseDir?: string) {
-    // Default to current working directory like Claude Code
-    this.todosDir = path.join(baseDir || process.cwd(), 'todos');
-    this.todosFile = path.join(this.todosDir, 'current-session.json');
-  }
-
   /**
-   * Initialize the todo manager and load existing todos
+   * Initialize the todo manager
+   * No longer needs async or filesystem setup
    */
-  async initialize(): Promise<void> {
-    await this.ensureDirectoryExists();
-    await this.loadTodos();
+  initialize(): void {
+    // Nothing to initialize - stateless
   }
 
   /**
    * Update the entire todo list
    */
-  async updateTodos(todos: TodoItem[]): Promise<void> {
+  updateTodos(todos: TodoItem[]): void {
     // Validate the update
     const errors = this.validateTodos(todos);
     if (errors.length > 0) {
@@ -36,109 +33,120 @@ export class TodoManager {
     this.todos = todos.map((todo) => ({
       ...todo,
       id: todo.id || this.generateId(),
-      priority: todo.priority || 'medium', // Default priority
+      priority: todo.priority || 'medium',
     }));
-    await this.saveTodos();
   }
 
   /**
-   * Load todos from filesystem
+   * Get current todos
    */
-  private async loadTodos(): Promise<void> {
-    try {
-      const content = await fs.readFile(this.todosFile, 'utf-8');
-      const data = JSON.parse(content);
+  getTodos(): TodoItem[] {
+    return [...this.todos];
+  }
 
-      if (Array.isArray(data) && this.isValidTodoArray(data)) {
-        this.todos = data;
-      } else {
-        console.warn('Invalid todo file format, starting fresh');
-        this.todos = [];
+  /**
+   * Set todos (used for recovery from session events)
+   */
+  setTodos(todos: TodoItem[]): void {
+    this.todos = todos;
+  }
+
+  /**
+   * Clear all todos
+   */
+  clearTodos(): void {
+    this.todos = [];
+  }
+
+  /**
+   * Get todos organized by status
+   */
+  getTodosByStatus(): {
+    pending: TodoItem[];
+    inProgress: TodoItem[];
+    completed: TodoItem[];
+  } {
+    return {
+      pending: this.todos.filter((t) => t.status === 'pending'),
+      inProgress: this.todos.filter((t) => t.status === 'in_progress'),
+      completed: this.todos.filter((t) => t.status === 'completed'),
+    };
+  }
+
+  /**
+   * Validate todos for business rules
+   */
+  private validateTodos(todos: TodoItem[]): string[] {
+    const errors: string[] = [];
+
+    // Check for only one in-progress task
+    const inProgressCount = todos.filter((t) => t.status === 'in_progress').length;
+    if (inProgressCount > 1) {
+      errors.push(`Only one task can be in progress at a time (found ${inProgressCount})`);
+    }
+
+    // Check for duplicate content
+    const contents = todos.map((t) => t.content.toLowerCase());
+    const duplicates = contents.filter((c, i) => contents.indexOf(c) !== i);
+    if (duplicates.length > 0) {
+      errors.push(`Duplicate tasks found: ${duplicates.join(', ')}`);
+    }
+
+    // Validate required fields
+    for (const todo of todos) {
+      if (!todo.content || todo.content.trim().length === 0) {
+        errors.push('Todo content cannot be empty');
       }
-    } catch {
-      // File doesn't exist or is corrupted, start fresh
-      this.todos = [];
+      if (!todo.activeForm || todo.activeForm.trim().length === 0) {
+        errors.push(`Todo "${todo.content}" is missing activeForm`);
+      }
+      if (!['pending', 'in_progress', 'completed'].includes(todo.status)) {
+        errors.push(`Invalid status "${todo.status}" for todo "${todo.content}"`);
+      }
     }
-  }
 
-  /**
-   * Save todos to filesystem
-   */
-  private async saveTodos(): Promise<void> {
-    try {
-      await fs.writeFile(this.todosFile, JSON.stringify(this.todos, null, 2), 'utf-8');
-    } catch (error) {
-      console.error('Failed to save todos:', error);
-      throw new Error(`Failed to save todos: ${error}`);
-    }
-  }
-
-  /**
-   * Ensure the todos directory exists
-   */
-  private async ensureDirectoryExists(): Promise<void> {
-    try {
-      await fs.mkdir(this.todosDir, { recursive: true });
-    } catch (error) {
-      console.error('Failed to create todos directory:', error);
-      throw new Error(`Failed to create todos directory: ${error}`);
-    }
+    return errors;
   }
 
   /**
    * Generate a unique ID for a todo item
    */
   private generateId(): string {
-    return crypto.randomBytes(8).toString('hex');
+    return crypto.randomBytes(4).toString('hex');
   }
 
   /**
-   * Validate todo items according to Claude Code's rules
+   * Format todos for display
    */
-  private validateTodos(todos: TodoItem[]): string[] {
-    const errors: string[] = [];
-    const inProgressCount = todos.filter((t) => t.status === 'in_progress').length;
-
-    // Only one task can be in_progress at a time
-    if (inProgressCount > 1) {
-      errors.push(`Only one task can be in_progress at a time, found ${inProgressCount}`);
+  formatTodos(): string {
+    if (this.todos.length === 0) {
+      return 'No todos';
     }
 
-    // Validate individual items
-    todos.forEach((todo, index) => {
-      if (!todo.content || todo.content.trim().length === 0) {
-        errors.push(`Todo ${index + 1}: content cannot be empty`);
-      }
+    const byStatus = this.getTodosByStatus();
+    const parts: string[] = [];
 
-      if (!todo.activeForm || todo.activeForm.trim().length === 0) {
-        errors.push(`Todo ${index + 1}: activeForm cannot be empty`);
-      }
+    if (byStatus.inProgress.length > 0) {
+      parts.push(
+        `In Progress (${byStatus.inProgress.length}):\n` +
+          byStatus.inProgress.map((t) => `  • ${t.activeForm}`).join('\n')
+      );
+    }
 
-      if (!['pending', 'in_progress', 'completed'].includes(todo.status)) {
-        errors.push(`Todo ${index + 1}: invalid status "${todo.status}"`);
-      }
+    if (byStatus.pending.length > 0) {
+      parts.push(
+        `Pending (${byStatus.pending.length}):\n` +
+          byStatus.pending.map((t) => `  • ${t.content}`).join('\n')
+      );
+    }
 
-      if (todo.priority && !['high', 'medium', 'low'].includes(todo.priority)) {
-        errors.push(`Todo ${index + 1}: invalid priority "${todo.priority}"`);
-      }
-    });
+    if (byStatus.completed.length > 0) {
+      parts.push(
+        `Completed (${byStatus.completed.length}):\n` +
+          byStatus.completed.map((t) => `  ✓ ${t.content}`).join('\n')
+      );
+    }
 
-    return errors;
-  }
-
-  /**
-   * Check if data is a valid todo array
-   */
-  private isValidTodoArray(data: unknown): data is TodoItem[] {
-    if (!Array.isArray(data)) return false;
-
-    return data.every(
-      (item) =>
-        typeof item === 'object' &&
-        typeof item.content === 'string' &&
-        typeof item.status === 'string' &&
-        ['pending', 'in_progress', 'completed'].includes(item.status) &&
-        typeof item.activeForm === 'string'
-    );
+    return parts.join('\n\n');
   }
 }
