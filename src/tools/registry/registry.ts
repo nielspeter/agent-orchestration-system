@@ -37,7 +37,7 @@ export class ToolRegistry implements IToolRegistry {
       throw new InvalidToolError(tool, ['execute (must be a function)']);
     }
 
-    if (!/^[a-zA-Z0-9-_]+$/.test(tool.name)) {
+    if (!/^[a-zA-Z0-9-_.]+$/.test(tool.name)) {
       throw new InvalidToolNameError(tool.name);
     }
 

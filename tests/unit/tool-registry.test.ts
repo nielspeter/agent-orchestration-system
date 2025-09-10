@@ -61,4 +61,85 @@ describe('Tool Registry - Essential Tests', () => {
     // Tool registry should exist
     expect(system.toolRegistry).toBeDefined();
   });
+
+  test('accepts tool names with dots for MCP tools', () => {
+    const registry = new ToolRegistry();
+
+    // Should accept MCP-style names with dots
+    const mcpTool = {
+      name: 'time.get_current_time',
+      description: 'Get current time',
+      parameters: { type: 'object' as const, properties: {}, required: [] },
+      execute: async () => ({ content: 'test' }),
+      isConcurrencySafe: () => true,
+    };
+
+    expect(() => registry.register(mcpTool)).not.toThrow();
+    expect(registry.getTool('time.get_current_time')).toBeDefined();
+  });
+
+  test('accepts various valid tool name formats', () => {
+    const registry = new ToolRegistry();
+
+    const validNames = [
+      'simple',
+      'with-dashes',
+      'with_underscores',
+      'with.dots',
+      'mixed-name_with.all',
+      'MCP.server.tool',
+      'time.convert_time',
+    ];
+
+    validNames.forEach((name) => {
+      const tool = {
+        name,
+        description: `Tool ${name}`,
+        parameters: { type: 'object' as const, properties: {}, required: [] },
+        execute: async () => ({ content: 'test' }),
+        isConcurrencySafe: () => true,
+      };
+
+      expect(() => registry.register(tool)).not.toThrow();
+      expect(registry.getTool(name)).toBeDefined();
+    });
+  });
+
+  test('rejects invalid tool name formats', () => {
+    const registry = new ToolRegistry();
+
+    const invalidNames = [
+      'with spaces',
+      'with@special',
+      'with#chars',
+      'with/slash',
+      'with\\backslash',
+    ];
+
+    invalidNames.forEach((name) => {
+      const tool = {
+        name,
+        description: `Tool ${name}`,
+        parameters: { type: 'object' as const, properties: {}, required: [] },
+        execute: async () => ({ content: 'test' }),
+        isConcurrencySafe: () => true,
+      };
+
+      expect(() => registry.register(tool)).toThrow('Invalid tool name format');
+    });
+  });
+
+  test('rejects empty tool name', () => {
+    const registry = new ToolRegistry();
+
+    const tool = {
+      name: '',
+      description: 'Empty name tool',
+      parameters: { type: 'object' as const, properties: {}, required: [] },
+      execute: async () => ({ content: 'test' }),
+      isConcurrencySafe: () => true,
+    };
+
+    expect(() => registry.register(tool)).toThrow();
+  });
 });

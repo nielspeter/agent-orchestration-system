@@ -50,7 +50,7 @@ export class ToolNotFoundError extends ToolRegistryError {
 export class InvalidToolNameError extends ToolRegistryError {
   constructor(public toolName: string) {
     super(
-      `Invalid tool name format: '${toolName}'. Must match /^[a-zA-Z0-9-_]+$/`,
+      `Invalid tool name format: '${toolName}'. Must match /^[a-zA-Z0-9-_.]+$/`,
       'INVALID_TOOL_NAME'
     );
     this.name = 'InvalidToolNameError';
