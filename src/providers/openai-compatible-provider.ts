@@ -9,10 +9,35 @@ interface ExtendedUsage extends OpenAI.Completions.CompletionUsage {
   prompt_cache_miss_tokens?: number;
 }
 
+// Type guard for OpenAI API errors
+interface ApiError extends Error {
+  status: number;
+  error?: unknown;
+}
+
+function isApiError(error: unknown): error is ApiError {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  const errorWithStatus = error as Error & { status?: unknown };
+  return 'status' in errorWithStatus && typeof errorWithStatus.status === 'number';
+}
+
 export interface OpenAICompatibleConfig {
   baseURL: string;
   apiKey: string;
   defaultHeaders?: Record<string, string>;
+  providerRouting?: OpenRouterProviderConfig;
+  temperature?: number;
+  topP?: number;
+}
+
+export interface OpenRouterProviderConfig {
+  order?: string[];
+  only?: string[];
+  allowFallbacks?: boolean;
+  sort?: 'latency' | 'throughput';
 }
 
 export class OpenAICompatibleProvider implements ILLMProvider {
@@ -20,10 +45,17 @@ export class OpenAICompatibleProvider implements ILLMProvider {
   private readonly modelName: string;
   private readonly logger?: AgentLogger;
   private lastUsage: UsageMetrics | null = null;
+  private readonly config: OpenAICompatibleConfig;
+  private readonly temperature: number;
+  private readonly topP: number;
 
   constructor(modelName: string, config: OpenAICompatibleConfig, logger?: AgentLogger) {
+    // OpenRouter handles :nitro and :floor modifiers directly
     this.modelName = modelName;
     this.logger = logger;
+    this.config = config;
+    this.temperature = config.temperature ?? 0.5;
+    this.topP = config.topP ?? 0.9;
 
     this.client = new OpenAI({
       apiKey: config.apiKey || 'dummy', // Some providers don't need keys
@@ -33,10 +65,34 @@ export class OpenAICompatibleProvider implements ILLMProvider {
   }
 
   async complete(messages: Message[], tools?: BaseTool[]): Promise<Message> {
-    const openAIMessages = messages.map((msg) => ({
-      role: msg.role as 'system' | 'user' | 'assistant',
-      content: typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content),
-    }));
+    // Convert our Message type to OpenAI's expected format
+    // OpenAI needs tool messages to have tool_call_id
+    const openAIMessages = messages.map((msg) => {
+      // Handle tool messages separately - they need tool_call_id
+      if (msg.role === 'tool') {
+        return {
+          role: 'tool' as const,
+          content: typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content),
+          tool_call_id: msg.tool_call_id || 'missing_id', // OpenAI requires this field
+        };
+      }
+
+      // Handle other message types
+      if (msg.tool_calls) {
+        // Assistant message with tool calls
+        return {
+          role: msg.role,
+          content: typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content),
+          tool_calls: msg.tool_calls,
+        };
+      }
+
+      // Simple message without tool calls
+      return {
+        role: msg.role,
+        content: typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content),
+      };
+    });
 
     const openAITools = tools?.map((tool) => ({
       type: 'function' as const,
@@ -49,12 +105,21 @@ export class OpenAICompatibleProvider implements ILLMProvider {
     }));
 
     try {
-      const response = await this.client.chat.completions.create({
+      // Build request body
+      const requestBody: OpenAI.Chat.ChatCompletionCreateParams & { provider?: unknown } = {
         model: this.modelName,
         messages: openAIMessages,
         tools: openAITools,
-        temperature: 0.5, // Default 0.5 for better agent behavior
-      });
+        temperature: this.temperature,
+        top_p: this.topP,
+      };
+
+      // Add OpenRouter-specific provider routing if configured
+      if (this.config.providerRouting && this.isOpenRouter()) {
+        requestBody.provider = this.buildOpenRouterProvider();
+      }
+
+      const response = await this.client.chat.completions.create(requestBody);
 
       const choice = response.choices[0];
       const usage = response.usage;
@@ -97,11 +162,26 @@ export class OpenAICompatibleProvider implements ILLMProvider {
         content: choice.message.content || '',
       };
     } catch (error) {
-      this.logger?.logAgentError(
-        'OpenAICompatibleProvider',
-        error instanceof Error ? error : new Error(`[${this.modelName}] API call failed: ${error}`)
-      );
-      throw error;
+      // Build a meaningful error message
+      let errorMessage: string;
+
+      if (isApiError(error)) {
+        // OpenAI API error with status code and details
+        errorMessage = `${error.status} ${error.message}`;
+        if (error.error && typeof error.error === 'object') {
+          errorMessage += ` - ${JSON.stringify(error.error)}`;
+        }
+      } else if (error instanceof Error) {
+        // Regular Error object
+        errorMessage = error.message;
+      } else {
+        // Unknown error type - stringify it
+        errorMessage = `[${this.modelName}] API call failed: ${JSON.stringify(error)}`;
+      }
+
+      const detailedError = new Error(errorMessage);
+      this.logger?.logAgentError('OpenAICompatibleProvider', detailedError);
+      throw detailedError;
     }
   }
 
@@ -115,5 +195,34 @@ export class OpenAICompatibleProvider implements ILLMProvider {
 
   getLastUsageMetrics(): UsageMetrics | null {
     return this.lastUsage;
+  }
+
+  private isOpenRouter(): boolean {
+    return this.config.baseURL.includes('openrouter.ai');
+  }
+
+  private buildOpenRouterProvider(): Record<string, unknown> | undefined {
+    const routing = this.config.providerRouting;
+    if (!routing) return undefined;
+
+    const provider: Record<string, unknown> = {};
+
+    if (routing.order && routing.order.length > 0) {
+      provider.order = routing.order;
+    }
+
+    if (routing.only && routing.only.length > 0) {
+      provider.only = routing.only;
+    }
+
+    if (routing.allowFallbacks !== undefined) {
+      provider.allow_fallbacks = routing.allowFallbacks;
+    }
+
+    if (routing.sort) {
+      provider.sort = routing.sort;
+    }
+
+    return Object.keys(provider).length > 0 ? provider : undefined;
   }
 }

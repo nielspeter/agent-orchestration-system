@@ -28,15 +28,20 @@ interface ProviderConfig {
   apiKeyEnv: string;
   headers?: Record<string, string>;
   models?: ModelConfig[];
+  routing?: {
+    order?: string[];
+    only?: string[];
+    allowFallbacks?: boolean;
+    sort?: 'latency' | 'throughput';
+  };
 }
 
 interface ProvidersConfig {
   defaultModel?: string; // The default model to use
   defaultBehavior?: string; // Default behavior preset
   behaviorPresets?: Record<string, BehaviorPreset>;
-  fallbackProvider: string; // Fallback when no pattern matches
   providers: Record<string, ProviderConfig>;
-  modelPatterns?: Array<{ pattern: string; provider: string }>;
+  // Removed: fallbackProvider and modelPatterns - now using explicit provider prefixes
 }
 
 export interface ProviderWithConfig {
@@ -47,10 +52,9 @@ export interface ProviderWithConfig {
 export class ProviderFactory {
   // Instance fields for testability
   private cachedConfig: ProvidersConfig | null = null;
-  private configPath: string;
+  private readonly configPath: string;
 
   // Keep static cache for backward compatibility
-  private static cachedConfig: ProvidersConfig | null = null;
   private static defaultInstance: ProviderFactory | null = null;
 
   constructor(configPath = path.join(process.cwd(), 'providers-config.json')) {
@@ -59,9 +63,7 @@ export class ProviderFactory {
 
   // Get or create default instance
   private static getDefaultInstance(): ProviderFactory {
-    if (!this.defaultInstance) {
-      this.defaultInstance = new ProviderFactory();
-    }
+    this.defaultInstance ??= new ProviderFactory();
     return this.defaultInstance;
   }
 
@@ -81,7 +83,6 @@ export class ProviderFactory {
     } catch {
       // Minimal fallback for POC
       const fallback: ProvidersConfig = {
-        fallbackProvider: 'anthropic',
         providers: {
           anthropic: {
             type: 'native',
@@ -119,61 +120,71 @@ export class ProviderFactory {
   }
 
   createWithConfig(
-    modelName: string,
+    modelString: string,
     providersConfig: ProvidersConfig,
     logger?: AgentLogger,
     behaviorSettings?: { temperature: number; top_p: number }
   ): ProviderWithConfig {
-    const config = providersConfig;
+    // Parse provider/model
+    const firstSlash = modelString.indexOf('/');
+    if (firstSlash === -1) {
+      throw new Error(
+        'Invalid model format. Use: provider/model (e.g., anthropic/claude-3-5-haiku-latest)'
+      );
+    }
 
-    // Find provider - simple pattern matching
-    let providerName = config.fallbackProvider;
+    const providerName = modelString.substring(0, firstSlash);
+    const rest = modelString.substring(firstSlash + 1);
 
-    // Check patterns
-    if (config.modelPatterns) {
-      for (const pattern of config.modelPatterns) {
-        if (new RegExp(pattern.pattern).test(modelName)) {
-          providerName = pattern.provider;
-          break;
+    // Validate provider and model are not empty
+    if (!providerName || !rest) {
+      throw new Error(
+        `Invalid model format: "${modelString}". Both provider and model must be specified.`
+      );
+    }
+
+    // For OpenRouter: pass model:modifier as-is (they handle it)
+    // For others: strip any modifiers
+    let actualModelName = rest;
+    if (!providerName.startsWith('openrouter')) {
+      const colonIndex = rest.indexOf(':');
+      if (colonIndex !== -1) {
+        actualModelName = rest.substring(0, colonIndex);
+        if (logger) {
+          logger.logSystemMessage(
+            `Modifier ignored for ${providerName}: ${rest.substring(colonIndex)}`
+          );
         }
       }
     }
+    // OpenRouter gets the full model string with :nitro or :floor
 
-    // Check if model has provider prefix (e.g., "groq/llama-70b")
-    if (modelName.includes('/')) {
-      const prefix = modelName.split('/')[0];
-      if (config.providers[prefix]) {
-        providerName = prefix;
-      }
-    }
-
-    const providerConfig = config.providers[providerName];
+    // Get provider config - no cloning needed, no mutations!
+    const providerConfig = providersConfig.providers[providerName];
     if (!providerConfig) {
-      throw new Error(`Provider ${providerName} not configured`);
+      const available = Object.keys(providersConfig.providers).join(', ');
+      throw new Error(`Unknown provider: ${providerName}. Available: ${available}`);
     }
 
-    // Check if API key is available for this provider
+    // Check API key
     const apiKey = process.env[providerConfig.apiKeyEnv];
     if (!apiKey) {
-      // Provide helpful error message with exact steps to fix
       throw new Error(
-        `Cannot use model "${modelName}" - missing API key.\n` +
-          `Please set the ${providerConfig.apiKeyEnv} environment variable.\n` +
-          `Example: export ${providerConfig.apiKeyEnv}=your-api-key-here`
+        `Missing API key for ${providerName}. Set ${providerConfig.apiKeyEnv} environment variable.`
       );
     }
 
     // Find model config if available
     let modelConfig: ModelConfig | undefined;
     if (providerConfig.models) {
-      modelConfig = providerConfig.models.find((m) => m.id === modelName);
+      modelConfig = providerConfig.models.find((m) => m.id === actualModelName || m.id === '*');
     }
 
-    // Create provider
+    // Create provider with appropriate model name
     let provider: ILLMProvider;
     if (providerConfig.type === 'native' && providerName === 'anthropic') {
       provider = new AnthropicProvider(
-        modelName,
+        actualModelName,
         logger,
         modelConfig?.pricing,
         modelConfig?.maxOutputTokens,
@@ -190,23 +201,26 @@ export class ProviderFactory {
         baseURL: providerConfig.baseURL,
         apiKey,
         defaultHeaders: providerConfig.headers,
+        providerRouting: providerConfig.routing,
+        temperature: behaviorSettings?.temperature,
+        topP: behaviorSettings?.top_p,
       };
 
-      provider = new OpenAICompatibleProvider(modelName, openAIConfig, logger);
+      provider = new OpenAICompatibleProvider(actualModelName, openAIConfig, logger);
     }
 
     return { provider, modelConfig };
   }
 
   create(
-    modelName: string,
+    modelString: string,
     providersConfig: ProvidersConfig,
     logger?: AgentLogger,
     defaultBehaviorName?: string
   ): ILLMProvider {
     // Use default behavior for backwards compatibility
     const defaultBehavior = this.getDefaultBehavior(providersConfig, defaultBehaviorName);
-    return this.createWithConfig(modelName, providersConfig, logger, defaultBehavior).provider;
+    return this.createWithConfig(modelString, providersConfig, logger, defaultBehavior).provider;
   }
 
   // Static methods delegate to default instance (backward compatibility)
@@ -225,13 +239,13 @@ export class ProviderFactory {
   }
 
   static createWithConfig(
-    modelName: string,
+    modelString: string,
     providersConfig: ProvidersConfig,
     logger?: AgentLogger,
     behaviorSettings?: { temperature: number; top_p: number }
   ): ProviderWithConfig {
     return this.getDefaultInstance().createWithConfig(
-      modelName,
+      modelString,
       providersConfig,
       logger,
       behaviorSettings
@@ -239,13 +253,13 @@ export class ProviderFactory {
   }
 
   static create(
-    modelName: string,
+    modelString: string,
     providersConfig: ProvidersConfig,
     logger?: AgentLogger,
     defaultBehaviorName?: string
   ): ILLMProvider {
     return this.getDefaultInstance().create(
-      modelName,
+      modelString,
       providersConfig,
       logger,
       defaultBehaviorName

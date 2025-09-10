@@ -92,7 +92,7 @@ When agent A delegates to agent B:
 - **USE type guards** - Proper runtime type checking with type predicates
 - **Keep it DRY** - This is an MVP/POC, avoid unnecessary abstractions
 - **Prefer explicit types** - Don't rely on inference for public APIs
-- **Follow YAGNI** - "You Aren't Gonna Need It" - Don't add functionality until it's actually needed
+- **Follow YAGNI** - "You Aren't Gonna Need It" - Don't implement features, abstractions, or optimizations just because you think you might need them in the future — you probably won't. Instead, focus on what is required right now
 
 **Documentation Best Practices**:
 - **Use Mermaid diagrams** - Prefer Mermaid diagrams over ASCII art in markdown files
@@ -163,9 +163,11 @@ Multi-Provider Configuration:
 # Copy and customize providers config
 cp providers-config.example.json providers-config.json
 
-# Models can be specified as:
-# - Direct: "claude-3-5-haiku-latest"
-# - Provider prefix: "openrouter/llama-3.1-70b"
+# Models must use provider prefix format:
+# - Anthropic: "anthropic/claude-3-5-haiku-latest"
+# - OpenAI: "openai/gpt-4-turbo"
+# - OpenRouter: "openrouter/meta-llama/llama-3.1-70b"
+# - With modifiers: "openrouter/gpt-4:nitro"
 ```
 
 ### Behavior Presets

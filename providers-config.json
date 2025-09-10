@@ -32,9 +32,7 @@
     }
   },
 
-  "_comment3": "The fallbackProvider is used when a model doesn't match any patterns or aliases",
-  "fallbackProvider": "openrouter",
-
+  "_comment3": "Providers are selected by explicit prefix: provider/model[:modifier]",
   "providers": {
     "anthropic": {
       "type": "native",
@@ -61,37 +59,45 @@
         }
       ]
     },
+    "openai": {
+      "type": "openai-compatible",
+      "baseURL": "https://api.openai.com/v1",
+      "apiKeyEnv": "OPENAI_API_KEY",
+      "models": [
+        {
+          "id": "gpt-4-turbo",
+          "contextLength": 128000,
+          "maxOutputTokens": 4096
+        },
+        {
+          "id": "gpt-3.5-turbo",
+          "contextLength": 16385,
+          "maxOutputTokens": 4096
+        },
+        {
+          "id": "o1-preview",
+          "contextLength": 128000,
+          "maxOutputTokens": 32768
+        }
+      ]
+    },
     "openrouter": {
       "type": "openai-compatible",
       "baseURL": "https://openrouter.ai/api/v1",
       "apiKeyEnv": "OPENROUTER_API_KEY",
       "dynamicModels": true,
+      "_comment": "OpenRouter handles :nitro and :floor modifiers directly in the model name",
       "models": [
         {
           "id": "*",
-          "description": "OpenRouter supports 200+ models dynamically. Any model not matched by other providers will be routed here.",
-          "examples": ["x-ai/grok-code-fast-1"]
+          "description": "OpenRouter supports 200+ models dynamically. Supports :nitro and :floor modifiers.",
+          "examples": [
+            "x-ai/grok-code-fast-1",
+            "meta-llama/llama-3.1-70b-instruct:nitro",
+            "gpt-4:floor"
+          ]
         }
       ]
     }
-  },
-  "modelPatterns": [
-    {
-      "pattern": "^claude",
-      "provider": "anthropic"
-    },
-    {
-      "pattern": "^(gpt|o[0-9])",
-      "provider": "openai"
-    },
-    {
-      "pattern": "^gemini",
-      "provider": "google"
-    },
-    {
-      "pattern": "/",
-      "provider": "openrouter",
-      "description": "Any model with provider prefix defaults to OpenRouter"
-    }
-  ]
+  }
 }

@@ -1,7 +1,7 @@
 ---
 name: documentation-verification
 description: Verifies completeness of claim documentation
-model: claude-sonnet-4-0
+model: anthropic/claude-3-5-sonnet-latest
 behavior: precise
 tools: ["get_policy_details"]
 ---

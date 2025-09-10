@@ -13,7 +13,7 @@ describe('Pull Architecture Integration Tests', () => {
   let buildResult: BuildResult;
 
   beforeAll(async () => {
-    const modelName = process.env.MODEL || 'claude-3-5-haiku-latest';
+    const modelName = process.env.MODEL || 'anthropic/claude-3-5-haiku-latest';
     buildResult = await AgentSystemBuilder.default()
       .withModel(modelName)
       .withAgentsFrom(path.join(__dirname, 'test-agents'))

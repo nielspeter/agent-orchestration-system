@@ -3,6 +3,7 @@
 A TypeScript implementation of an advanced agent orchestration system using **pull architecture** where child agents autonomously gather information via tools rather than inheriting parent context. Built with a **middleware pipeline architecture** (Chain of Responsibility pattern) and leverages Anthropic's ephemeral caching for efficiency.
 
 ## 🆕 Recent Updates
+- **OpenRouter Speed Optimization**: Provider pinning for lowest latency/highest throughput with `:nitro` suffix
 - **Behavior Presets**: Semantic temperature/top_p control (deterministic, precise, balanced, creative, exploratory)
 - **Multi-Provider Support**: Dynamic provider selection (Anthropic, OpenRouter) based on model patterns
 - **Grep Tool**: Fast file searching using ripgrep for pattern matching
@@ -194,6 +195,23 @@ agent-orchestration-system/
 
 ## 📊 Performance & Efficiency
 
+### Model Selection
+
+Models must be specified with their provider prefix:
+
+```typescript
+// Format: provider/model[:modifier]
+
+// Direct to provider APIs
+.withModel('anthropic/claude-3-5-haiku-latest')
+.withModel('openai/gpt-4-turbo')
+
+// Via OpenRouter (supports :nitro and :floor modifiers)
+.withModel('openrouter/meta-llama/llama-3.1-70b-instruct')        // Default routing
+.withModel('openrouter/meta-llama/llama-3.1-70b-instruct:nitro')  // Fast throughput
+.withModel('openrouter/meta-llama/llama-3.1-70b-instruct:floor')  // Lowest price
+```
+
 ### Caching Metrics
 - **90% reduction** in token costs for repeated context
 - **2000x efficiency** for multi-agent workflows
@@ -232,7 +250,7 @@ const minimal = await AgentSystemBuilder.minimal().build();
 
 // Default with file tools
 const withTools = await AgentSystemBuilder.default()
-  .withModel('claude-3-5-haiku-latest')
+  .withModel('anthropic/claude-3-5-haiku-latest')
   .withSessionId('my-session')
   .build();
 

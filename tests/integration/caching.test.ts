@@ -14,7 +14,7 @@ describe('Caching Integration Tests', () => {
 
   beforeAll(async () => {
     buildResult = await AgentSystemBuilder.default()
-      .withModel(process.env.MODEL || 'claude-3-5-haiku-latest')
+      .withModel(process.env.MODEL || 'anthropic/claude-3-5-haiku-latest')
       .withAgentsFrom(path.join(__dirname, 'test-agents'))
       .withSessionId('caching-test')
       .build();

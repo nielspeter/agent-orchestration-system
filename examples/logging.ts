@@ -14,7 +14,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 async function testWithLogging() {
   // Minimal config with verbose logging enabled and example-specific agents
   const { executor, cleanup } = await new AgentSystemBuilder()
-    .withModel(process.env.MODEL || 'claude-3-5-haiku-latest')
+    .withModel(process.env.MODEL || 'anthropic/claude-3-5-haiku-latest')
     .withAgentsFrom(path.join(__dirname, 'logging', 'agents'))
     .withDefaultTools() // read, write, list, task for delegation demos
     .withTodoTool() // Include todo for Test 3

@@ -1,7 +1,7 @@
 ---
 name: policy-assessment
 description: Evaluates if the claimed illness is covered by the policy
-model: claude-sonnet-4-0
+model: anthropic/claude-3-5-sonnet-latest
 behavior: precise
 tools: ["get_policy_details", "check_fraud_indicators"]
 ---

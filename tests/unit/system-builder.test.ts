@@ -51,7 +51,7 @@ describe('AgentSystemBuilder Tests', () => {
 
   describe('Builder Configuration', () => {
     test('withModel() should set the model', async () => {
-      const modelName = process.env.MODEL || 'claude-3-5-haiku-latest';
+      const modelName = process.env.MODEL || 'anthropic/claude-3-5-haiku-latest';
       const result = await AgentSystemBuilder.minimal().withModel(modelName).build();
       cleanup = result.cleanup;
 
@@ -140,7 +140,7 @@ describe('AgentSystemBuilder Tests', () => {
     test('fromConfigFile() should load config if file exists', async () => {
       // Create a temporary config file
       const configPath = './test-config.json';
-      const modelName = process.env.MODEL || 'claude-3-5-haiku-latest';
+      const modelName = process.env.MODEL || 'anthropic/claude-3-5-haiku-latest';
       const config = {
         model: modelName,
         agents: { directories: ['./agents'] },

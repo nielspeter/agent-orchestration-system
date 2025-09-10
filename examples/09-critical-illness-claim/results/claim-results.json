@@ -1,0 +1,136 @@
+{
+  "processId": "PROC-A7B9C2D1",
+  "timestamp": "2025-09-10T08:18:17.342250Z",
+  "workflowPath": [
+    "notification_received",
+    "categorization_performed",
+    "claim_registered",
+    "documentation_verified",
+    "communication_sent"
+  ],
+  "finalOutcome": "pending_docs",
+  "details": {
+    "claimId": "CI-20250113-1D5C8",
+    "claimantName": "Jane Smith",
+    "policyNumber": "POL-54321",
+    "illness": "Stage 2 breast cancer",
+    "decision": "Documentation incomplete - awaiting additional documents",
+    "notes": "Missing attending physician statement and medical bills"
+  },
+  "auditTrail": [
+    {
+      "sequence": 1,
+      "timestamp": "2025-09-10T08:18:17.342250Z",
+      "agent": "workflow-orchestrator",
+      "action": "WORKFLOW_START",
+      "input": {
+        "notification": {
+          "id": "NOTIF-001",
+          "type": "critical_illness_claim",
+          "content": "I am submitting a claim for my recent cancer diagnosis. I was diagnosed with stage 2 breast cancer on December 15, 2024. I have been a policyholder for 2 years and have all the necessary medical documentation including pathology reports, oncologist statements, and treatment plans.",
+          "timestamp": "2025-01-13T09:00:00Z",
+          "claimantInfo": {
+            "name": "Jane Smith",
+            "policyNumber": "POL-54321",
+            "contactInfo": "jane.smith@email.com, +1-555-0123"
+          }
+        }
+      },
+      "reasoning": "Received new critical illness claim notification"
+    },
+    {
+      "sequence": 2,
+      "timestamp": "2025-09-10T08:18:17.342250Z",
+      "agent": "workflow-orchestrator",
+      "action": "DELEGATE",
+      "target": "notification-categorization",
+      "input": "Notification data for categorization",
+      "output": {
+        "isCriticalIllness": true,
+        "category": "critical_illness",
+        "confidence": "high",
+        "identifiedCondition": "Stage 2 breast cancer"
+      },
+      "reasoning": "Categorizing notification to determine claim type"
+    },
+    {
+      "sequence": 3,
+      "timestamp": "2025-09-10T08:18:30.000Z",
+      "agent": "workflow-orchestrator",
+      "action": "TOOL_USE",
+      "tool": "claim_id_generator",
+      "input": {
+        "policy_number": "POL-54321",
+        "timestamp": "2025-01-13T09:00:00Z",
+        "claim_type": "CI"
+      },
+      "output": {
+        "claim_id": "CI-20250113-1D5C8"
+      },
+      "reasoning": "Generating unique claim ID for new claim"
+    },
+    {
+      "sequence": 4,
+      "timestamp": "2025-09-10T08:18:45.000Z",
+      "agent": "workflow-orchestrator",
+      "action": "DELEGATE",
+      "target": "claim-registration",
+      "input": "Claim registration data",
+      "output": {
+        "registrationSuccess": true,
+        "claimId": "CI-20250113-1D5C8",
+        "status": "registered"
+      },
+      "reasoning": "Registering new claim in the system"
+    },
+    {
+      "sequence": 5,
+      "timestamp": "2025-09-10T08:19:00.000Z",
+      "agent": "workflow-orchestrator",
+      "action": "DELEGATE",
+      "target": "documentation-verification",
+      "input": "Document verification request",
+      "output": {
+        "documentationComplete": false,
+        "missingDocuments": ["attending_physician_statement", "medical_bills"]
+      },
+      "reasoning": "Verifying completeness of submitted documentation"
+    },
+    {
+      "sequence": 6,
+      "timestamp": "2025-09-10T08:19:15.000Z",
+      "agent": "workflow-orchestrator",
+      "action": "DECISION",
+      "decisionPoint": "documentation_complete",
+      "output": {
+        "decision": "incomplete",
+        "nextStep": "request_documents"
+      },
+      "reasoning": "Documentation incomplete - need to request missing documents"
+    },
+    {
+      "sequence": 7,
+      "timestamp": "2025-09-10T08:19:30.000Z",
+      "agent": "workflow-orchestrator",
+      "action": "DELEGATE",
+      "target": "communication",
+      "input": "Documentation request communication",
+      "output": {
+        "messageId": "DOC_REQ_20250113_1",
+        "deliveryStatus": "sent"
+      },
+      "reasoning": "Sending documentation request to claimant"
+    },
+    {
+      "sequence": 8,
+      "timestamp": "2025-09-10T08:19:45.000Z",
+      "agent": "workflow-orchestrator",
+      "action": "WORKFLOW_END",
+      "output": {
+        "status": "pending_docs",
+        "reason": "Awaiting additional documentation from claimant"
+      },
+      "reasoning": "Workflow paused pending receipt of required documentation"
+    }
+  ]
+}

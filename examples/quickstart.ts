@@ -14,7 +14,7 @@ async function test() {
 
   // Clean, self-contained setup with example-specific agents
   const { executor, cleanup } = await new AgentSystemBuilder()
-    .withModel('claude-3-5-haiku-latest')
+    .withModel('openrouter/openai/gpt-oss-20b')
     .withAgentsFrom(path.join(__dirname, 'quickstart', 'agents'))
     .withDefaultTools() // read, write, list
     .withSessionId('simple-test')

@@ -15,7 +15,7 @@
     "additionalDirectories": []
   },
   "execution": {
-    "defaultModel": "claude-3-5-haiku-latest",
+    "defaultModel": "anthropic/claude-3-5-haiku-latest",
     "defaultBehavior": "balanced",
     "maxDepth": 10,
     "maxIterations": 100,
