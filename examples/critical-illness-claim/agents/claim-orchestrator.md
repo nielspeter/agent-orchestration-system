@@ -162,7 +162,7 @@ The Task tool will return the sub-agent's response, which you must then process 
 - Use the claim_id_generator tool to generate claim IDs (format: CI-YYYYMMDD-XXXXX)
 - Use the timestamp_generator tool for consistent timestamps
 - **MANDATORY**: You MUST actually delegate to sub-agents using the Task tool - DO NOT generate mock responses
-- **MANDATORY**: You MUST save the final result using the Write tool to 'examples/09-critical-illness-claim/results/claim-results.json'
+- **MANDATORY**: You MUST save the final result using the Write tool to 'examples/critical-illness-claim/results/claim-results.json'
   - Use the exact output format specified above
   - Include the complete auditTrail array with actual delegation results
   - This is required for validation and testing
