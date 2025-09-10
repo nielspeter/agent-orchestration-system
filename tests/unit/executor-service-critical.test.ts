@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { groupToolsByConcurrency, executeSingleTool } from '@/tools/registry/executor-service';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { executeSingleTool, groupToolsByConcurrency } from '@/tools/registry/executor-service';
 import { ToolRegistry } from '@/tools/registry/registry';
 import { ToolCall } from '@/base-types';
 

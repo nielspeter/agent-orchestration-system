@@ -1,7 +1,7 @@
 ---
 name: claim-registration
 description: Registers critical illness claims in the system
-model: claude-sonnet-4-0
+model: anthropic/claude-3-5-sonnet-latest
 behavior: precise
 tools: ["claim_id_generator", "timestamp_generator"]
 ---

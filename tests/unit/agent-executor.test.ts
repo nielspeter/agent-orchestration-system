@@ -5,7 +5,7 @@ import { AgentExecutor } from '@/agents/executor';
 describe('Agent Executor - Essential Tests', () => {
   test('enforces iteration limit to prevent infinite loops', async () => {
     const builder = AgentSystemBuilder.forTest({
-      model: 'claude-3-5-haiku-latest',
+      model: 'anthropic/claude-3-5-haiku-latest',
       safety: {
         maxIterations: 3,
         maxDepth: 5,
@@ -23,7 +23,7 @@ describe('Agent Executor - Essential Tests', () => {
 
   test('enforces depth limit to prevent infinite recursion', async () => {
     const builder = AgentSystemBuilder.forTest({
-      model: 'claude-3-5-haiku-latest',
+      model: 'anthropic/claude-3-5-haiku-latest',
       safety: {
         maxIterations: 10,
         maxDepth: 2,
@@ -48,7 +48,7 @@ describe('Agent Executor - Essential Tests', () => {
 
   test('warns before hitting iteration limit', async () => {
     const builder = AgentSystemBuilder.forTest({
-      model: 'claude-3-5-haiku-latest',
+      model: 'anthropic/claude-3-5-haiku-latest',
       safety: {
         maxIterations: 5,
         maxDepth: 3,

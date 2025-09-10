@@ -45,7 +45,7 @@ describe('Tool Execution - Essential Tests', () => {
 
   test('respects tool concurrency limits', async () => {
     const builder = AgentSystemBuilder.forTest({
-      model: 'claude-3-5-haiku-latest',
+      model: 'anthropic/claude-3-5-haiku-latest',
       tools: {
         maxConcurrentTools: 2,
       },

@@ -98,7 +98,7 @@ Define agents in markdown with YAML frontmatter:
 ---
 name: code-reviewer
 tools: ["Read", "Write", "Grep"]
-model: claude-3-5-haiku-latest  # Optional
+model: anthropic/claude-3-5-haiku-latest  # Optional, uses provider/model format
 behavior: precise                # Optional preset
 ---
 

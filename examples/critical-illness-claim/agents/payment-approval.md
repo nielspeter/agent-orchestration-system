@@ -1,7 +1,7 @@
 ---
 name: payment-approval
 description: Handles payment approval decisions for approved claims
-model: claude-sonnet-4-0
+model: anthropic/claude-3-5-sonnet-latest
 behavior: deterministic
 tools: ["validate_bank_account", "check_fraud_indicators", "process_payment"]
 ---

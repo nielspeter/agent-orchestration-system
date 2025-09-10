@@ -1,7 +1,7 @@
 ---
 name: notification-categorization
 description: Determines if a notification is a critical illness claim or other type
-model: claude-sonnet-4-0
+model: anthropic/claude-3-5-sonnet-latest
 behavior: precise
 tools: []
 ---
