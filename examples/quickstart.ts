@@ -2,7 +2,7 @@
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
-import { AgentSystemBuilder } from '../src/config/system-builder';
+import { AgentSystemBuilder } from '@/config';
 
 // Load environment variables
 dotenv.config();
