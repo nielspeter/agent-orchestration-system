@@ -108,7 +108,7 @@ export class ConsoleLogger implements AgentLogger {
     console.log(`${timestamp}${this.color(`# ${message}`, 'dim')}`);
   }
 
-  logToolCall(agent: string, tool: string, params: Record<string, unknown>): void {
+  logToolCall(agent: string, tool: string, _toolId: string, params: Record<string, unknown>): void {
     const indent = this.getIndent(agent);
     const timestamp = this.formatTimestamp();
 

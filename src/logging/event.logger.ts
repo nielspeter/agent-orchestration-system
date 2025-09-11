@@ -69,17 +69,15 @@ export class EventLogger implements AgentLogger {
     this.logAssistantMessage('system', message);
   }
 
-  logToolCall(agent: string, tool: string, params: Record<string, unknown>): void {
-    const id = crypto.randomUUID();
-
+  logToolCall(agent: string, tool: string, toolId: string, params: Record<string, unknown>): void {
     // Store mapping for later use
-    this.toolCallMap.set(id, { tool, agent });
+    this.toolCallMap.set(toolId, { tool, agent });
 
     const event: ToolCallEvent = {
       type: 'tool_call',
       timestamp: Date.now(),
       data: {
-        id,
+        id: toolId,
         tool,
         params,
         agent,

@@ -146,7 +146,7 @@ export async function executeSingleTool(
 
   if (!tool) {
     // Log the missing tool as both a call and an error result
-    ctx.logger.logToolCall(ctx.agentName, toolCall.function.name, {});
+    ctx.logger.logToolCall(ctx.agentName, toolCall.function.name, toolCall.id, {});
     ctx.logger.logToolResult(ctx.agentName, toolCall.function.name, toolCall.id, {
       error: true,
       message: `Tool ${toolCall.function.name} not found`,
@@ -158,7 +158,7 @@ export async function executeSingleTool(
     const args = JSON.parse(toolCall.function.arguments);
 
     // Always log the tool call first
-    ctx.logger.logToolCall(ctx.agentName, tool.name, args);
+    ctx.logger.logToolCall(ctx.agentName, tool.name, toolCall.id, args);
 
     let result: ToolResult;
 
