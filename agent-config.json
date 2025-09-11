@@ -11,7 +11,7 @@
     "tools": ["read", "write", "list", "task", "todowrite"]
   },
   "agents": {
-    "directory": "./agents",
+    "directory": "",
     "additionalDirectories": []
   },
   "execution": {

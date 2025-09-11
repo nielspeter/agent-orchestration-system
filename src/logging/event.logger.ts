@@ -254,7 +254,7 @@ export class EventLogger implements AgentLogger {
         typeof e === 'object' &&
         e !== null &&
         'type' in e &&
-        ['user', 'assistant', 'tool_call', 'tool_result'].includes((e as any).type)
+        ['user', 'assistant', 'tool_call', 'tool_result'].includes((e as AnySessionEvent).type)
     );
   }
 
