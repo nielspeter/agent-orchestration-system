@@ -16,8 +16,8 @@ interface SessionStorage {
 
 ## Storage Implementations
 
-### NoOpStorage (Default)
-- No persistence
+### NoOpStorage
+- No persistence (used when storage.type = 'none')
 - Zero overhead
 - Methods return immediately
 
@@ -62,7 +62,7 @@ Events are logged with consistent structure:
 ```json
 {
   "storage": {
-    "type": "noop",
+    "type": "none",
     "options": {
       "path": ".agent-sessions"
     }
@@ -70,12 +70,12 @@ Events are logged with consistent structure:
 }
 ```
 
-Storage types: `"noop"` | `"memory"` | `"filesystem"`
+Storage types: `"none"` | `"memory"` | `"filesystem"`
 
 ### Programmatic Configuration
 
 ```typescript
-// Use default (NoOpStorage)
+// Use default (NoOpStorage when storage.type = 'none')
 const system = await AgentSystemBuilder.default().build();
 
 // Use InMemoryStorage
@@ -320,7 +320,7 @@ The system:
 
 - Events are immutable once written
 - Session IDs should be unique
-- NoOpStorage always returns empty results
+- NoOpStorage (type='none') always returns empty results
 - FilesystemStorage creates directories as needed
 - Event timestamps are Unix milliseconds
 - Tool call IDs are generated with crypto.randomUUID()
