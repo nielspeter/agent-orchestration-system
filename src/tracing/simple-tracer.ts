@@ -118,7 +118,12 @@ export class SimpleTracer {
     const totalDuration = Math.max(
       ...Array.from(this.spans.values())
         .filter((s) => s.endTime)
-        .map((s) => s.endTime! - s.startTime)
+        .map((s) => {
+          if (!s.endTime) {
+            throw new Error('Span should have endTime');
+          }
+          return s.endTime - s.startTime;
+        })
     );
 
     console.log('\n' + chalk.bold('Summary:'));
