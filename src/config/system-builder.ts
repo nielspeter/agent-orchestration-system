@@ -406,6 +406,22 @@ export class AgentSystemBuilder {
 
     // Create storage based on config
     const storageConfig = config.storage;
+    const validStorageTypes = ['none', 'memory', 'filesystem'] as const;
+    type ValidStorageType = (typeof validStorageTypes)[number];
+
+    // Validate storage type to prevent silent data loss
+    function isValidStorageType(type: string): type is ValidStorageType {
+      return validStorageTypes.includes(type as ValidStorageType);
+    }
+
+    if (!isValidStorageType(storageConfig.type)) {
+      throw new Error(
+        `Invalid storage type: '${storageConfig.type}'. ` +
+          `Valid types are: ${validStorageTypes.join(', ')}. ` +
+          'Check for typos in your configuration.'
+      );
+    }
+
     switch (storageConfig.type) {
       case 'none':
         return new NoOpStorage();
@@ -414,8 +430,9 @@ export class AgentSystemBuilder {
       case 'filesystem':
         return new FilesystemStorage(storageConfig.options?.path);
       default:
-        // Default to no storage for unknown types
-        return new NoOpStorage();
+        // This should never be reached due to validation above
+        // But TypeScript doesn't know that, so we need this for exhaustiveness
+        throw new Error(`Unexpected storage type: ${storageConfig.type}`);
     }
   }
 

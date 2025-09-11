@@ -27,11 +27,14 @@ describe('Memory Storage Session Events', () => {
     // Should have session events
     expect(events).toBeDefined();
     expect(events).toHaveLength(2);
-    expect(events![0]).toMatchObject({
+    if (!events) {
+      throw new Error('Events should be defined');
+    }
+    expect(events[0]).toMatchObject({
       type: 'user',
       data: { content: 'Test message' },
     });
-    expect(events![1]).toMatchObject({
+    expect(events[1]).toMatchObject({
       type: 'assistant',
       data: { content: 'Response message' },
     });
@@ -72,13 +75,19 @@ describe('Memory Storage Session Events', () => {
     const events2 = await session2.logger.getSessionEvents?.();
 
     expect(events1).toHaveLength(1);
-    expect(events1![0]).toMatchObject({
+    if (!events1) {
+      throw new Error('Events1 should be defined');
+    }
+    expect(events1[0]).toMatchObject({
       type: 'user',
       data: { content: 'Session 1 message' },
     });
 
     expect(events2).toHaveLength(1);
-    expect(events2![0]).toMatchObject({
+    if (!events2) {
+      throw new Error('Events2 should be defined');
+    }
+    expect(events2[0]).toMatchObject({
       type: 'user',
       data: { content: 'Session 2 message' },
     });
