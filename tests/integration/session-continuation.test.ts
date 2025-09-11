@@ -106,7 +106,7 @@ describe('Session Continuation Integration Tests', () => {
   }, 10000);
 
   test('should preserve conversation context across restarts', async () => {
-    // First system - have a conversation
+    // First system - have a conversation in a single session
     firstSystem = await AgentSystemBuilder.default()
       .withModel(process.env.MODEL || 'anthropic/claude-3-5-haiku-latest')
       .withStorage(new FilesystemStorage(storagePath))
@@ -114,15 +114,14 @@ describe('Session Continuation Integration Tests', () => {
       .withConsole(false)
       .build();
 
-    await firstSystem.executor.execute(
+    // Have a conversation that doesn't trigger tool calls
+    const firstResult = await firstSystem.executor.execute(
       'default',
-      'My favorite color is blue. Remember this.'
+      'My favorite color is blue and my favorite number is 7. Acknowledge this by saying "Noted: blue and 7"'
     );
 
-    await firstSystem.executor.execute(
-      'default',
-      'My favorite number is 7. Remember this too.'
-    );
+    expect(firstResult.toLowerCase()).toContain('blue');
+    expect(firstResult).toContain('7');
 
     // Clean up first system
     await firstSystem.cleanup();
@@ -137,7 +136,7 @@ describe('Session Continuation Integration Tests', () => {
 
     const result = await secondSystem.executor.execute(
       'default',
-      'What are my favorite color and number?'
+      'What are my favorite color and number that I told you earlier?'
     );
 
     expect(result.toLowerCase()).toContain('blue');

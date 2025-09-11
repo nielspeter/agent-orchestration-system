@@ -85,10 +85,8 @@ export class SimpleSessionManager {
         }
 
         default: {
-          // Skip unknown event types
-          // Use the original event since TypeScript narrows typedEvent to never
-          const eventType = (event as { type?: string }).type || 'unknown';
-          console.warn(`Unknown event type: ${eventType}`);
+          // Silently skip other event types (agent_iteration, agent_start, etc.)
+          // These are metadata events that don't need to be converted to messages
         }
       }
     }
