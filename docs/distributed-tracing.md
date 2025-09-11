@@ -20,7 +20,10 @@ User Request → Orchestrator (session_123)
 1. **Shared Logger Instance** (`src/agents/executor.ts:84`)
    - The executor passes `this.execute.bind(this)` as the delegation function
    - All delegated agents use the same logger instance
-   - Events from all agents go to one file: `logs/[sessionId].jsonl`
+   - Events from all agents go to one location based on storage type:
+     - Filesystem: `.agent-sessions/[sessionId]/events.jsonl`
+     - Memory: InMemoryStorage (for testing/debugging)
+     - None: No storage (default, for performance)
 
 2. **Event-Based Logging** (`src/logging/event.logger.ts`)
    - Every interaction is an event with timestamp and agent name
