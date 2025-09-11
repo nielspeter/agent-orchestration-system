@@ -16,13 +16,9 @@
  */
 
 import * as dotenv from 'dotenv';
-import * as path from 'path';
-import { fileURLToPath } from 'url';
 import { AgentSystemBuilder } from '@/config';
 
 dotenv.config();
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 interface Transaction {
   id: string;
@@ -33,15 +29,14 @@ interface Transaction {
   timestamp: string;
 }
 
+// Minimal interfaces - only fields we actually use for control flow
 interface ValidationResult {
   valid: boolean;
-  errors: string[];
-  transactionId: string;
+  errors?: string[];
 }
 
 interface FraudResult {
   riskScore: number;
-  flags: string[];
   proceed: boolean;
   reason?: string;
 }
@@ -49,13 +44,6 @@ interface FraudResult {
 interface ComplianceResult {
   compliant: boolean;
   reportRequired: boolean;
-  restrictions: string[];
-}
-
-interface ProcessingResult {
-  status: 'executed' | 'rejected' | 'held';
-  transactionId: string;
-  auditLog: string[];
 }
 
 async function processTransaction(transaction: Transaction) {
@@ -67,9 +55,12 @@ async function processTransaction(transaction: Transaction) {
   console.log('='.repeat(50));
 
   // Create executor for the pipeline
+  // NOTE: We use a single executor with shared session so each agent can see
+  // previous agents' responses in the conversation history. This eliminates
+  // the need to re-pass all data while maintaining the orchestrated flow.
   const { executor, cleanup } = await AgentSystemBuilder.minimal()
     .withModel('anthropic/claude-3-5-haiku-latest')
-    .withAgentsFrom(path.join(__dirname, 'workflow-pipeline', 'agents'))
+    .withAgentsFrom('examples/workflow-pipeline/agents')
     .withConsole(false) // Disable console for clean output
     .withSessionId(`transaction-${transaction.id}`)
     .build();
@@ -99,7 +90,7 @@ async function processTransaction(transaction: Transaction) {
     console.log(`   Result: ${validation.valid ? '✅ Valid' : '❌ Invalid'}`);
 
     if (!validation.valid) {
-      console.log(`   Errors: ${validation.errors.join(', ')}`);
+      console.log(`   Errors: ${validation.errors?.join(', ') || 'Validation failed'}`);
       console.log('\n🚫 Transaction rejected at validation');
       return { status: 'rejected', reason: 'validation_failed', auditLog };
     }
@@ -107,8 +98,7 @@ async function processTransaction(transaction: Transaction) {
     // STEP 2: Fraud Detection (ONLY if validation passed)
     console.log('\n🔍 Step 2: Fraud Detection');
     const fraudPrompt = `
-      Analyze fraud risk for this validated transaction:
-      ${JSON.stringify(transaction, null, 2)}
+      The transaction above has been validated. Now analyze it for fraud risk.
       
       Check for:
       - High amount (>5000 is medium risk, >20000 is high risk)
@@ -134,12 +124,11 @@ async function processTransaction(transaction: Transaction) {
     // STEP 3: Compliance Check (ONLY if fraud check passed)
     console.log('\n⚖️ Step 3: Compliance Check');
     const compliancePrompt = `
-      Check AML/KYC compliance for transaction:
-      ${JSON.stringify(transaction, null, 2)}
+      Review the validated transaction and fraud assessment above for AML/KYC compliance.
       
-      With fraud assessment:
-      Risk Score: ${fraud.riskScore}
-      Flags: ${JSON.stringify(fraud.flags)}
+      The fraud assessment shows:
+      - Risk Score: ${fraud.riskScore}
+      - Decision: ${fraud.proceed ? 'Proceed' : 'Block'}
       
       Check for:
       - Amount thresholds (>10000 requires reporting)
@@ -159,7 +148,6 @@ async function processTransaction(transaction: Transaction) {
     console.log(`   Report Required: ${compliance.reportRequired ? '📄 Yes' : 'No'}`);
 
     if (!compliance.compliant) {
-      console.log(`   Restrictions: ${compliance.restrictions.join(', ')}`);
       console.log('\n🚫 Transaction failed compliance check');
       return { status: 'rejected', reason: 'compliance_violation', auditLog };
     }
@@ -167,20 +155,20 @@ async function processTransaction(transaction: Transaction) {
     // STEP 4: Process Transaction (deterministic based on all checks)
     console.log('\n💳 Step 4: Processing Transaction');
     const processingPrompt = `
-      Execute this approved transaction:
-      ${JSON.stringify(transaction, null, 2)}
+      Based on the complete assessment chain above, execute this approved transaction.
       
-      Validation: PASSED
-      Fraud Score: ${fraud.riskScore}
-      Compliance: ${compliance.compliant ? 'APPROVED' : 'FAILED'}
-      Report Required: ${compliance.reportRequired}
+      Summary of checks:
+      - Validation: PASSED
+      - Fraud Score: ${fraud.riskScore}
+      - Compliance: ${compliance.compliant ? 'APPROVED' : 'FAILED'}
+      - Report Required: ${compliance.reportRequired}
       
-      Create audit entry and confirmation.
+      Create audit entry and confirmation for transaction ${transaction.id}.
       Return JSON: {"status": "executed", "transactionId": "${transaction.id}", "auditLog": ["entries"]}
     `;
 
     const processingResult = await executor.execute('transaction-processor', processingPrompt);
-    const processing: ProcessingResult = JSON.parse(processingResult);
+    const processing = JSON.parse(processingResult) as { status: string; auditLog: string[] };
 
     auditLog.push(`PROCESSING: Status=${processing.status}`);
     auditLog.push(...processing.auditLog);

@@ -31,6 +31,7 @@
     "example:configuration": "tsx examples/configuration.ts",
     "example:critical-illness": "tsx examples/critical-illness-claim.ts",
     "example:default-agent": "tsx examples/default-agent.ts",
+    "example:inline-agents": "tsx examples/inline-agents.ts",
     "example:logging": "tsx examples/logging.ts",
     "example:mcp": "tsx examples/mcp-integration.ts",
     "example:orchestration": "tsx examples/orchestration.ts",

@@ -1,12 +1,8 @@
 import * as dotenv from 'dotenv';
-import * as path from 'path';
-import { fileURLToPath } from 'url';
 import { AgentSystemBuilder } from '@/config';
 
 // Load environment variables
 dotenv.config();
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /**
  * Test that demonstrates TRUE agent orchestration
@@ -18,7 +14,7 @@ async function testTrueOrchestration() {
   // Use full configuration with example-specific agents for complex orchestration
   const { executor, cleanup } = await AgentSystemBuilder.default()
     .withModel(process.env.MODEL || 'anthropic/claude-3-5-haiku-latest')
-    .withAgentsFrom(path.join(__dirname, 'orchestration', 'agents'))
+    .withAgentsFrom('examples/orchestration/agents')
     .withSessionId('true-orchestration-demo')
     .build();
 
