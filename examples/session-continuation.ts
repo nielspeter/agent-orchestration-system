@@ -5,8 +5,12 @@
  * by using recovered messages from a previous session.
  */
 
+import * as dotenv from 'dotenv';
 import { AgentSystemBuilder } from '@/config';
 import { FilesystemStorage } from '@/session/filesystem.storage';
+
+// Load environment variables
+dotenv.config();
 
 async function main() {
   const sessionId = 'demo-session-123';
