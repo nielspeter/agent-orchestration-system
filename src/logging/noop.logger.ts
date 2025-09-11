@@ -7,7 +7,7 @@ export class NoOpLogger implements AgentLogger {
   logUserMessage(_content: string): void {}
   logAssistantMessage(_agent: string, _text: string): void {}
   logSystemMessage(_message: string): void {}
-  logToolCall(_agent: string, _tool: string, _params: Record<string, unknown>): void {}
+  logToolCall(_agent: string, _tool: string, _toolId: string, _params: Record<string, unknown>): void {}
   logToolExecution(_agent: string, _tool: string, _toolId: string): void {}
   logToolResult(_agent: string, _tool: string, _toolId: string, _result: unknown): void {}
   logToolError(_agent: string, _tool: string, _toolId: string, _error: Error): void {}

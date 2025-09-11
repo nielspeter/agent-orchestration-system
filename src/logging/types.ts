@@ -3,7 +3,7 @@ export interface AgentLogger {
   logAssistantMessage(agent: string, text: string): void;
   logSystemMessage(message: string): void;
 
-  logToolCall(agent: string, tool: string, params: Record<string, unknown>): void;
+  logToolCall(agent: string, tool: string, toolId: string, params: Record<string, unknown>): void;
   logToolExecution(agent: string, tool: string, toolId: string): void;
   logToolResult(agent: string, tool: string, toolId: string, result: unknown): void;
   logToolError(agent: string, tool: string, toolId: string, error: Error): void;

@@ -25,13 +25,7 @@ export function createLLMCallMiddleware(): Middleware {
       ctx.logger.logAssistantMessage(ctx.agentName, ctx.response.content);
     }
 
-    // Log tool calls if any
-    if (ctx.response.tool_calls?.length) {
-      for (const toolCall of ctx.response.tool_calls) {
-        const args = JSON.parse(toolCall.function.arguments);
-        ctx.logger.logToolCall(ctx.agentName, toolCall.function.name, args);
-      }
-    }
+    // Tool calls will be logged by the executor when they're actually executed
 
     await next();
   };

@@ -102,9 +102,9 @@ describe('EventLogger', () => {
   });
 
   describe('logToolCall', () => {
-    it('should log tool calls with generated ID', async () => {
+    it('should log tool calls with provided ID', async () => {
       const params = { path: '/test/file.txt', encoding: 'utf-8' };
-      logger.logToolCall('test-agent', 'Read', params);
+      logger.logToolCall('test-agent', 'Read', 'call-123', params);
 
       await new Promise((resolve) => setTimeout(resolve, 10));
 
@@ -120,10 +120,10 @@ describe('EventLogger', () => {
       expect(event.data.agent).toBe('test-agent');
     });
 
-    it('should generate unique IDs for each tool call', async () => {
-      logger.logToolCall('agent', 'Tool1', {});
-      logger.logToolCall('agent', 'Tool2', {});
-      logger.logToolCall('agent', 'Tool3', {});
+    it('should use provided IDs for each tool call', async () => {
+      logger.logToolCall('agent', 'Tool1', 'call-1', {});
+      logger.logToolCall('agent', 'Tool2', 'call-2', {});
+      logger.logToolCall('agent', 'Tool3', 'call-3', {});
 
       await new Promise((resolve) => setTimeout(resolve, 10));
 
@@ -147,7 +147,7 @@ describe('EventLogger', () => {
         null: null,
       };
 
-      logger.logToolCall('agent', 'ComplexTool', complexParams);
+      logger.logToolCall('agent', 'ComplexTool', 'call-complex', complexParams);
 
       await new Promise((resolve) => setTimeout(resolve, 10));
 
@@ -406,7 +406,7 @@ describe('EventLogger', () => {
       failingLogger.logUserMessage('test');
       failingLogger.logAssistantMessage('agent', 'test');
       failingLogger.logSystemMessage('test');
-      failingLogger.logToolCall('agent', 'tool', {});
+      failingLogger.logToolCall('agent', 'tool', 'call-id', {});
       failingLogger.logToolResult('agent', 'tool', 'id', {});
       failingLogger.logToolError('agent', 'tool', 'id', new Error('test'));
       failingLogger.logDelegation('parent', 'child', 'task');
@@ -428,7 +428,7 @@ describe('EventLogger', () => {
     it('should preserve chronological order of events', async () => {
       logger.logUserMessage('Question?');
       logger.logAssistantMessage('agent', 'Let me help');
-      logger.logToolCall('agent', 'Search', { query: 'test' });
+      logger.logToolCall('agent', 'Search', 'call-1', { query: 'test' });
       logger.logToolResult('agent', 'Search', 'call-1', { results: [] });
       logger.logAssistantMessage('agent', 'No results found');
 

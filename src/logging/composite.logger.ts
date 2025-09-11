@@ -43,9 +43,9 @@ export class CompositeLogger implements AgentLogger {
     );
   }
 
-  logToolCall(agent: string, tool: string, params: Record<string, unknown>): void {
+  logToolCall(agent: string, tool: string, toolId: string, params: Record<string, unknown>): void {
     this.executeWithErrorIsolation(
-      (logger) => logger.logToolCall(agent, tool, params),
+      (logger) => logger.logToolCall(agent, tool, toolId, params),
       'logToolCall'
     );
   }
