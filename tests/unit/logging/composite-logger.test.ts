@@ -17,8 +17,12 @@ describe('CompositeLogger', () => {
       expect(logger2.logUserMessage).toHaveBeenCalledWith('Test message');
       expect(logger1.logAssistantMessage).toHaveBeenCalledWith('agent', 'Response');
       expect(logger2.logAssistantMessage).toHaveBeenCalledWith('agent', 'Response');
-      expect(logger1.logToolCall).toHaveBeenCalledWith('agent', 'Read', 'call-id', { file: 'test.txt' });
-      expect(logger2.logToolCall).toHaveBeenCalledWith('agent', 'Read', 'call-id', { file: 'test.txt' });
+      expect(logger1.logToolCall).toHaveBeenCalledWith('agent', 'Read', 'call-id', {
+        file: 'test.txt',
+      });
+      expect(logger2.logToolCall).toHaveBeenCalledWith('agent', 'Read', 'call-id', {
+        file: 'test.txt',
+      });
     });
 
     it('should handle empty logger array', () => {
@@ -92,7 +96,9 @@ describe('CompositeLogger', () => {
       composite.logToolResult('agent', 'Read', 'tool-id-1', 'file contents');
       composite.logToolError('agent', 'Read', 'tool-id-1', new Error('File not found'));
 
-      expect(logger.logToolCall).toHaveBeenCalledWith('agent', 'Read', 'call-id', { file: 'test.txt' });
+      expect(logger.logToolCall).toHaveBeenCalledWith('agent', 'Read', 'call-id', {
+        file: 'test.txt',
+      });
       expect(logger.logToolExecution).toHaveBeenCalledWith('agent', 'Read', 'tool-id-1');
       expect(logger.logToolResult).toHaveBeenCalledWith(
         'agent',
