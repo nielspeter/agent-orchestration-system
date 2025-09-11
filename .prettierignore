@@ -1,7 +1,7 @@
-node_modules
-dist
-coverage
 *.log
-.env
-package-lock.json
 *.md
+.env
+coverage
+dist
+node_modules
+package-lock.json

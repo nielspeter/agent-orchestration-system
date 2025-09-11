@@ -36,7 +36,7 @@ coverage-integration/
 logs/
 
 # Temporary files
+*.tmp.env.test
+.agent-sessions/
 temp/
 tmp/
-*.tmp.env.test
-.env.test.local
