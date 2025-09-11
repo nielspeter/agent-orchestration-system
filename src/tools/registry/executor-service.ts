@@ -145,24 +145,40 @@ export async function executeSingleTool(
   const tool = toolRegistry.getTool(toolCall.function.name);
 
   if (!tool) {
+    // Log the missing tool as both a call and an error result
+    ctx.logger.logToolCall(ctx.agentName, toolCall.function.name, {});
+    ctx.logger.logToolResult(ctx.agentName, toolCall.function.name, toolCall.id, {
+      error: true,
+      message: `Tool ${toolCall.function.name} not found`,
+    });
     return createErrorResult(toolCall.id, `Tool ${toolCall.function.name} not found`, ctx);
   }
 
   try {
     const args = JSON.parse(toolCall.function.arguments);
 
+    // Always log the tool call first
+    ctx.logger.logToolCall(ctx.agentName, tool.name, args);
+
     let result: ToolResult;
 
-    if (tool.name === 'Task') {
-      // Handle delegation to sub-agents
-      result = await handleDelegation(args, ctx, executeDelegate, toolCall.id);
-    } else {
-      // Regular tool execution
-      ctx.logger.logToolCall(ctx.agentName, tool.name, args);
-
-      result = await tool.execute(args);
+    try {
+      if (tool.name === 'Task') {
+        // Handle delegation to sub-agents
+        result = await handleDelegation(args, ctx, executeDelegate, toolCall.id);
+      } else {
+        // Regular tool execution
+        result = await tool.execute(args);
+      }
+    } catch (executionError) {
+      // Tool execution failed - create error result
+      result = {
+        content: null,
+        error: String(executionError),
+      };
     }
 
+    // Always log the result, whether success or failure
     ctx.logger.logToolResult(ctx.agentName, tool.name, toolCall.id, result);
 
     return {
@@ -171,6 +187,14 @@ export async function executeSingleTool(
       content: JSON.stringify(result),
     };
   } catch (error) {
+    // This catches JSON parse errors or other setup failures
+    // Still need to log a result for consistency
+    const errorResult = { error: true, message: `Tool setup failed: ${error}` };
+
+    if (tool) {
+      ctx.logger.logToolResult(ctx.agentName, tool.name, toolCall.id, errorResult);
+    }
+
     return createErrorResult(toolCall.id, `Tool execution failed: ${error}`, ctx, tool?.name);
   }
 }

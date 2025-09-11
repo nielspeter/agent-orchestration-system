@@ -167,7 +167,8 @@ describe('ExecutorService - Critical Path (Minimal MVP Tests)', () => {
 
       expect(result.role).toBe('tool');
       expect(result.content).toContain('Something went wrong');
-      expect(mockLogger.logToolError).toHaveBeenCalled();
+      // Note: logToolError is no longer called since we handle errors with logToolResult now
+      expect(mockLogger.logToolResult).toHaveBeenCalled();
     });
 
     it('should execute tool successfully', async () => {

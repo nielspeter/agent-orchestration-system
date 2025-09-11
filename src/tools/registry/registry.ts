@@ -1,5 +1,5 @@
 import type { Tool } from '../types';
-import type { TestAgentConfig } from '@/config';
+import type { TestAgentConfig, Agent } from '@/config';
 import {
   DuplicateToolError,
   InvalidToolError,
@@ -15,7 +15,7 @@ export interface IToolRegistry {
   getTool(name: string): Tool | undefined;
   getAllTools(): Tool[];
   getToolsForAgent(config: TestAgentConfig): Tool[];
-  filterForAgent(agentConfig: { tools?: string[] | '*'; [key: string]: unknown }): Tool[];
+  filterForAgent(agentConfig: Agent): Tool[];
 }
 
 export class ToolRegistry implements IToolRegistry {
@@ -87,7 +87,7 @@ export class ToolRegistry implements IToolRegistry {
     return result;
   }
 
-  filterForAgent(agentConfig: { tools?: string[] | '*'; [key: string]: unknown }): Tool[] {
+  filterForAgent(agentConfig: Agent): Tool[] {
     // If no tools configured, return empty array
     if (!agentConfig.tools) {
       return [];

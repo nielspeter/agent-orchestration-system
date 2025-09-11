@@ -763,7 +763,9 @@ export class AgentSystemBuilder {
 
     // Use first directory or current directory if none specified
     const primaryDir = allAgentDirs[0] || '.';
-    const agentLoader = new AgentLoader(primaryDir, logger);
+    // Pass inline agents directly - they're already in the right format
+    const inlineAgents = resolvedConfig.agents.agents;
+    const agentLoader = new AgentLoader(primaryDir, logger, inlineAgents);
 
     // Warn if multiple directories were specified but not all used
     if (allAgentDirs.length > 1) {
