@@ -90,7 +90,12 @@ describe('Tool Result Logging Atomicity', () => {
       const result = await executeSingleTool(toolCall, mockContext, toolRegistry, vi.fn());
 
       // Verify call was logged
-      expect(mockLogger.logToolCall).toHaveBeenCalledWith('test-agent', 'FailingTool', 'call-456', {});
+      expect(mockLogger.logToolCall).toHaveBeenCalledWith(
+        'test-agent',
+        'FailingTool',
+        'call-456',
+        {}
+      );
 
       // Verify error result was logged
       expect(mockLogger.logToolResult).toHaveBeenCalledWith(
@@ -241,12 +246,24 @@ describe('Tool Result Logging Atomicity', () => {
       expect(resultCount).toBe(2);
 
       // Verify specific calls and results match
-      expect(mockLogger.logToolCall).toHaveBeenNthCalledWith(1, 'test-agent', 'Tool1', 'call-1', {});
+      expect(mockLogger.logToolCall).toHaveBeenNthCalledWith(
+        1,
+        'test-agent',
+        'Tool1',
+        'call-1',
+        {}
+      );
       expect(mockLogger.logToolResult).toHaveBeenNthCalledWith(1, 'test-agent', 'Tool1', 'call-1', {
         content: 'result1',
       });
 
-      expect(mockLogger.logToolCall).toHaveBeenNthCalledWith(2, 'test-agent', 'Tool2', 'call-2', {});
+      expect(mockLogger.logToolCall).toHaveBeenNthCalledWith(
+        2,
+        'test-agent',
+        'Tool2',
+        'call-2',
+        {}
+      );
       expect(mockLogger.logToolResult).toHaveBeenNthCalledWith(2, 'test-agent', 'Tool2', 'call-2', {
         content: null,
         error: 'Error: Tool2 failed',
