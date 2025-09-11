@@ -1,7 +1,7 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import matter from 'gray-matter';
-import { AgentDefinition } from './types';
+import { Agent } from '@/config/types';
 import { AgentLogger } from '@/logging';
 
 export class AgentLoader {
@@ -9,7 +9,7 @@ export class AgentLoader {
    * Built-in default agent definition
    * Used as fallback when specific agents aren't found
    */
-  private readonly DEFAULT_AGENT: AgentDefinition = {
+  private readonly DEFAULT_AGENT: Agent = {
     id: 'default',
     name: 'default',
     description: `You are a versatile, general-purpose assistant capable of handling any task.
@@ -65,14 +65,34 @@ you step in to ensure the task gets completed by returning useful results.`,
 
   constructor(
     private readonly agentsDir: string,
-    private readonly logger?: AgentLogger
+    private readonly logger?: AgentLogger,
+    private readonly inlineAgents?: Agent[]
   ) {}
 
-  async loadAgent(name: string): Promise<AgentDefinition> {
+  async loadAgent(name: string): Promise<Agent> {
     // Special case: return built-in default agent
     if (name === 'default') {
       this.logger?.logSystemMessage('Using built-in default agent');
       return this.DEFAULT_AGENT;
+    }
+
+    // Check inline agents first
+    if (this.inlineAgents) {
+      const inlineAgent = this.inlineAgents.find((a) => a.name === name);
+      if (inlineAgent) {
+        this.logger?.logSystemMessage(`Using inline agent: ${name}`);
+        return {
+          id: inlineAgent.name,
+          name: inlineAgent.name,
+          description: inlineAgent.prompt || '',
+          prompt: inlineAgent.prompt || '',
+          tools: inlineAgent.tools || [],
+          model: inlineAgent.model,
+          behavior: inlineAgent.behavior,
+          temperature: inlineAgent.temperature,
+          top_p: inlineAgent.top_p,
+        };
+      }
     }
 
     const agentPath = path.join(this.agentsDir, `${name}.md`);
@@ -122,12 +142,19 @@ you step in to ensure the task gets completed by returning useful results.`,
   }
 
   async listAgents(): Promise<string[]> {
+    const agents: string[] = ['default'];
+
+    // Add inline agents
+    if (this.inlineAgents) {
+      agents.push(...this.inlineAgents.map((a) => a.name));
+    }
+
+    // Add file-based agents
     try {
       const files = await fs.readdir(this.agentsDir);
       const fileAgents = files.filter((f) => f.endsWith('.md')).map((f) => f.replace('.md', ''));
-
-      // Always include 'default' in the list of available agents
-      return ['default', ...fileAgents];
+      agents.push(...fileAgents);
+      return agents;
     } catch (error) {
       // Only log as error if the directory exists but can't be read
       // If directory doesn't exist (ENOENT), just return default agent

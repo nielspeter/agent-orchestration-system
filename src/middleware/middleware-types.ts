@@ -1,5 +1,5 @@
 import { BaseTool, ExecutionContext, Message } from '@/base-types';
-import { AgentDefinition } from '@/agents/types';
+import { Agent } from '@/config/types';
 import { AgentLogger } from '@/logging';
 import { ILLMProvider } from '@/providers/llm-provider.interface';
 import { ProviderWithConfig } from '@/providers/provider-factory';
@@ -15,7 +15,7 @@ export interface MiddlewareContext {
   executionContext: ExecutionContext;
 
   // Agent and tools
-  agent?: AgentDefinition;
+  agent?: Agent;
   tools?: BaseTool[];
 
   // LLM Provider

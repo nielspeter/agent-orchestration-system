@@ -16,16 +16,26 @@ import type { ConsoleConfig } from '@/logging';
  * Agent definition
  */
 export interface Agent {
+  /** Agent identifier (usually same as name) */
+  id?: string;
   /** Agent name */
   name: string;
   /** Agent prompt/instructions */
   prompt: string;
+  /** Agent description (for backward compatibility, usually same as prompt) */
+  description?: string;
   /** Tools available to the agent */
-  tools: string[] | '*';
+  tools?: string[] | '*';
   /** Optional model override */
   model?: string;
   /** Optional temperature */
   temperature?: number;
+  /** Optional top_p */
+  top_p?: number;
+  /** Optional behavior preset */
+  behavior?: string;
+  /** Optional max delegation depth */
+  maxDepth?: number;
 }
 
 /**

@@ -12,10 +12,12 @@ describe('Integration Smoke Tests', () => {
   let buildResult: BuildResult;
 
   beforeAll(async () => {
+    // Use unique session ID to avoid test pollution
+    const sessionId = `smoke-test-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
     buildResult = await AgentSystemBuilder.default()
       .withModel(process.env.MODEL || 'anthropic/claude-3-5-haiku-latest')
       .withAgentsFrom(path.join(__dirname, 'test-agents'))
-      .withSessionId('smoke-test')
+      .withSessionId(sessionId)
       .build();
   });
 
