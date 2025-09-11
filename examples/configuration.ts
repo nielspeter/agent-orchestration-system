@@ -3,11 +3,7 @@
  * Demonstration of configuration-based setup with AgentSystemBuilder
  */
 
-import * as path from 'path';
-import { fileURLToPath } from 'url';
 import { AgentSystemBuilder } from '../src';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 async function fullConfigExample() {
   console.log('📋 Full Configuration Example');
@@ -36,7 +32,7 @@ async function minimalSetupExample() {
 
   // Minimal setup with no tools but with example-specific agents
   const { executor, cleanup } = await AgentSystemBuilder.minimal()
-    .withAgentsFrom(path.join(__dirname, 'configuration', 'agents'))
+    .withAgentsFrom('examples/configuration/agents')
     .build();
 
   const result = await executor.execute(
@@ -55,7 +51,7 @@ async function defaultSetupExample() {
 
   // Default setup with file tools and example-specific agents
   const { executor, cleanup } = await AgentSystemBuilder.default()
-    .withAgentsFrom(path.join(__dirname, 'configuration', 'agents'))
+    .withAgentsFrom('examples/configuration/agents')
     .build();
 
   const result = await executor.execute('orchestrator', 'List the files in the src directory');
@@ -71,7 +67,7 @@ async function fullSetupExample() {
 
   // Full setup with all tools including TodoWrite and example-specific agents
   const { executor, cleanup } = await AgentSystemBuilder.default()
-    .withAgentsFrom(path.join(__dirname, 'configuration', 'agents'))
+    .withAgentsFrom('examples/configuration/agents')
     .build();
 
   const result = await executor.execute(
@@ -91,7 +87,7 @@ async function customConfigExample() {
   // Custom configuration with specific settings and example-specific agents
   const { executor, cleanup } = await AgentSystemBuilder.default()
     .withModel('anthropic/claude-3-5-haiku-latest')
-    .withAgentsFrom(path.join(__dirname, 'configuration', 'agents'))
+    .withAgentsFrom('examples/configuration/agents')
     .withSafetyLimits({ maxIterations: 50 })
     .withConsole({ verbosity: 'verbose' })
     .withStorage('filesystem')
