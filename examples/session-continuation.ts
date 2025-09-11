@@ -5,8 +5,8 @@
  * by using recovered messages from a previous session.
  */
 
-import { AgentSystemBuilder } from '../src/config/system-builder';
-import { FilesystemStorage } from '../src/session/filesystem.storage';
+import { AgentSystemBuilder } from '@/config';
+import { FilesystemStorage } from '@/session/filesystem.storage';
 
 async function main() {
   const sessionId = 'demo-session-123';
