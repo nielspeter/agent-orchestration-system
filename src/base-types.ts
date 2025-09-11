@@ -78,4 +78,6 @@ export interface ExecutionContext {
   maxDepth: number;
   isSidechain?: boolean;
   parentMessages?: Message[];
+  traceId?: string;
+  parentCallId?: string;
 }

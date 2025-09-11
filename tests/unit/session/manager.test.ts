@@ -83,18 +83,20 @@ describe('SimpleSessionManager - Session Recovery', () => {
       expect(messages).toHaveLength(1);
       expect(messages[0]).toEqual({
         role: 'assistant',
-        content: [
+        tool_calls: [
           {
-            type: 'tool_use',
             id: 'call-123',
-            name: 'Read',
-            input: { path: 'file.txt' },
+            type: 'function',
+            function: {
+              name: 'Read',
+              arguments: JSON.stringify({ path: 'file.txt' }),
+            },
           },
         ],
       });
     });
 
-    it('should recover tool results as user messages', async () => {
+    it('should recover tool results as tool messages', async () => {
       const event: ToolResultEvent = {
         type: 'tool_result',
         timestamp: Date.now(),
@@ -109,14 +111,9 @@ describe('SimpleSessionManager - Session Recovery', () => {
 
       expect(messages).toHaveLength(1);
       expect(messages[0]).toEqual({
-        role: 'user',
-        content: [
-          {
-            type: 'tool_result',
-            tool_use_id: 'call-123',
-            content: { content: 'File contents here' },
-          },
-        ],
+        role: 'tool',
+        content: JSON.stringify({ content: 'File contents here' }),
+        tool_call_id: 'call-123',
       });
     });
 
@@ -162,15 +159,10 @@ describe('SimpleSessionManager - Session Recovery', () => {
       expect(messages[0].role).toBe('user');
       expect(messages[1].role).toBe('assistant');
       expect(messages[2].role).toBe('assistant');
-      expect(Array.isArray(messages[2].content)).toBe(true);
-      if (Array.isArray(messages[2].content)) {
-        expect(messages[2].content[0].type).toBe('tool_use');
-      }
-      expect(messages[3].role).toBe('user');
-      expect(Array.isArray(messages[3].content)).toBe(true);
-      if (Array.isArray(messages[3].content)) {
-        expect(messages[3].content[0].type).toBe('tool_result');
-      }
+      expect(messages[2].tool_calls).toBeDefined();
+      expect(messages[2].tool_calls?.[0]?.function.name).toBe('Read');
+      expect(messages[3].role).toBe('tool');
+      expect(messages[3].tool_call_id).toBe('call-456');
       expect(messages[4].role).toBe('assistant');
     });
 
@@ -222,17 +214,19 @@ describe('SimpleSessionManager - Session Recovery', () => {
       expect(sessionManager.hasIncompleteToolCall(messages)).toBe(false);
     });
 
-    it('should return true when last message has tool_use', () => {
+    it('should return true when last message has tool_calls', () => {
       const messages = [
         { role: 'user' as const, content: 'Read file' },
         {
           role: 'assistant' as const,
-          content: [
+          tool_calls: [
             {
-              type: 'tool_use' as const,
               id: 'call-123',
-              name: 'Read',
-              input: { path: 'file.txt' },
+              type: 'function' as const,
+              function: {
+                name: 'Read',
+                arguments: JSON.stringify({ path: 'file.txt' }),
+              },
             },
           ],
         },
@@ -244,24 +238,21 @@ describe('SimpleSessionManager - Session Recovery', () => {
       const messages = [
         {
           role: 'assistant' as const,
-          content: [
+          tool_calls: [
             {
-              type: 'tool_use' as const,
               id: 'call-123',
-              name: 'Read',
-              input: { path: 'file.txt' },
+              type: 'function' as const,
+              function: {
+                name: 'Read',
+                arguments: JSON.stringify({ path: 'file.txt' }),
+              },
             },
           ],
         },
         {
-          role: 'user' as const,
-          content: [
-            {
-              type: 'tool_result' as const,
-              tool_use_id: 'call-123',
-              content: 'File contents',
-            },
-          ],
+          role: 'tool' as const,
+          content: 'File contents',
+          tool_call_id: 'call-123',
         },
       ];
       expect(sessionManager.hasIncompleteToolCall(messages)).toBe(false);
@@ -286,12 +277,14 @@ describe('SimpleSessionManager - Session Recovery', () => {
         { role: 'user' as const, content: 'Read file' },
         {
           role: 'assistant' as const,
-          content: [
+          tool_calls: [
             {
-              type: 'tool_use' as const,
               id: 'call-789',
-              name: 'Read',
-              input: { path: '/tmp/test.txt' },
+              type: 'function' as const,
+              function: {
+                name: 'Read',
+                arguments: JSON.stringify({ path: '/tmp/test.txt' }),
+              },
             },
           ],
         },
@@ -305,38 +298,36 @@ describe('SimpleSessionManager - Session Recovery', () => {
       });
     });
 
-    it('should return null if tool_use missing required fields', () => {
+    it('should return null if no tool_calls present', () => {
       const messages = [
         {
           role: 'assistant' as const,
-          content: [
-            {
-              type: 'tool_use' as const,
-              // Missing id and name
-              input: { path: 'file.txt' },
-            },
-          ],
+          content: 'Just a regular message without tool calls',
         },
       ];
       expect(sessionManager.getLastToolCall(messages)).toBeNull();
     });
 
-    it('should handle multiple tool uses in one message', () => {
+    it('should handle multiple tool calls in one message', () => {
       const messages = [
         {
           role: 'assistant' as const,
-          content: [
+          tool_calls: [
             {
-              type: 'tool_use' as const,
               id: 'call-1',
-              name: 'Read',
-              input: { path: 'file1.txt' },
+              type: 'function' as const,
+              function: {
+                name: 'Read',
+                arguments: JSON.stringify({ path: 'file1.txt' }),
+              },
             },
             {
-              type: 'tool_use' as const,
               id: 'call-2',
-              name: 'Write',
-              input: { path: 'file2.txt', content: 'data' },
+              type: 'function' as const,
+              function: {
+                name: 'Write',
+                arguments: JSON.stringify({ path: 'file2.txt', content: 'data' }),
+              },
             },
           ],
         },

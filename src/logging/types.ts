@@ -18,26 +18,19 @@ export interface AgentLogger {
 
   logTodoUpdate?(todos: Array<{ content: string; status: string; activeForm?: string }>): void;
 
+  /**
+   * Get session events (if supported by the logger implementation)
+   * Used for debugging, monitoring, and session recovery
+   * Returns empty array for loggers that don't store events
+   */
+  getSessionEvents?(): Promise<import('@/session/types').AnySessionEvent[]>;
+
   flush(): void;
   close(): void;
 }
 
-export type LoggingDisplay = 'console' | 'jsonl' | 'both' | 'none';
-
 export type ConsoleVerbosity = 'minimal' | 'normal' | 'verbose';
 
-export interface LoggingConfig {
-  display: LoggingDisplay;
-
-  jsonl: {
-    enabled: boolean;
-    path: string;
-    filename?: string;
-  };
-
-  console: {
-    timestamps: boolean;
-    colors: boolean;
-    verbosity: ConsoleVerbosity;
-  };
+export interface ConsoleConfig {
+  verbosity?: ConsoleVerbosity;
 }

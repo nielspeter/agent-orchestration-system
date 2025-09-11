@@ -18,18 +18,8 @@ async function testWithLogging() {
     .withAgentsFrom(path.join(__dirname, 'logging', 'agents'))
     .withDefaultTools() // read, write, list, task for delegation demos
     .withTodoTool() // Include todo for Test 3
-    .withLogging({
-      display: 'both',
-      console: {
-        timestamps: true,
-        colors: true,
-        verbosity: 'verbose',
-      },
-      jsonl: {
-        enabled: true,
-        path: './logs',
-      },
-    }) // Enable detailed logging
+    .withConsole({ verbosity: 'verbose' }) // Enable verbose console output
+    .withStorage('filesystem') // Enable event persistence
     .withSessionId('logging-demo')
     .build();
 

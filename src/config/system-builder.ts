@@ -27,7 +27,6 @@ import {
   Agent,
   CachingConfig,
   DEFAULT_SYSTEM_CONFIG,
-  LoggingConfig,
   MCPConfig,
   mergeConfigs,
   resolveConfig,
@@ -40,10 +39,13 @@ import {
   TodoConfig,
 } from './types';
 import { SessionStorage } from '@/session/types';
-import { NoOpStorage } from '@/session/noop.storage';
 import { InMemoryStorage } from '@/session/memory.storage';
 import { FilesystemStorage } from '@/session/filesystem.storage';
+import { NoOpStorage } from '@/session/noop.storage';
 import { EventLogger } from '@/logging/event.logger';
+import { AgentLogger, ConsoleConfig, NoOpLogger } from '@/logging';
+import { ConsoleLogger } from '@/logging/console.logger';
+import { CompositeLogger } from '@/logging/composite.logger';
 import { Message, SimpleSessionManager } from '@/session/manager';
 
 /**
@@ -81,10 +83,11 @@ interface FileConfig {
     builtin?: string[];
   };
   mcpServers?: Record<string, MCPConfig['servers'][string]>;
-  logging?: {
-    display?: 'console' | 'jsonl' | 'both' | 'none';
-    verbosity?: 'minimal' | 'normal' | 'verbose';
-  };
+  console?:
+    | boolean
+    | {
+        verbosity?: 'minimal' | 'normal' | 'verbose';
+      };
 }
 
 /**
@@ -97,6 +100,7 @@ export interface BuildResult {
   mcpClients: MCPClientWrapper[];
   sessionManager: SimpleSessionManager;
   storage: SessionStorage;
+  logger: AgentLogger;
   cleanup: () => Promise<void>;
 }
 
@@ -220,13 +224,10 @@ export class AgentSystemBuilder {
   }
 
   /**
-   * Configure logging
+   * Configure console output
    */
-  withLogging(config: Partial<LoggingConfig>): AgentSystemBuilder {
-    const currentLogging = this.config.logging || {};
-    return this.with({
-      logging: { ...currentLogging, ...config } as LoggingConfig,
-    });
+  withConsole(config: boolean | ConsoleConfig = true): AgentSystemBuilder {
+    return this.with({ console: config });
   }
 
   /**
@@ -262,7 +263,22 @@ export class AgentSystemBuilder {
   /**
    * Configure storage for session persistence
    */
-  withStorage(storage: StorageConfig | SessionStorage): AgentSystemBuilder {
+  withStorage(type: 'memory' | 'filesystem', path?: string): AgentSystemBuilder;
+  withStorage(storage: StorageConfig | SessionStorage): AgentSystemBuilder;
+  withStorage(
+    storageOrType: StorageConfig | SessionStorage | 'memory' | 'filesystem',
+    path?: string
+  ): AgentSystemBuilder {
+    // If it's a string type, create a StorageConfig
+    if (typeof storageOrType === 'string') {
+      const storage: StorageConfig = {
+        type: storageOrType,
+        ...(path && { options: { path } }),
+      };
+      return this.with({ storage });
+    }
+
+    const storage = storageOrType;
     // If it's a SessionStorage instance, we'll handle it in build()
     if ('appendEvent' in storage && 'readEvents' in storage) {
       // It's a SessionStorage instance - store it separately
@@ -271,6 +287,16 @@ export class AgentSystemBuilder {
       newBuilder.mcpClients = [...this.mcpClients];
       newBuilder.toolDirectories = [...this.toolDirectories];
       newBuilder.storageInstance = storage;
+
+      // Also set the storage type in config based on the instance type
+      // This ensures EventLogger is created for InMemoryStorage/FilesystemStorage
+      if (storage instanceof InMemoryStorage) {
+        newBuilder.config.storage = { type: 'memory' };
+      } else if (storage instanceof FilesystemStorage) {
+        newBuilder.config.storage = { type: 'filesystem' };
+      }
+      // NoOpStorage keeps the default 'none' type
+
       return newBuilder;
     }
     // It's a StorageConfig
@@ -318,10 +344,16 @@ export class AgentSystemBuilder {
     }
 
     // Check if any agents are configured
-    if (
-      this.config.agents?.directories?.length === 0 &&
-      (!this.config.agents?.agents || this.config.agents.agents.length === 0)
-    ) {
+    // Allow empty configuration when using built-in default agent
+    // An empty directories array [] signals use of the built-in default agent
+    const hasDirectories =
+      this.config.agents?.directories && this.config.agents.directories.length > 0;
+    const hasAgents = this.config.agents?.agents && this.config.agents.agents.length > 0;
+    const hasEmptyDirectories =
+      Array.isArray(this.config.agents?.directories) && this.config.agents.directories.length === 0;
+
+    // Only error if we have no way to get agents (no directories, no agents, and not using default)
+    if (!hasDirectories && !hasAgents && !hasEmptyDirectories) {
       errors.push('No agents configured');
     }
 
@@ -342,9 +374,9 @@ export class AgentSystemBuilder {
   }
 
   /**
-   * Build the executor with the current configuration
+   * Validate and resolve configuration with defaults
    */
-  async build(): Promise<BuildResult> {
+  private async validateAndResolve(): Promise<ResolvedSystemConfig> {
     // Validate configuration first
     await this.validateConfiguration();
 
@@ -360,55 +392,108 @@ export class AgentSystemBuilder {
       resolvedConfig.session.sessionId = uuidv4();
     }
 
-    // Create storage instance
-    let storage: SessionStorage;
+    return resolvedConfig;
+  }
+
+  /**
+   * Create storage instance based on configuration
+   */
+  private createStorage(config: ResolvedSystemConfig): SessionStorage {
     if (this.storageInstance) {
       // Use the provided storage instance
-      storage = this.storageInstance;
-    } else {
-      // Create storage based on config
-      const storageConfig = resolvedConfig.storage;
-      switch (storageConfig.type) {
-        case 'memory':
-          storage = new InMemoryStorage();
-          break;
-        case 'filesystem':
-          storage = new FilesystemStorage(storageConfig.options?.path);
-          break;
-        case 'noop':
-        default:
-          storage = new NoOpStorage();
-          break;
+      return this.storageInstance;
+    }
+
+    // Create storage based on config
+    const storageConfig = config.storage;
+    switch (storageConfig.type) {
+      case 'none':
+        return new NoOpStorage();
+      case 'memory':
+        return new InMemoryStorage();
+      case 'filesystem':
+        return new FilesystemStorage(storageConfig.options?.path);
+      default:
+        // Default to no storage for unknown types
+        return new NoOpStorage();
+    }
+  }
+
+  /**
+   * Create logger and session manager
+   */
+  private createLoggerAndSessionManager(
+    storage: SessionStorage,
+    config: ResolvedSystemConfig
+  ): {
+    logger: AgentLogger;
+    sessionManager: SimpleSessionManager;
+  } {
+    // sessionId is guaranteed to exist after validateAndResolve()
+    if (!config.session.sessionId) {
+      throw new Error('Session ID should be set after validateAndResolve()');
+    }
+    const sessionId = config.session.sessionId;
+    const loggers: AgentLogger[] = [];
+
+    // EventLogger is only created for actual storage (memory or filesystem)
+    // Not created for 'none' type to avoid unnecessary overhead
+    if (config.storage.type === 'memory' || config.storage.type === 'filesystem') {
+      const eventLogger = new EventLogger(storage, sessionId);
+      loggers.push(eventLogger);
+    }
+    // No EventLogger for 'none' - events are not persisted
+
+    // Always create session manager with the storage
+    const sessionManager = new SimpleSessionManager(storage);
+
+    // Console logger is EXPLICIT (now top-level)
+    if (config.console) {
+      // Handle both boolean and object config
+      if (typeof config.console === 'boolean') {
+        if (config.console) {
+          const consoleLogger = new ConsoleLogger({
+            verbosity: 'normal',
+            timestamps: true,
+            colors: true, // Auto-detect TTY
+          });
+          loggers.push(consoleLogger);
+        }
+      } else {
+        // ConsoleConfig object - presence means enabled
+        const consoleLogger = new ConsoleLogger({
+          verbosity: config.console.verbosity || 'normal',
+          timestamps: true,
+          colors: true,
+        });
+        loggers.push(consoleLogger);
       }
     }
 
-    // Create EventLogger with storage
-    const eventLogger = new EventLogger(storage, resolvedConfig.session.sessionId);
+    // Determine final logger
+    const logger =
+      loggers.length === 0
+        ? new NoOpLogger()
+        : loggers.length === 1
+          ? loggers[0]
+          : new CompositeLogger(loggers);
 
-    // Create session manager
-    const sessionManager = new SimpleSessionManager(storage);
+    return { logger, sessionManager };
+  }
 
-    // For backward compatibility, create a logger facade if needed
-    // EventLogger implements AgentLogger, so we can use it directly
-    const logger = eventLogger;
-
-    // Initialize agent loader
-    const allAgentDirs = [
-      ...resolvedConfig.agents.directories,
-      ...(resolvedConfig.agents.additionalDirectories || []),
-    ];
-
-    const agentLoader = new AgentLoader(allAgentDirs[0], logger);
-    // TODO: Add support for multiple directories in AgentLoader
-
-    // Initialize tool registry
-    const toolRegistry = new ToolRegistry();
-
+  /**
+   * Register built-in tools to the registry
+   */
+  private async registerBuiltinTools(
+    toolRegistry: ToolRegistry,
+    config: ResolvedSystemConfig,
+    agentLoader: AgentLoader
+  ): Promise<TodoManager | undefined> {
     // TodoManager instance (if todowrite tool is enabled)
     let todoManager: TodoManager | undefined;
 
     // Register built-in tools
-    const builtinTools = resolvedConfig.tools.builtin || [];
+    const builtinTools = config.tools.builtin || [];
     for (const toolName of builtinTools) {
       switch (toolName) {
         case 'read':
@@ -440,10 +525,21 @@ export class AgentSystemBuilder {
 
     // Register session log tool only if we have builtin tools configured
     // This prevents the tool from being registered in minimal configuration
-    if (resolvedConfig.session.sessionId && resolvedConfig.tools.builtin.length > 0) {
-      toolRegistry.register(createGetSessionLogTool(resolvedConfig.session.sessionId));
+    if (config.session.sessionId && config.tools.builtin.length > 0) {
+      // sessionId is guaranteed to exist after validateAndResolve()
+      toolRegistry.register(createGetSessionLogTool(config.session.sessionId));
     }
 
+    return todoManager;
+  }
+
+  /**
+   * Register custom tools and load from directories
+   */
+  private async registerCustomTools(
+    toolRegistry: ToolRegistry,
+    logger: AgentLogger
+  ): Promise<void> {
     // Register custom tools
     for (const tool of this.customTools) {
       toolRegistry.register(tool);
@@ -451,166 +547,253 @@ export class AgentSystemBuilder {
 
     // Load tools from directories
     for (const directory of this.toolDirectories) {
-      console.info(`Loading tools from directory: ${directory}`);
+      logger.logSystemMessage(`Loading tools from directory: ${directory}`);
       const toolLoader = new ToolLoader(directory, logger);
       const toolNames = await toolLoader.listTools();
-      console.info(`Found ${toolNames.length} tool(s): ${toolNames.join(', ')}`);
+      logger.logSystemMessage(`Found ${toolNames.length} tool(s): ${toolNames.join(', ')}`);
 
       for (const toolName of toolNames) {
         try {
           const tool = await toolLoader.loadTool(toolName);
           toolRegistry.register(tool);
-          console.info(`✓ Loaded tool: ${toolName} from ${directory}`);
+          logger.logSystemMessage(`✓ Loaded tool: ${toolName} from ${directory}`);
         } catch (error) {
-          console.error(`Failed to load tool ${toolName}:`, error);
+          logger.logSystemMessage(`ERROR: Failed to load tool ${toolName}: ${error}`);
         }
       }
     }
+  }
 
-    // Initialize MCP servers if configured
-    if (resolvedConfig.mcp?.servers) {
-      for (const [serverName, serverConfig] of Object.entries(resolvedConfig.mcp.servers)) {
-        try {
-          console.info(`Initializing MCP server: ${serverName}`);
+  /**
+   * Initialize MCP servers and register their tools
+   */
+  private async initializeMCPServers(
+    toolRegistry: ToolRegistry,
+    config: ResolvedSystemConfig,
+    logger: AgentLogger
+  ): Promise<void> {
+    if (!config.mcp?.servers) {
+      return;
+    }
 
-          // Create transport with clean environment
-          // MCP servers should not inherit process environment variables
-          const cleanEnv: Record<string, string> = {
-            PATH: process.env.PATH || '',
-            HOME: process.env.HOME || '',
-            USER: process.env.USER || '',
-            // Add any server-specific env vars
-            ...(serverConfig.env || {}),
-          };
+    for (const [serverName, serverConfig] of Object.entries(config.mcp.servers)) {
+      try {
+        logger.logSystemMessage(`Initializing MCP server: ${serverName}`);
 
-          const transport = new StdioClientTransport({
-            command: serverConfig.command,
-            args: serverConfig.args,
-            env: cleanEnv,
-            cwd: serverConfig.cwd, // Use server-specific working directory if provided
-          });
+        // Create transport with clean environment
+        // MCP servers should not inherit process environment variables
+        const cleanEnv: Record<string, string> = {
+          PATH: process.env.PATH || '',
+          HOME: process.env.HOME || '',
+          USER: process.env.USER || '',
+          // Add any server-specific env vars
+          ...(serverConfig.env || {}),
+        };
 
-          // Create client
-          const client = new Client(
-            {
-              name: `agent-system-${serverName}`,
-              version: '1.0.0',
-            },
-            {
-              capabilities: {},
-            }
-          );
+        const transport = new StdioClientTransport({
+          command: serverConfig.command,
+          args: serverConfig.args,
+          env: cleanEnv,
+          cwd: serverConfig.cwd, // Use server-specific working directory if provided
+        });
 
-          // Connect to server
-          await client.connect(transport);
-
-          // List available tools from this server
-          const { tools } = await client.listTools();
-
-          // Register each tool from the MCP server
-          for (const tool of tools) {
-            // Ensure inputSchema has the correct structure
-            const toolSchema: ToolSchema = tool.inputSchema
-              ? {
-                  type: 'object' as const,
-                  properties:
-                    ((tool.inputSchema as Record<string, unknown>).properties as Record<
-                      string,
-                      ToolParameter
-                    >) || {},
-                  required:
-                    ((tool.inputSchema as Record<string, unknown>).required as string[]) || [],
-                }
-              : { type: 'object' as const, properties: {}, required: [] };
-
-            const mcpTool: BaseTool = {
-              name: `${serverName}.${tool.name}`,
-              description: tool.description || `Tool from ${serverName} MCP server`,
-              parameters: toolSchema,
-              execute: async (input: Record<string, unknown>) => {
-                try {
-                  const result = await client.callTool({
-                    name: tool.name,
-                    arguments: input,
-                  });
-                  return { content: result.content };
-                } catch (error) {
-                  return {
-                    content: '',
-                    error: error instanceof Error ? error.message : String(error),
-                  };
-                }
-              },
-              isConcurrencySafe: () => true,
-            };
-            toolRegistry.register(mcpTool);
+        // Create client
+        const client = new Client(
+          {
+            name: `agent-system-${serverName}`,
+            version: '1.0.0',
+          },
+          {
+            capabilities: {},
           }
+        );
 
-          // Store client for cleanup
-          this.mcpClients.push({
-            client,
-            transport,
-            serverName,
-          });
+        // Connect to server
+        await client.connect(transport);
 
-          console.info(`✓ MCP server ${serverName} connected with ${tools.length} tools`);
-        } catch (error) {
-          console.error(`Failed to initialize MCP server ${serverName}:`, error);
+        // List available tools from this server
+        const { tools } = await client.listTools();
+
+        // Register each tool from the MCP server
+        for (const tool of tools) {
+          // Ensure inputSchema has the correct structure
+          const toolSchema: ToolSchema = tool.inputSchema
+            ? {
+                type: 'object' as const,
+                properties:
+                  ((tool.inputSchema as Record<string, unknown>).properties as Record<
+                    string,
+                    ToolParameter
+                  >) || {},
+                required:
+                  ((tool.inputSchema as Record<string, unknown>).required as string[]) || [],
+              }
+            : { type: 'object' as const, properties: {}, required: [] };
+
+          const mcpTool: BaseTool = {
+            name: `${serverName}.${tool.name}`,
+            description: tool.description || `Tool from ${serverName} MCP server`,
+            parameters: toolSchema,
+            execute: async (input: Record<string, unknown>) => {
+              try {
+                const result = await client.callTool({
+                  name: tool.name,
+                  arguments: input,
+                });
+                return { content: result.content };
+              } catch (error) {
+                return {
+                  content: '',
+                  error: error instanceof Error ? error.message : String(error),
+                };
+              }
+            },
+            isConcurrencySafe: () => true,
+          };
+          toolRegistry.register(mcpTool);
         }
+
+        // Store client for cleanup
+        this.mcpClients.push({
+          client,
+          transport,
+          serverName,
+        });
+
+        logger.logSystemMessage(`✓ MCP server ${serverName} connected with ${tools.length} tools`);
+      } catch (error) {
+        logger.logSystemMessage(`ERROR: Failed to initialize MCP server ${serverName}: ${error}`);
       }
     }
+  }
 
-    // Check for session recovery
+  /**
+   * Handle session recovery if session exists
+   */
+  private async handleSessionRecovery(
+    storage: SessionStorage,
+    sessionManager: SimpleSessionManager,
+    config: ResolvedSystemConfig,
+    logger: AgentLogger,
+    todoManager?: TodoManager
+  ): Promise<unknown[]> {
     let recoveredMessages: unknown[] = [];
-    if (await storage.sessionExists(resolvedConfig.session.sessionId)) {
-      console.info(`Recovering session: ${resolvedConfig.session.sessionId}`);
-      recoveredMessages = await sessionManager.recoverSession(resolvedConfig.session.sessionId);
+
+    if (!config.session.sessionId) {
+      return recoveredMessages;
+    }
+
+    if (await storage.sessionExists(config.session.sessionId)) {
+      logger.logSystemMessage(`Recovering session: ${config.session.sessionId}`);
+      recoveredMessages = await sessionManager.recoverSession(config.session.sessionId);
 
       // Check if we have an incomplete tool call
       if (sessionManager.hasIncompleteToolCall(recoveredMessages as Message[])) {
         const toolCall = sessionManager.getLastToolCall(recoveredMessages as Message[]);
         if (toolCall) {
-          console.info(`Executing incomplete tool call: ${toolCall.name}`);
+          logger.logSystemMessage(`Executing incomplete tool call: ${toolCall.name}`);
           // The executor will handle this when it receives the messages
         }
       }
 
       // Recover todos if TodoWrite tool is enabled
       if (todoManager) {
-        const recoveredTodos = await sessionManager.recoverTodos(resolvedConfig.session.sessionId);
+        const recoveredTodos = await sessionManager.recoverTodos(config.session.sessionId);
         if (recoveredTodos.length > 0) {
           todoManager.setTodos(recoveredTodos);
-          console.info(`Recovered ${recoveredTodos.length} todos from session`);
+          logger.logSystemMessage(`Recovered ${recoveredTodos.length} todos from session`);
         }
       }
     }
 
-    // Create executor with config
-    const executor = new AgentExecutor(
-      agentLoader,
-      toolRegistry,
-      resolvedConfig,
-      resolvedConfig.model,
-      logger,
-      resolvedConfig.session.sessionId
-    );
+    return recoveredMessages;
+  }
 
-    // TODO: Add method to executor to continue with recovered messages
-    // For now, the executor will need to be enhanced to support this
-
-    // Cleanup function
-    const cleanup = async () => {
+  /**
+   * Create cleanup function for MCP clients
+   */
+  private createCleanupFunction(): () => Promise<void> {
+    return async () => {
       // Cleanup MCP clients
       for (const wrapper of this.mcpClients) {
         try {
           await wrapper.client.close();
           await wrapper.transport.close();
         } catch (error) {
+          // Use console.error here since logger might be disposed
           console.error(`Error closing MCP client ${wrapper.serverName}:`, error);
         }
       }
     };
+  }
 
+  /**
+   * Build the executor with the current configuration
+   */
+  async build(): Promise<BuildResult> {
+    // Validate and resolve configuration
+    const resolvedConfig = await this.validateAndResolve();
+
+    // Create core components
+    const storage = this.createStorage(resolvedConfig);
+    const { logger, sessionManager } = this.createLoggerAndSessionManager(storage, resolvedConfig);
+
+    // Initialize agent loader
+    const allAgentDirs = [
+      ...resolvedConfig.agents.directories,
+      ...(resolvedConfig.agents.additionalDirectories || []),
+    ];
+
+    // Use first directory or current directory if none specified
+    const primaryDir = allAgentDirs[0] || '.';
+    const agentLoader = new AgentLoader(primaryDir, logger);
+
+    // Warn if multiple directories were specified but not all used
+    if (allAgentDirs.length > 1) {
+      logger.logSystemMessage(
+        `WARNING: Multiple agent directories specified (${allAgentDirs.length}), but only using first: ${primaryDir}. ` +
+          'AgentLoader currently supports only one directory.'
+      );
+    }
+
+    // Setup tools
+    const toolRegistry = new ToolRegistry();
+    const todoManager = await this.registerBuiltinTools(toolRegistry, resolvedConfig, agentLoader);
+    await this.registerCustomTools(toolRegistry, logger);
+
+    // Initialize MCP if configured
+    await this.initializeMCPServers(toolRegistry, resolvedConfig, logger);
+
+    // Handle session recovery
+    const recoveredMessages = await this.handleSessionRecovery(
+      storage,
+      sessionManager,
+      resolvedConfig,
+      logger,
+      todoManager
+    );
+
+    // Create executor with session manager for automatic recovery
+    const executor = new AgentExecutor(
+      agentLoader,
+      toolRegistry,
+      resolvedConfig,
+      resolvedConfig.model,
+      logger,
+      resolvedConfig.session.sessionId,
+      sessionManager // Pass session manager for automatic recovery
+    );
+
+    // Session recovery is handled automatically by the executor.
+    // If a session exists, the executor will load and continue from previous messages.
+    if (recoveredMessages.length > 0) {
+      logger.logSystemMessage(
+        `Session ${resolvedConfig.session.sessionId} exists with ${recoveredMessages.length} messages. ` +
+          'Executor will automatically continue from previous state.'
+      );
+    }
+
+    // Build result
     return {
       config: resolvedConfig,
       executor,
@@ -618,7 +801,8 @@ export class AgentSystemBuilder {
       mcpClients: this.mcpClients,
       sessionManager,
       storage,
-      cleanup,
+      logger,
+      cleanup: this.createCleanupFunction(),
     };
   }
 
@@ -703,20 +887,9 @@ export class AgentSystemBuilder {
       };
     }
 
-    // Add logging config if provided
-    if (config.logging) {
-      systemConfig.logging = {
-        display: config.logging.display || 'both',
-        jsonl: {
-          enabled: true,
-          path: './logs',
-        },
-        console: {
-          timestamps: true,
-          colors: true,
-          verbosity: config.logging.verbosity || 'normal',
-        },
-      };
+    // Add console config if provided
+    if (config.console !== undefined) {
+      systemConfig.console = config.console;
     }
 
     return new AgentSystemBuilder(systemConfig);
@@ -754,18 +927,8 @@ export class AgentSystemBuilder {
         : { directories: [] }, // Uses built-in default agent
       tools: { builtin: ['read', 'write', 'list', 'grep', 'task', 'todowrite'] },
       caching: { enabled: true, maxCacheBlocks: 4, cacheTTLMinutes: 5 },
-      logging: {
-        display: 'both',
-        jsonl: {
-          enabled: true,
-          path: './logs',
-        },
-        console: {
-          timestamps: true,
-          colors: true,
-          verbosity: 'verbose',
-        },
-      },
+      storage: { type: 'filesystem' }, // Implies event logging
+      console: true, // Enable console with normal verbosity
     });
   }
 

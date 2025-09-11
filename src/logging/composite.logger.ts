@@ -67,6 +67,19 @@ export class CompositeLogger implements AgentLogger {
     });
   }
 
+  async getSessionEvents(): Promise<import('@/session/types').AnySessionEvent[]> {
+    // Return events from the first logger that has them (typically EventLogger)
+    for (const logger of this.loggers) {
+      if (logger.getSessionEvents) {
+        const events = await logger.getSessionEvents();
+        if (events.length > 0) {
+          return events;
+        }
+      }
+    }
+    return [];
+  }
+
   flush(): void {
     this.loggers.forEach((logger) => logger.flush());
   }

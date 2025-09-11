@@ -21,10 +21,8 @@ describe('Grep Tool - Essential Tests', () => {
   });
 
   test('validates required pattern parameter', async () => {
-    const result = await grepTool.execute({});
-    // When pattern is missing, it should return an error
-    expect(result.content).toBeNull();
-    expect(result.error).toBeDefined();
+    // When pattern is missing, it should throw an error
+    await expect(grepTool.execute({})).rejects.toThrow('Pattern must be a string');
   });
 
   test('executes basic pattern search', async () => {

@@ -40,6 +40,20 @@ npx tsx examples/mcp-integration.ts  # MCP tool server (time utilities)
 npx tsx examples/werewolf-game.ts    # Autonomous multi-agent game
 ```
 
+## Security & Reliability
+
+**IMPORTANT**: This system includes built-in security features. See [Security Documentation](docs/security.md) for details.
+
+### Built-in Protections
+- **File Security**: Blocks access to sensitive files (.ssh, .aws, .env, etc.)
+- **Shell Security**: Prevents catastrophic commands (rm -rf /, fork bombs)
+- **Retry Logic**: Smart retry with linear backoff for transient failures
+- **Timeouts**: Configurable timeouts on all tool executions
+- **Size Limits**: Prevents memory exhaustion (50MB read, 10MB write)
+- **Metrics**: Token usage, cache hit rates, cost tracking
+
+For production readiness assessment, see [Production Readiness](docs/production-readiness.md).
+
 ## Architecture Overview
 
 ### Core Concept: Middleware Pipeline
@@ -94,6 +108,55 @@ When agent A delegates to agent B:
 - **Prefer explicit types** - Don't rely on inference for public APIs
 - **Follow YAGNI** - "You Aren't Gonna Need It" - Don't implement features, abstractions, or optimizations just because you think you might need them in the future — you probably won't. Instead, focus on what is required right now
 
+### Engineering Principles
+
+**NEVER GIVE UP ON IMPLEMENTATION**:
+- **Think before reverting** - When something doesn't work, ANALYZE the problem first, don't just immediately rollback
+- **Complete what you start** - Whether refactoring or implementing new features, see it through
+- **Fix errors, don't revert** - When you encounter compilation errors or test failures, FIX them
+- **No random attempts** - Think carefully about the solution; don't just try random things hoping they'll work
+- **Ask for help** - If you're stuck, ask the user: "I'm getting these errors, should I fix them or try a different approach?"
+- **Don't chicken out** - NEVER revert working changes just because of fixable errors
+- **No backward compatibility needed** - This is an MVP, breaking changes are acceptable
+
+**Problem-Solving Approach**:
+1. When a new feature or change doesn't work immediately:
+   - **STOP and THINK** - Analyze why it's not working
+   - Investigate the actual root cause
+   - Propose a thoughtful solution
+   - NEVER: Immediately revert without analysis
+
+2. When you encounter errors after changes, your options are (in order):
+   - Understand the error first
+   - Fix the errors systematically
+   - Ask for guidance with specific questions
+   - NEVER: Silently revert and delete your work
+
+3. If implementation creates many errors:
+   - List and categorize the errors
+   - Identify patterns or common causes
+   - Propose solutions based on understanding
+   - Ask user preference
+   - NEVER: Just give up and revert without user acceptance
+
+**Example of BAD behavior** (what NOT to do):
+```
+❌ "The feature isn't working. Let me try a different approach."
+❌ "There are compilation errors. Let me revert to the original."
+❌ *Tries random fixes without understanding the problem*
+❌ *Silently deletes new files and restores old ones*
+```
+
+**Example of GOOD behavior** (what TO do):
+```
+✅ "The feature isn't working because [specific reason]. Let me fix this by [specific solution]."
+✅ "I'm getting type errors in 3 components. They all relate to the new interface. Let me update them to match."
+✅ "The implementation has 15 type errors. Should I:
+   1. Fix them systematically (I see they're mostly about missing properties)
+   2. Show you the errors for guidance
+   3. Try a different approach (with your approval)?"
+```
+
 **Documentation Best Practices**:
 - **Use Mermaid diagrams** - Prefer Mermaid diagrams over ASCII art in markdown files
 - Mermaid is more maintainable, visually appealing, and renders properly on GitHub
@@ -113,9 +176,9 @@ const result = response as ToolResult; // Avoid this!
 ### File Organization
 
 **Large Files** (need refactoring for production):
-- `system-builder.ts` (563 lines) - Configuration builder
-- `anthropic-provider.ts` (399 lines) - LLM provider with caching
-- `jsonl-logger.ts` (398 lines) - Structured logging
+- `system-builder.ts` (845 lines) - Configuration builder - TOO LARGE
+- `anthropic-provider.ts` (399 lines) - LLM provider with caching - Acceptable
+- `jsonl-logger.ts` (398 lines) - Structured logging - Acceptable
 
 **Middleware** (`src/middleware/`): Each ~50-100 lines, single responsibility
 
@@ -125,10 +188,13 @@ const result = response as ToolResult; // Avoid this!
 
 ### Testing Strategy
 
-**Unit Tests** (30% coverage on critical paths):
+**Unit Tests** (203 tests, ~65% coverage):
 - Safety mechanisms (iteration/depth limits)
-- Configuration building
+- Configuration building  
 - Tool registry
+- Session persistence and recovery
+- Storage implementations
+- Event logging
 - No API calls, uses mocks
 
 **Integration Tests** (manual, expensive):
@@ -139,10 +205,12 @@ const result = response as ToolResult; // Avoid this!
 ### Known Issues & Limitations
 
 1. ~~**Tight Coupling**: AgentExecutor directly instantiates AnthropicProvider~~ ✅ FIXED - Now uses ProviderFactory
-2. **Console.log Usage**: 6 instances in production code (should use proper logger)
-3. **No Retry Logic**: API failures aren't retried
-4. **File Access**: No path restrictions on Read/Write/Grep tools
-5. **Large Files**: Several files >400 lines need splitting
+2. **Console.log Usage**: 27 instances in ConsoleLogger (intentional for console output)
+3. ~~**No Retry Logic**: API failures aren't retried~~ ✅ FIXED - Smart retry with backoff implemented
+4. ~~**File Access**: No path restrictions on Read/Write/Grep tools~~ ✅ FIXED - Security validation implemented
+5. **Large Files**: SystemBuilder is 845 lines (needs refactoring)
+6. **No API Rate Limiting**: Could exhaust quotas (retry exists but no proactive limiting)
+7. **No Authentication**: System has no user management
 
 ### Environment Setup
 

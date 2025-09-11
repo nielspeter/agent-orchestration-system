@@ -45,6 +45,10 @@ export interface MiddlewareContext {
   modelName: string;
   sessionId?: string;
 
+  // Tracing context
+  traceId?: string; // Unique ID for the entire execution chain
+  parentCallId?: string; // Parent tool call ID when delegated
+
   // Control flow
   shouldContinue: boolean;
   error?: Error;

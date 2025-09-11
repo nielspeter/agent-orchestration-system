@@ -7,15 +7,19 @@
  * 2. When explicitly called for general tasks
  */
 
+import * as dotenv from 'dotenv';
 import { AgentSystemBuilder } from '../src';
+
+// Load environment variables from .env file
+dotenv.config();
 
 async function main() {
   console.log('🤖 Default Agent Example\n');
 
   try {
-    // Build system with minimal configuration
+    // Build system with default configuration
     // No agents directory specified - only default agent available
-    const builder = AgentSystemBuilder.minimal().withDefaultTools(); // Add basic tools
+    const builder = AgentSystemBuilder.default(); // Includes default agent and tools
 
     const { executor, toolRegistry, cleanup } = await builder.build();
 

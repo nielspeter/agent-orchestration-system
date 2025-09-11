@@ -16,7 +16,7 @@ interface ModelConfig {
   };
 }
 
-export interface BehaviorPreset {
+export interface BehaviorSettings {
   temperature: number;
   top_p: number;
   description?: string;
@@ -39,7 +39,7 @@ interface ProviderConfig {
 interface ProvidersConfig {
   defaultModel?: string; // The default model to use
   defaultBehavior?: string; // Default behavior preset
-  behaviorPresets?: Record<string, BehaviorPreset>;
+  behaviorPresets?: Record<string, BehaviorSettings>;
   providers: Record<string, ProviderConfig>;
   // Removed: fallbackProvider and modelPatterns - now using explicit provider prefixes
 }
@@ -101,14 +101,14 @@ export class ProviderFactory {
   }
 
   // Instance methods
-  getBehaviorPreset(providersConfig: ProvidersConfig, name: string): BehaviorPreset | undefined {
+  getBehaviorPreset(providersConfig: ProvidersConfig, name: string): BehaviorSettings | undefined {
     return providersConfig.behaviorPresets?.[name];
   }
 
   getDefaultBehavior(
     providersConfig: ProvidersConfig,
     defaultBehaviorName?: string
-  ): BehaviorPreset {
+  ): BehaviorSettings {
     const behaviorName = defaultBehaviorName || 'balanced';
     return (
       providersConfig.behaviorPresets?.[behaviorName] || {
@@ -227,14 +227,14 @@ export class ProviderFactory {
   static getBehaviorPreset(
     providersConfig: ProvidersConfig,
     name: string
-  ): BehaviorPreset | undefined {
+  ): BehaviorSettings | undefined {
     return this.getDefaultInstance().getBehaviorPreset(providersConfig, name);
   }
 
   static getDefaultBehavior(
     providersConfig: ProvidersConfig,
     defaultBehaviorName?: string
-  ): BehaviorPreset {
+  ): BehaviorSettings {
     return this.getDefaultInstance().getDefaultBehavior(providersConfig, defaultBehaviorName);
   }
 

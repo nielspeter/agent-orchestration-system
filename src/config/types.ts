@@ -10,10 +10,7 @@
  */
 
 import { BaseTool } from '@/base-types';
-import type { LoggingConfig } from '@/logging';
-
-// Re-export LoggingConfig from logging module
-export type { LoggingConfig };
+import type { ConsoleConfig } from '@/logging';
 
 /**
  * Agent definition
@@ -147,8 +144,8 @@ export interface TodoConfig {
  * Storage configuration for session persistence
  */
 export interface StorageConfig {
-  /** Storage type: 'noop' | 'memory' | 'filesystem' */
-  type: 'noop' | 'memory' | 'filesystem';
+  /** Storage type: 'none' | 'memory' | 'filesystem' */
+  type: 'none' | 'memory' | 'filesystem';
   /** Storage-specific options */
   options?: {
     /** Path for filesystem storage */
@@ -177,8 +174,8 @@ export interface SystemConfig {
   safety?: SafetyConfig;
   /** Caching settings */
   caching?: CachingConfig;
-  /** Logging settings */
-  logging?: LoggingConfig;
+  /** Console output settings */
+  console?: boolean | ConsoleConfig;
   /** MCP server configuration */
   mcp?: MCPConfig;
   /** Session configuration */
@@ -201,7 +198,7 @@ export interface ResolvedSystemConfig {
   tools: Required<ToolConfig>;
   safety: SafetyConfig;
   caching: CachingConfig;
-  logging: Required<LoggingConfig>;
+  console: boolean | ConsoleConfig;
   mcp?: MCPConfig;
   session: SessionConfig;
   todos: TodoConfig;
@@ -213,7 +210,7 @@ export interface ResolvedSystemConfig {
  */
 export const DEFAULT_SYSTEM_CONFIG: ResolvedSystemConfig = {
   model: '', // Will be set to defaultModel if not specified
-  defaultModel: 'claude-3-5-haiku-latest',
+  defaultModel: 'anthropic/claude-3-5-haiku-latest',
   defaultBehavior: 'balanced',
 
   agents: {
@@ -240,18 +237,7 @@ export const DEFAULT_SYSTEM_CONFIG: ResolvedSystemConfig = {
     cacheTTLMinutes: 5,
   },
 
-  logging: {
-    display: 'both',
-    jsonl: {
-      enabled: true,
-      path: './logs',
-    },
-    console: {
-      timestamps: true,
-      colors: true,
-      verbosity: 'normal',
-    },
-  },
+  console: false, // Silent by default
 
   session: {
     sessionId: undefined,
@@ -265,7 +251,7 @@ export const DEFAULT_SYSTEM_CONFIG: ResolvedSystemConfig = {
   },
 
   storage: {
-    type: 'noop', // NoOp storage by default (zero overhead)
+    type: 'none', // No storage by default - explicit opt-in required
     options: {
       path: '.agent-sessions', // Default path for filesystem storage
     },
@@ -296,20 +282,9 @@ export const TEST_CONFIG_MINIMAL: SystemConfig = {
     maxDepth: 2,
   },
   caching: { enabled: false, maxCacheBlocks: 0, cacheTTLMinutes: 0 },
-  logging: {
-    display: 'none',
-    jsonl: {
-      enabled: false,
-      path: './test-logs',
-    },
-    console: {
-      timestamps: false,
-      colors: false,
-      verbosity: 'minimal',
-    },
-  },
+  console: false, // Silent for tests
   storage: {
-    type: 'noop',
+    type: 'memory',
     options: {},
   },
 };
@@ -359,9 +334,9 @@ export function mergeConfigs(...configs: Partial<SystemConfig>[]): SystemConfig 
       result.caching = deepMergeObjects<CachingConfig>(result.caching, config.caching);
     }
 
-    // Handle logging config
-    if (config.logging !== undefined) {
-      result.logging = deepMergeObjects<LoggingConfig>(result.logging, config.logging);
+    // Handle console config
+    if (config.console !== undefined) {
+      result.console = config.console;
     }
 
     // Handle MCP config
@@ -402,7 +377,7 @@ export function resolveConfig(partial: Partial<SystemConfig>): ResolvedSystemCon
   merged.tools ??= DEFAULT_SYSTEM_CONFIG.tools;
   merged.safety ??= DEFAULT_SYSTEM_CONFIG.safety;
   merged.caching ??= DEFAULT_SYSTEM_CONFIG.caching;
-  merged.logging ??= DEFAULT_SYSTEM_CONFIG.logging;
+  merged.console ??= DEFAULT_SYSTEM_CONFIG.console;
   merged.session ??= DEFAULT_SYSTEM_CONFIG.session;
   merged.todos ??= DEFAULT_SYSTEM_CONFIG.todos;
   merged.storage ??= DEFAULT_SYSTEM_CONFIG.storage;

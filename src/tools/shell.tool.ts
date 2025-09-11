@@ -75,10 +75,15 @@ export function createShellTool(): BaseTool {
     },
 
     execute: async (args: Record<string, unknown>): Promise<ToolResult> => {
-      const command = args.command as string;
-      const timeout = (args.timeout as number) || 30000;
-      const cwd = args.cwd as string | undefined;
-      const parseJson = (args.parseJson as boolean) || false;
+      // Validate and extract arguments with proper type checking
+      if (typeof args.command !== 'string') {
+        throw new Error('Command must be a string');
+      }
+      const command = args.command;
+
+      const timeout = typeof args.timeout === 'number' ? args.timeout : 30000;
+      const cwd = typeof args.cwd === 'string' ? args.cwd : undefined;
+      const parseJson = typeof args.parseJson === 'boolean' ? args.parseJson : false;
 
       try {
         // Security check

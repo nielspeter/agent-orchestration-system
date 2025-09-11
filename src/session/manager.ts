@@ -1,22 +1,10 @@
 import { AnySessionEvent, SessionStorage, ToolCallEvent } from './types';
 import { TodoItem } from '@/tools/todowrite.tool';
+import { isSessionEvent } from '@/utils/type-guards';
+import { Message, ToolCall } from '@/base-types';
 
-/**
- * Message structure expected by the LLM
- */
-export interface Message {
-  role: 'user' | 'assistant';
-  content: string | MessageContent[];
-}
-
-export interface MessageContent {
-  type: 'tool_use' | 'tool_result';
-  id?: string;
-  tool_use_id?: string;
-  name?: string;
-  input?: unknown;
-  content?: unknown;
-}
+// Using Message type from base-types for consistency
+// This ensures compatibility with the rest of the system
 
 /**
  * Simple session manager for recovery
@@ -31,7 +19,7 @@ export class SimpleSessionManager {
   /**
    * Recover a session from storage
    *
-   * Reads all events and converts them to LLM message format.
+   * Reads all events and converts them to base-types Message format.
    * The messages represent the complete conversation history
    * and can be sent to the LLM to continue execution.
    */
@@ -40,59 +28,67 @@ export class SimpleSessionManager {
     const messages: Message[] = [];
 
     for (const event of events) {
+      if (!isSessionEvent(event)) {
+        console.warn('Invalid event format:', event);
+        continue;
+      }
+
+      // Type guard ensures event matches expected structure
       const typedEvent = event as AnySessionEvent;
 
       switch (typedEvent.type) {
         case 'user': {
           messages.push({
             role: 'user',
-            content: typedEvent.data.content,
+            content: typedEvent.data.content as string,
           });
           break;
         }
 
         case 'assistant': {
-          messages.push({
-            role: 'assistant',
-            content: typedEvent.data.content,
-          });
+          // Check if this is a text response or tool call based on content
+          const content = typedEvent.data.content;
+          if (typeof content === 'string') {
+            messages.push({
+              role: 'assistant',
+              content: content,
+            });
+          }
           break;
         }
 
         case 'tool_call': {
-          // Tool calls are assistant messages with structured content
+          // Tool calls are assistant messages with tool_calls array
+          const toolCall: ToolCall = {
+            id: typedEvent.data.id,
+            type: 'function',
+            function: {
+              name: typedEvent.data.tool,
+              arguments: JSON.stringify(typedEvent.data.params),
+            },
+          };
           messages.push({
             role: 'assistant',
-            content: [
-              {
-                type: 'tool_use',
-                id: typedEvent.data.id,
-                name: typedEvent.data.tool,
-                input: typedEvent.data.params,
-              },
-            ],
+            tool_calls: [toolCall],
           });
           break;
         }
 
         case 'tool_result': {
-          // Tool results are user messages with structured content
+          // Tool results use the 'tool' role
           messages.push({
-            role: 'user',
-            content: [
-              {
-                type: 'tool_result',
-                tool_use_id: typedEvent.data.toolCallId,
-                content: typedEvent.data.result,
-              },
-            ],
+            role: 'tool',
+            content: JSON.stringify(typedEvent.data.result),
+            tool_call_id: typedEvent.data.toolCallId,
           });
           break;
         }
 
         default: {
           // Skip unknown event types
-          console.warn(`Unknown event type: ${(typedEvent as AnySessionEvent).type}`);
+          // Use the original event since TypeScript narrows typedEvent to never
+          const eventType = (event as { type?: string }).type || 'unknown';
+          console.warn(`Unknown event type: ${eventType}`);
         }
       }
     }
@@ -113,12 +109,12 @@ export class SimpleSessionManager {
 
     const lastMessage = messages[messages.length - 1];
 
-    // Check if last message is an assistant message with tool_use content
-    if (lastMessage.role === 'assistant' && Array.isArray(lastMessage.content)) {
-      return lastMessage.content.some((item) => item.type === 'tool_use');
-    }
-
-    return false;
+    // Check if last message is an assistant message with tool_calls
+    return !!(
+      lastMessage.role === 'assistant' &&
+      lastMessage.tool_calls &&
+      lastMessage.tool_calls.length > 0
+    );
   }
 
   /**
@@ -133,13 +129,23 @@ export class SimpleSessionManager {
 
     const lastMessage = messages[messages.length - 1];
 
-    if (lastMessage.role === 'assistant' && Array.isArray(lastMessage.content)) {
-      const toolUse = lastMessage.content.find((item) => item.type === 'tool_use');
-      if (toolUse?.id && toolUse.name) {
+    if (
+      lastMessage.role === 'assistant' &&
+      lastMessage.tool_calls &&
+      lastMessage.tool_calls.length > 0
+    ) {
+      const toolCall = lastMessage.tool_calls[0]; // Get the first tool call
+      try {
         return {
-          id: toolUse.id,
-          name: toolUse.name,
-          input: toolUse.input,
+          id: toolCall.id,
+          name: toolCall.function.name,
+          input: JSON.parse(toolCall.function.arguments),
+        };
+      } catch {
+        return {
+          id: toolCall.id,
+          name: toolCall.function.name,
+          input: {},
         };
       }
     }
@@ -157,11 +163,17 @@ export class SimpleSessionManager {
 
     // Find the last TodoWrite tool call
     for (let i = events.length - 1; i >= 0; i--) {
-      const event = events[i] as AnySessionEvent;
+      const event = events[i];
+      if (!isSessionEvent(event)) {
+        continue;
+      }
 
-      if (event.type === 'tool_call' && this.isTodoWriteCall(event)) {
+      // Type guard validated the event structure
+      const typedEvent = event as AnySessionEvent;
+
+      if (typedEvent.type === 'tool_call' && this.isTodoWriteCall(typedEvent)) {
         // Found the last TodoWrite call, return its todos
-        return event.data.params.todos;
+        return typedEvent.data.params.todos;
       }
     }
 
@@ -189,3 +201,6 @@ export class SimpleSessionManager {
     );
   }
 }
+
+// Re-export Message from base-types for backward compatibility
+export type { Message } from '@/base-types';

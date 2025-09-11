@@ -135,9 +135,40 @@ The builder:
 1. Creates storage instance based on configuration
 2. Initializes EventLogger with storage and sessionId
 3. Creates SimpleSessionManager with storage
-4. Checks for existing session and recovers messages
-5. Recovers todos from session events if TodoWrite tool is enabled
+4. Passes SessionManager to AgentExecutor for automatic recovery
+5. Checks for existing session and recovers todos if TodoWrite tool is enabled
 6. Returns storage and sessionManager in BuildResult
+
+### Automatic Session Continuation
+
+Session recovery is **automatic and transparent**. When using the same sessionId:
+
+```typescript
+const system = await AgentSystemBuilder.default()
+  .withStorage(new FilesystemStorage('./sessions'))
+  .withSessionId('session-123')
+  .build();
+
+const { executor } = system;
+
+// If session exists, executor automatically recovers and continues
+// No need to pass messages - it's handled internally!
+const result = await executor.execute(
+  'agent-name',
+  'Continue working on the task'
+);
+```
+
+The AgentExecutor:
+- Automatically checks for existing session on first execute()
+- Loads previous messages if session exists
+- Continues conversation from where it left off
+- Only for top-level calls (not delegated agents)
+
+This enables:
+- **Crash recovery**: Seamless resume after unexpected exits
+- **Long-running tasks**: Continue work across multiple sessions
+- **Zero configuration**: Just use the same sessionId
 
 ## File Structure
 
@@ -196,6 +227,30 @@ Extracts tool call details from the last message if it's a tool call.
 
 #### `recoverTodos(sessionId: string): Promise<TodoItem[]>`
 Finds the last TodoWrite tool call and extracts todos from its parameters.
+
+## Session Continuation Philosophy
+
+### No Explicit Completion Marking
+The system does NOT mark sessions as "complete". This is intentional and allows for natural conversation continuation.
+
+### How Continuation Works
+When continuing with an existing sessionId:
+1. **All messages are loaded** - Including any "final" answers from previous executions
+2. **New prompt is added** - Becomes part of the ongoing conversation
+3. **LLM figures it out** - Based on context, determines if work is complete or needs continuation
+
+### Example Continuation Behavior
+```
+History: "Analyze file X" → "Analysis complete: [details]"
+New: "Continue working on this"
+LLM: "I've completed the analysis of file X. Would you like me to analyze something else or go deeper?"
+```
+
+The LLM naturally handles:
+- Recognizing completed work
+- Understanding new requests in context
+- Determining if previous work needs revision
+- Continuing partial work after interruption
 
 ## Usage Examples
 

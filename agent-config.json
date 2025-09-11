@@ -22,7 +22,7 @@
     "timeout": 300000
   },
   "storage": {
-    "type": "noop",
+    "type": "none",
     "options": {
       "path": ".agent-sessions"
     }

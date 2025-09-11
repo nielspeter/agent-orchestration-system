@@ -155,7 +155,7 @@ export async function executeSingleTool(
 
     if (tool.name === 'Task') {
       // Handle delegation to sub-agents
-      result = await handleDelegation(args, ctx, executeDelegate);
+      result = await handleDelegation(args, ctx, executeDelegate, toolCall.id);
     } else {
       // Regular tool execution
       ctx.logger.logToolCall(ctx.agentName, tool.name, args);
@@ -190,7 +190,8 @@ interface TaskArgs {
 async function handleDelegation(
   args: TaskArgs,
   ctx: MiddlewareContext,
-  executeDelegate: ExecuteDelegate
+  executeDelegate: ExecuteDelegate,
+  parentCallId: string
 ): Promise<ToolResult> {
   // PULL ARCHITECTURE: Don't pass parent messages to child agents
   // will use tools to gather the information they need
@@ -203,6 +204,8 @@ async function handleDelegation(
     parentAgent: ctx.agentName,
     isSidechain: true,
     parentMessages: [], // Empty array - child starts fresh (pull architecture)
+    traceId: ctx.traceId || crypto.randomUUID(),
+    parentCallId: parentCallId,
   });
 
   return { content: subAgentResult };

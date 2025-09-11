@@ -15,7 +15,6 @@ export type {
   TodoConfig,
   Agent,
   TestAgentConfig,
-  LoggingConfig,
 } from './types';
 
 // Export utilities
