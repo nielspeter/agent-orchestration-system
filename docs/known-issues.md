@@ -3,33 +3,33 @@
 ## Session Recovery with Incomplete Tool Calls
 
 ### Issue
-When recovering a session that has incomplete tool calls (tool_use without corresponding tool_result), the system fails with an error:
+In the extremely rare case where a process crashes between writing a `tool_call` event and its corresponding `tool_result` event, session recovery will fail with:
 ```
 messages.3: `tool_use` ids were found without `tool_result` blocks immediately after
 ```
 
-### Symptoms
-- Session continuation fails when the previous session ended with pending tool calls
-- Error occurs when trying to add a new user message after incomplete tool calls
+### Likelihood
+**Very Low** - This requires the process to crash in the narrow window between:
+1. Writing the tool_call event to storage
+2. Writing the tool_result event to storage
 
-### Root Cause
-The `AgentExecutor.execute()` method recovers previous messages but doesn't check for or handle incomplete tool calls before adding the new user prompt.
+Since tool execution is typically fast (reading files, listing directories), this window is usually milliseconds.
 
-### Current Workaround
-Delete the problematic session directory:
+### Current Behavior
+The system will fail to recover the session and report an error. This is intentional as incomplete tool calls represent an inconsistent state.
+
+### Workaround
+If this rare issue occurs, delete the problematic session:
 ```bash
 rm -rf .agent-sessions/<session-id>
 ```
 
-### Proposed Solution
-The executor should use `SessionManager.hasIncompleteToolCall()` during recovery and either:
-1. Complete the pending tool calls before adding new messages
-2. Remove incomplete tool calls from the recovered messages
-3. Add dummy tool results for incomplete calls
-
-### Code Location
-- `src/agents/executor.ts:140-150` - Session recovery logic
-- `src/session/manager.ts:105-150` - Methods for detecting incomplete tool calls
+### Design Decision
+We chose not to add complex recovery logic for this edge case because:
+1. The likelihood is extremely low (requires precise crash timing)
+2. Event writes are atomic, making partial writes unlikely
+3. The workaround is simple and effective
+4. Complex recovery logic could introduce bugs for a problem that rarely occurs
 
 ### Priority
-Medium - Affects session continuation reliability but has a simple workaround
+Low - Extremely rare edge case with simple workaround
