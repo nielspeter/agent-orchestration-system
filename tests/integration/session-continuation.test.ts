@@ -143,15 +143,42 @@ describe('Session Continuation Integration Tests', () => {
     expect(result).toContain('7');
   }, 30000);
 
-  // TODO: Add test for incomplete tool calls once the bug is fixed
-  test.skip('should handle incomplete tool calls gracefully', async () => {
-    // This test is skipped until we fix the incomplete tool call bug
-    // documented in docs/known-issues.md
+  test('should recognize completed work when resuming', async () => {
+    // First system - complete a task fully
+    firstSystem = await AgentSystemBuilder.default()
+      .withModel(process.env.MODEL || 'anthropic/claude-3-5-haiku-latest')
+      .withStorage(new FilesystemStorage(storagePath))
+      .withSessionId(sessionId)
+      .withConsole(false)
+      .build();
     
-    // The test would:
-    // 1. Create a session with a tool call
-    // 2. Interrupt before tool result is logged
-    // 3. Attempt to continue the session
-    // 4. Verify it either completes the tool call or handles it gracefully
-  });
+    // Execute a simple task that completes
+    const firstResult = await firstSystem.executor.execute(
+      'default',
+      'Tell me what 2 + 2 equals. Just give the answer.'
+    );
+    
+    expect(firstResult).toContain('4');
+    
+    // Clean up first system
+    await firstSystem.cleanup();
+    
+    // Second system - resume the same session
+    secondSystem = await AgentSystemBuilder.default()
+      .withModel(process.env.MODEL || 'anthropic/claude-3-5-haiku-latest')
+      .withStorage(new FilesystemStorage(storagePath))
+      .withSessionId(sessionId)
+      .withConsole(false)
+      .build();
+    
+    // Try to continue - it should recognize the task was already completed
+    const secondResult = await secondSystem.executor.execute(
+      'default',
+      'Continue with the calculation'
+    );
+    
+    // Should either continue from where we left off or indicate completion
+    expect(secondResult).toBeDefined();
+    expect(secondResult.toLowerCase()).toMatch(/4|already|complete|answered|calculated/);
+  }, 20000);
 });
