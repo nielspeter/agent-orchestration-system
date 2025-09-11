@@ -37,6 +37,7 @@
     "example:quickstart": "tsx examples/quickstart.ts",
     "example:script-tools": "tsx examples/script-tools.ts",
     "example:session-analyzer": "tsx examples/session-analyzer.ts",
+    "example:session-continuation": "tsx examples/session-continuation.ts",
     "example:werewolf": "tsx examples/werewolf-game.ts",
     "clean": "rm -rf dist",
     "trace": "tsx src/tracing/simple-tracer.ts",

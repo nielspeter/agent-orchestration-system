@@ -22,7 +22,6 @@ async function main() {
   // Session ID will be auto-generated as UUID
   const builder = AgentSystemBuilder.default()
     .withAgentsFrom('examples/werewolf-game/agents')
-    .withSessionId() // Auto-generates UUID
     .withSafetyLimits({
       maxIterations: 50, // Allow many iterations for complex game
       maxDepth: 10, // Allow deeper delegation chains
