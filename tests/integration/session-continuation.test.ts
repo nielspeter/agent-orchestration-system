@@ -93,10 +93,7 @@ describe('Session Continuation Integration Tests', () => {
     const sessionExists = await firstSystem.storage.sessionExists(sessionId);
     expect(sessionExists).toBe(false);
 
-    const result = await firstSystem.executor.execute(
-      'default',
-      'Say "Hello World"'
-    );
+    const result = await firstSystem.executor.execute('default', 'Say "Hello World"');
 
     expect(result).toContain('Hello World');
 
@@ -151,18 +148,18 @@ describe('Session Continuation Integration Tests', () => {
       .withSessionId(sessionId)
       .withConsole(false)
       .build();
-    
+
     // Execute a simple task that completes
     const firstResult = await firstSystem.executor.execute(
       'default',
       'Tell me what 2 + 2 equals. Just give the answer.'
     );
-    
+
     expect(firstResult).toContain('4');
-    
+
     // Clean up first system
     await firstSystem.cleanup();
-    
+
     // Second system - resume the same session
     secondSystem = await AgentSystemBuilder.default()
       .withModel(process.env.MODEL || 'anthropic/claude-3-5-haiku-latest')
@@ -170,13 +167,13 @@ describe('Session Continuation Integration Tests', () => {
       .withSessionId(sessionId)
       .withConsole(false)
       .build();
-    
+
     // Try to continue - it should recognize the task was already completed
     const secondResult = await secondSystem.executor.execute(
       'default',
       'Continue with the calculation'
     );
-    
+
     // Should either continue from where we left off or indicate completion
     expect(secondResult).toBeDefined();
     expect(secondResult.toLowerCase()).toMatch(/4|already|complete|answered|calculated/);
