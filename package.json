@@ -38,6 +38,7 @@
     "example:script-tools": "tsx examples/script-tools.ts",
     "example:session-analyzer": "tsx examples/session-analyzer.ts",
     "example:werewolf": "tsx examples/werewolf-game.ts",
+    "example:workflow-pipeline": "tsx examples/workflow-pipeline.ts",
     "clean": "rm -rf dist",
     "trace": "tsx src/tracing/simple-tracer.ts",
     "trace:last": "tsx src/tracing/simple-tracer.ts $(ls -t sessions/*.jsonl | head -1 | xargs basename .jsonl)"
