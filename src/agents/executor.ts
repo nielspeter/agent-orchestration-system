@@ -1,10 +1,11 @@
 import { AgentLoader } from './loader';
 import { ToolRegistry } from '@/tools/registry/registry';
-import { ExecutionContext } from '@/base-types';
+import { ExecutionContext, Message } from '@/base-types';
 import { AgentLogger, LoggerFactory } from '@/logging';
 import { ResolvedSystemConfig } from '@/config/types';
 import { MiddlewarePipeline } from '@/middleware/pipeline';
 import { MiddlewareContext } from '@/middleware/middleware-types';
+import { SimpleSessionManager } from '@/session/manager';
 import { createAgentLoaderMiddleware } from '@/middleware/agent-loader.middleware';
 import { createContextSetupMiddleware } from '@/middleware/context-setup.middleware';
 import { createSafetyChecksMiddleware } from '@/middleware/safety-checks.middleware';
@@ -41,6 +42,7 @@ export class AgentExecutor {
    * @param modelName - Optional LLM model name (defaults to config)
    * @param logger - Optional custom logger (creates default if not provided)
    * @param sessionId - Optional session ID for conversation tracking
+   * @param sessionManager - Optional session manager for automatic recovery
    */
   constructor(
     private readonly agentLoader: AgentLoader,
@@ -48,7 +50,8 @@ export class AgentExecutor {
     private readonly config: ResolvedSystemConfig,
     modelName?: string,
     logger?: AgentLogger,
-    sessionId?: string
+    sessionId?: string,
+    private readonly sessionManager?: SimpleSessionManager
   ) {
     this.sessionId = sessionId;
     this.logger = logger || LoggerFactory.createCombinedLogger(sessionId);
@@ -112,6 +115,8 @@ export class AgentExecutor {
       maxDepth: 10,
       isSidechain: false,
       parentMessages: undefined,
+      traceId: crypto.randomUUID(),
+      parentCallId: undefined,
     };
 
     // Log execution start (model will be determined after agent is loaded)
@@ -125,18 +130,44 @@ export class AgentExecutor {
     const depthIndicator = '│ '.repeat(execContext.depth);
     this.logger.logSystemMessage(`${depthIndicator}→ Starting ${agentName}`);
 
-    // Create middleware context
+    // Set trace context on logger if it supports it
+    if ('setTraceContext' in this.logger && typeof this.logger.setTraceContext === 'function') {
+      this.logger.setTraceContext(execContext.traceId, execContext.parentCallId);
+    }
+
+    // Automatically recover messages if this is a continuation of an existing session
+    let initialMessages: Message[] = [];
+    if (!context && this.sessionManager && this.sessionId) {
+      // Only recover for top-level execution, not delegated calls
+      try {
+        const recovered = await this.sessionManager.recoverSession(this.sessionId);
+        if (recovered.length > 0) {
+          // Messages are now the same type - no conversion needed
+          initialMessages = recovered;
+          this.logger.logSystemMessage(
+            `Automatically continuing session ${this.sessionId} with ${recovered.length} recovered messages`
+          );
+        }
+      } catch {
+        // Session doesn't exist yet, start fresh
+        this.logger.logSystemMessage(`Starting new session ${this.sessionId}`);
+      }
+    }
+
+    // Create middleware context with recovered messages if any
     const middlewareContext: MiddlewareContext = {
       agentName,
       prompt,
       executionContext: execContext,
-      messages: [],
+      messages: initialMessages,
       iteration: 0,
       logger: this.logger,
       modelName: this.modelName,
       shouldContinue: true,
       result: undefined,
       sessionId: this.sessionId,
+      traceId: execContext.traceId,
+      parentCallId: execContext.parentCallId,
     };
 
     // Main execution loop with timeout protection

@@ -1,6 +1,6 @@
 import type { ToolRegistry } from '@/tools';
 import type { ToolUse } from '@/providers';
-import type { ToolOutput } from '../../types';
+import type { ToolOutput } from '@/base-types';
 
 export interface ToolExecutorConfig {
   maxConcurrentTools?: number;

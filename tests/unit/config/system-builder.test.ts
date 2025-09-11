@@ -78,26 +78,13 @@ describe('AgentSystemBuilder Tests', () => {
       expect(result.config.safety.maxDepth).toBe(5);
     });
 
-    test('withLogging() should set logging configuration', async () => {
+    test('withConsole() should set console configuration', async () => {
       const result = await AgentSystemBuilder.minimal()
-        .withLogging({
-          display: 'both',
-          jsonl: {
-            enabled: true,
-            path: './test-logs',
-          },
-          console: {
-            timestamps: true,
-            colors: false,
-            verbosity: 'verbose',
-          },
-        })
+        .withConsole({ verbosity: 'verbose' })
         .build();
       cleanup = result.cleanup;
 
-      expect(result.config.logging.display).toBe('both');
-      expect(result.config.logging.jsonl.path).toBe('./test-logs');
-      expect(result.config.logging.console.verbosity).toBe('verbose');
+      expect(result.config.console).toEqual({ verbosity: 'verbose' });
     });
 
     test('withSessionId() should set session ID', async () => {

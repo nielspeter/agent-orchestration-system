@@ -1,5 +1,6 @@
-import { Tool, ToolResult } from '../types';
+import { Tool, ToolResult } from '@/base-types';
 import { TodoManager } from '@/todos';
+import { isTodoItemArray } from '@/utils/type-guards';
 
 /**
  * Todo item interface for task management
@@ -121,7 +122,10 @@ When in doubt, use this tool. Being proactive with task management demonstrates 
 
   execute: async (args: Record<string, unknown>): Promise<ToolResult> => {
     try {
-      const todos = args.todos as TodoItem[];
+      if (!isTodoItemArray(args.todos)) {
+        throw new Error('Invalid todos format: must be an array of TodoItem objects');
+      }
+      const todos = args.todos;
       // Update todos using the manager (includes validation)
       // No longer async - todos are stored in memory and persisted via session events
       todoManager.updateTodos(todos);

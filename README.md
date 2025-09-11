@@ -2,14 +2,17 @@
 
 A TypeScript implementation of an advanced agent orchestration system using **pull architecture** where child agents autonomously gather information via tools rather than inheriting parent context. Built with a **middleware pipeline architecture** (Chain of Responsibility pattern) and leverages Anthropic's ephemeral caching for efficiency.
 
+> **Production Readiness**: This system includes built-in security features, retry logic, and monitoring. See [Security Documentation](docs/security.md) and [Production Readiness Assessment](docs/production-readiness.md) for details.
+
 ## 🆕 Recent Updates
-- **OpenRouter Speed Optimization**: Provider pinning for lowest latency/highest throughput with `:nitro` suffix
-- **Behavior Presets**: Semantic temperature/top_p control (deterministic, precise, balanced, creative, exploratory)
-- **Multi-Provider Support**: Dynamic provider selection (Anthropic, OpenRouter) based on model patterns
-- **Grep Tool**: Fast file searching using ripgrep for pattern matching
-- **Improved Error Handling**: Clear messages for missing API keys and unavailable models
-- **Provider Factory**: Automatic provider selection with per-agent behavior configuration
-- **Fail-Fast Behavior**: Agents now fail immediately when required models are unavailable
+- **Session Persistence**: Event-sourced session storage with recovery capabilities
+- **Security Hardening**: Path validation, command filtering, size limits
+- **Retry Logic**: Smart retry with backoff for transient failures  
+- **Metrics Collection**: Token usage, cache hit rates, cost tracking
+- **OpenRouter Speed Optimization**: Provider pinning with `:nitro` suffix
+- **Behavior Presets**: Semantic temperature/top_p control
+- **Multi-Provider Support**: Dynamic provider selection (Anthropic, OpenRouter)
+- **Grep Tool**: Fast file searching using ripgrep
 
 ## 🎯 Architecture Highlights
 

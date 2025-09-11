@@ -277,6 +277,10 @@ export class ConsoleLogger implements AgentLogger {
     );
   }
 
+  async getSessionEvents(): Promise<import('@/session/types').AnySessionEvent[]> {
+    return []; // Console logger doesn't store events, only displays them
+  }
+
   flush(): void {
     // Console output is immediate, no buffering
   }

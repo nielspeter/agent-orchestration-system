@@ -53,8 +53,9 @@ export const createGetSessionLogTool = (currentSessionId?: string): Tool => ({
   execute: async (args: Record<string, unknown>): Promise<ToolResult> => {
     try {
       // Get session ID from args or use the provided current session
-      const sessionId = (args.sessionId as string) || currentSessionId;
-      const includeSystemMessages = args.includeSystemMessages as boolean;
+      const sessionId = typeof args.sessionId === 'string' ? args.sessionId : currentSessionId;
+      const includeSystemMessages =
+        typeof args.includeSystemMessages === 'boolean' ? args.includeSystemMessages : false;
 
       if (!sessionId) {
         return {

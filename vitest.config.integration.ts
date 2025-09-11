@@ -9,6 +9,8 @@ export default defineConfig({
     setupFiles: ['./tests/setup-integration.ts'],
     globals: true,
     testTimeout: 60000, // 60 seconds for integration tests (API calls)
+    maxConcurrency: 1, // Run tests sequentially
+    fileParallelism: false, // Disable parallel file execution
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov', 'html'],

@@ -93,18 +93,8 @@ async function customConfigExample() {
     .withModel('anthropic/claude-3-5-haiku-latest')
     .withAgentsFrom(path.join(__dirname, 'configuration', 'agents'))
     .withSafetyLimits({ maxIterations: 50 })
-    .withLogging({
-      display: 'both',
-      console: {
-        timestamps: true,
-        colors: true,
-        verbosity: 'verbose',
-      },
-      jsonl: {
-        enabled: true,
-        path: './logs',
-      },
-    })
+    .withConsole({ verbosity: 'verbose' })
+    .withStorage('filesystem')
     .build();
 
   // Use the custom setup

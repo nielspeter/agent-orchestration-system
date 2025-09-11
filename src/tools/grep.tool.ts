@@ -26,8 +26,11 @@ export const createGrepTool = (): BaseTool => ({
     required: ['pattern'],
   },
   execute: async (args): Promise<ToolResult> => {
-    const pattern = args.pattern as string;
-    const path = (args.path as string) || '.';
+    if (typeof args.pattern !== 'string') {
+      throw new Error('Pattern must be a string');
+    }
+    const pattern = args.pattern;
+    const path = typeof args.path === 'string' ? args.path : '.';
 
     try {
       // Use ripgrep with:

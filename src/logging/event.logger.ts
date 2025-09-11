@@ -1,5 +1,6 @@
 import { AgentLogger } from './types.js';
 import {
+  AnySessionEvent,
   AssistantMessageEvent,
   SessionStorage,
   ToolCallEvent,
@@ -16,11 +17,18 @@ import {
  */
 export class EventLogger implements AgentLogger {
   private readonly toolCallMap = new Map<string, { tool: string; agent: string }>();
+  private traceId?: string;
+  private parentCallId?: string;
 
   constructor(
     private readonly storage: SessionStorage,
     private readonly sessionId: string
   ) {}
+
+  setTraceContext(traceId?: string, parentCallId?: string): void {
+    this.traceId = traceId;
+    this.parentCallId = parentCallId;
+  }
 
   logUserMessage(content: string): void {
     const event: UserMessageEvent = {
@@ -75,6 +83,8 @@ export class EventLogger implements AgentLogger {
         tool,
         params,
         agent,
+        traceId: this.traceId,
+        parentCallId: this.parentCallId,
       },
     };
 
@@ -233,6 +243,19 @@ export class EventLogger implements AgentLogger {
     this.storage.appendEvent(this.sessionId, event).catch((error) => {
       console.error('Failed to log todo update:', error);
     });
+  }
+
+  async getSessionEvents(): Promise<AnySessionEvent[]> {
+    // Return events from storage, properly typed
+    const events = await this.storage.readEvents(this.sessionId);
+    // Filter to only return properly typed session events
+    return events.filter(
+      (e): e is AnySessionEvent =>
+        typeof e === 'object' &&
+        e !== null &&
+        'type' in e &&
+        ['user', 'assistant', 'tool_call', 'tool_result'].includes((e as any).type)
+    );
   }
 
   flush(): void {

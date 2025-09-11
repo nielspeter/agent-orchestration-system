@@ -70,6 +70,8 @@ export interface ToolCallEvent extends SessionEvent {
     tool: string;
     params: unknown;
     agent?: string;
+    traceId?: string;
+    parentCallId?: string;
   };
 }
 

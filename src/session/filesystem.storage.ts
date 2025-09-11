@@ -1,6 +1,7 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import { SessionStorage } from './types.js';
+import { isNodeError } from '@/utils/type-guards';
 
 /**
  * Filesystem storage implementation
@@ -55,7 +56,7 @@ export class FilesystemStorage implements SessionStorage {
         .filter((event) => event !== null);
     } catch (error) {
       // File doesn't exist or other error
-      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      if (isNodeError(error) && error.code === 'ENOENT') {
         return [];
       }
       throw error;
@@ -84,7 +85,7 @@ export class FilesystemStorage implements SessionStorage {
       await fs.rm(dir, { recursive: true, force: true });
     } catch (error) {
       // Ignore errors if directory doesn't exist
-      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+      if (isNodeError(error) && error.code !== 'ENOENT') {
         throw error;
       }
     }
@@ -100,7 +101,7 @@ export class FilesystemStorage implements SessionStorage {
       return entries.filter((entry) => entry.isDirectory()).map((entry) => entry.name);
     } catch (error) {
       // Directory doesn't exist
-      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      if (isNodeError(error) && error.code === 'ENOENT') {
         return [];
       }
       throw error;

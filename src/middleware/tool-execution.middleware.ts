@@ -1,6 +1,6 @@
 import { Middleware, MiddlewareContext } from './middleware-types';
 import { ToolRegistry } from '../tools/registry/registry';
-import { ToolCall } from '../types';
+import { ToolCall } from '@/base-types';
 import {
   ExecuteDelegate,
   executeToolsConcurrently,

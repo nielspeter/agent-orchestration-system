@@ -1,5 +1,4 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { NoOpStorage } from '@/session/noop.storage';
 import { InMemoryStorage } from '@/session/memory.storage';
 import { FilesystemStorage } from '@/session/filesystem.storage';
 import { SessionStorage } from '@/session/types';
@@ -8,43 +7,6 @@ import * as path from 'path';
 import { existsSync } from 'fs';
 
 describe('Storage Implementations', () => {
-  describe('NoOpStorage', () => {
-    let storage: NoOpStorage;
-
-    beforeEach(() => {
-      storage = new NoOpStorage();
-    });
-
-    it('should always return empty array for readEvents', async () => {
-      const events = await storage.readEvents('any-session');
-      expect(events).toEqual([]);
-    });
-
-    it('should always return false for sessionExists', async () => {
-      const exists = await storage.sessionExists('any-session');
-      expect(exists).toBe(false);
-    });
-
-    it('should not throw when appending events', async () => {
-      await expect(
-        storage.appendEvent('session', { type: 'test', data: 'value' })
-      ).resolves.toBeUndefined();
-    });
-
-    it('should handle multiple operations without state', async () => {
-      // Append multiple events
-      await storage.appendEvent('session1', { event: 1 });
-      await storage.appendEvent('session1', { event: 2 });
-      await storage.appendEvent('session2', { event: 3 });
-
-      // Should still return empty
-      expect(await storage.readEvents('session1')).toEqual([]);
-      expect(await storage.readEvents('session2')).toEqual([]);
-      expect(await storage.sessionExists('session1')).toBe(false);
-      expect(await storage.sessionExists('session2')).toBe(false);
-    });
-  });
-
   describe('InMemoryStorage', () => {
     let storage: InMemoryStorage;
 
@@ -314,7 +276,6 @@ describe('Storage Implementations', () => {
   describe('Storage Interface Compliance', () => {
     // Test that all implementations conform to the interface
     const implementations: Array<[string, () => SessionStorage]> = [
-      ['NoOpStorage', () => new NoOpStorage()],
       ['InMemoryStorage', () => new InMemoryStorage()],
       ['FilesystemStorage', () => new FilesystemStorage('./test-compliance-temp')],
     ];
@@ -345,7 +306,7 @@ describe('Storage Implementations', () => {
           const event = { type: 'test', data: 'value' };
 
           // Should not exist initially (except NoOp always returns false)
-          if (name !== 'NoOpStorage') {
+          if (name === 'InMemoryStorage' || name === 'FilesystemStorage') {
             expect(await storage.sessionExists(sessionId)).toBe(false);
           }
 
@@ -353,7 +314,8 @@ describe('Storage Implementations', () => {
           await expect(storage.appendEvent(sessionId, event)).resolves.toBeUndefined();
 
           // For NoOp, special handling
-          if (name === 'NoOpStorage') {
+          // Remove this condition since we no longer have NoOpStorage
+          if (false) {
             expect(await storage.readEvents(sessionId)).toEqual([]);
             expect(await storage.sessionExists(sessionId)).toBe(false);
           } else {
