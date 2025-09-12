@@ -1,6 +1,6 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { BaseTool, ToolResult } from '@/base-types';
+import { BaseTool, ToolResult, ToolParameter } from '@/base-types';
 import { AgentLogger } from '@/logging';
 import { createShellTool } from '@/tools/shell.tool';
 
@@ -253,7 +253,7 @@ export class ToolLoader {
    */
   private createScriptTool(name: string, scriptPath: string, metadata: ToolMetadata): BaseTool {
     // Build parameter schema from metadata
-    const properties: Record<string, any> = {};
+    const properties: Record<string, ToolParameter> = {};
     const required: string[] = [];
 
     if (metadata.parameters) {
@@ -266,14 +266,18 @@ export class ToolLoader {
           properties[paramName] = {
             type: 'array',
             description: paramInfo.description || `Parameter ${paramName}`,
-            items: { type: 'string' }, // Default to string items
+            items: {
+              type: 'string',
+              description: 'Array item',
+            } as ToolParameter, // Default to string items
           };
         } else if (paramType === 'object') {
           // For objects, create proper JSON schema
           properties[paramName] = {
             type: 'object',
             description: paramInfo.description || `Parameter ${paramName}`,
-            additionalProperties: true, // Allow any properties
+            // Note: additionalProperties not supported in ToolParameter interface
+            // Objects will need to define their properties explicitly
           };
         } else {
           // Simple types (string, number, boolean)

@@ -7,6 +7,7 @@ export interface FixtureConfig {
   fixtureDir: string;
   fixtureCount: number;
   fixturePrefix?: string;
+  fixtureBasePath?: string; // Optional base path for fixtures
   generator?: (sessionId: string) => Promise<void>;
   validateCompletion?: (messages: any[]) => boolean;
 }
@@ -36,8 +37,10 @@ export function describeWithFixtures(
   config: FixtureConfig,
   testSuite: (fixture: FixtureData) => void
 ) {
-  const fixturesBaseDir = path.join(process.cwd(), 'tests/fixtures');
-  const fixturesDir = path.join(fixturesBaseDir, config.fixtureDir);
+  // Allow configurable base path, default to fixture directory directly
+  const fixturesDir = config.fixtureBasePath
+    ? path.join(config.fixtureBasePath, config.fixtureDir)
+    : path.join(process.cwd(), config.fixtureDir);
   const prefix = config.fixturePrefix || 'fixture';
 
   // Setup phase: Ensure fixtures exist
@@ -126,25 +129,4 @@ function loadFixture(fixturesDir: string, sessionId: string): FixtureData {
 
   // Parse events will be done by GameEventParser
   return { sessionId, messages, events: {} };
-}
-
-/**
- * Shorthand for fixture testing with sensible defaults
- */
-export function describeGame(
-  name: string,
-  fixtureCount: number,
-  testSuite: (fixture: FixtureData) => void
-) {
-  const dirName = name.toLowerCase().replace(/\s+/g, '-');
-
-  return describeWithFixtures(
-    {
-      name,
-      fixtureDir: dirName,
-      fixtureCount,
-      fixturePrefix: `${dirName}-fixture`,
-    },
-    testSuite
-  );
 }

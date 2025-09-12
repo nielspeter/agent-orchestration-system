@@ -1,5 +1,6 @@
 import { expect } from 'vitest';
 import { EventStreamParser } from '../utils/event-stream-parser';
+import type { EventMessage } from '../types/event-types';
 
 interface CustomMatchers<R = unknown> {
   toHaveCompleted(completionKeywords?: string[]): R;
@@ -28,7 +29,7 @@ expect.extend({
    * Check if execution reached completion (using configurable keywords)
    */
   toHaveCompleted(
-    messages: any[],
+    messages: EventMessage[],
     completionKeywords: string[] = ['completed', 'finished', 'done', 'success', 'victory', 'wins']
   ) {
     const hasCompletion = EventStreamParser.hasKeywords(messages, completionKeywords);
@@ -47,7 +48,7 @@ expect.extend({
   /**
    * Check if system delegated to expected agents
    */
-  toHaveDelegatedToAgents(messages: any[], expectedAgents: string[]) {
+  toHaveDelegatedToAgents(messages: EventMessage[], expectedAgents: string[]) {
     const delegations = EventStreamParser.extractDelegations(messages);
     const delegatedTo = new Set(delegations.map((d) => d.to));
     const missing = expectedAgents.filter((agent) => !delegatedTo.has(agent));
@@ -66,9 +67,9 @@ expect.extend({
   /**
    * Check if specific tools were executed
    */
-  toHaveExecutedTools(messages: any[], toolNames: string[]) {
+  toHaveExecutedTools(messages: EventMessage[], toolNames: string[]) {
     const toolCalls = EventStreamParser.extractToolCalls(messages);
-    const calledTools = new Set(toolCalls.map((tc) => tc.tool));
+    const calledTools = new Set(toolCalls.map((tc) => tc?.tool).filter(Boolean));
     const missing = toolNames.filter((tool) => !calledTools.has(tool));
 
     return {
@@ -87,7 +88,7 @@ expect.extend({
   /**
    * Check that content does not contain certain patterns (e.g., simulated responses)
    */
-  toNotContainPatterns(messages: any[], patterns: RegExp[]) {
+  toNotContainPatterns(messages: EventMessage[], patterns: RegExp[]) {
     const assistantMessages = messages.filter(
       (msg: any) => msg.type === 'assistant' && msg.data?.content
     );
@@ -115,7 +116,7 @@ expect.extend({
   /**
    * Check minimum agent interactions
    */
-  toHaveAgentInteractions(messages: any[], minInteractions: number) {
+  toHaveAgentInteractions(messages: EventMessage[], minInteractions: number) {
     const agentCalls = EventStreamParser.extractAgentCalls(messages);
 
     return {
@@ -130,7 +131,7 @@ expect.extend({
   /**
    * Check if messages contain specific keywords
    */
-  toHaveKeywords(messages: any[], keywords: string[]) {
+  toHaveKeywords(messages: EventMessage[], keywords: string[]) {
     const hasKeywords = EventStreamParser.hasKeywords(messages, keywords);
 
     return {

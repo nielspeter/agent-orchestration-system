@@ -296,7 +296,7 @@ describe('Tool Result Logging Atomicity', () => {
 
       // Should still log a result even with malformed arguments
       expect(mockLogger.logToolResult).toHaveBeenCalled();
-      expect(result.content).toContain('Tool execution failed');
+      expect(result.content).toContain('Invalid arguments');
     });
 
     it('should handle missing tool', async () => {
