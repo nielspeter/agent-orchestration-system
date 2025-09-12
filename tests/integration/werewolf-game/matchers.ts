@@ -1,5 +1,5 @@
 import { expect } from 'vitest';
-import { GameEventParser } from '../utils/game-event-parser';
+import { GameEventParser } from './parser';
 
 interface CustomMatchers<R = unknown> {
   toHaveGameCompletion(): R;

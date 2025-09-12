@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { GameEventParser } from '../utils/game-event-parser';
-import '../matchers/game-matchers';
+import { GameEventParser } from './parser';
+import './matchers';
 import { AgentSystemBuilder } from '@/config';
 import path from 'path';
 import fs from 'fs';
@@ -9,7 +9,7 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 const FIXTURE_COUNT = 5;
-const FIXTURES_DIR = path.join(__dirname, '../fixtures/werewolf-games');
+const FIXTURES_DIR = path.join(__dirname, 'fixtures');
 
 /**
  * Werewolf Game Integration Tests
@@ -34,8 +34,8 @@ describe('Werewolf Game - Fixture Setup', () => {
 
         const { executor, cleanup } = await AgentSystemBuilder.default()
           .withModel('openrouter/openai/gpt-4o')
-          .withAgentsFrom(path.join(__dirname, '../../examples/werewolf-game/agents'))
-          .withToolsFrom(path.join(__dirname, '../../examples/werewolf-game/tools'))
+          .withAgentsFrom(path.join(__dirname, '../../../examples/werewolf-game/agents'))
+          .withToolsFrom(path.join(__dirname, '../../../examples/werewolf-game/tools'))
           .withStorage('filesystem', FIXTURES_DIR)
           .withSessionId(sessionId)
           .withSafetyLimits({

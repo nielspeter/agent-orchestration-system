@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { executeSingleTool } from '@/tools/registry/executor-service';
 import { MiddlewareContext } from '@/middleware/middleware-types';
 import type { ToolCall } from '@/base-types';
