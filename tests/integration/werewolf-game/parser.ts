@@ -11,13 +11,9 @@ export class GameEventParser {
 
     for (const msg of messages) {
       // Handle tool results (e.g., random_roles)
-      if (msg.type === 'tool_result' && msg.data?.tool === 'random_roles' && msg.data?.result) {
-        try {
-          const result = JSON.parse(msg.data.result);
-          if (result.assignments) {
-            return result.assignments;
-          }
-        } catch {}
+      if (msg.type === 'tool_result' && msg.data?.result?.content?.roles) {
+        // The roles are already parsed in the fixture
+        return msg.data.result.content.roles;
       }
 
       // Handle assistant messages with role assignments
@@ -77,7 +73,7 @@ export class GameEventParser {
   static hasVictory(messages: any[]): boolean {
     return messages.some((msg) => {
       const content = msg.data?.content || '';
-      return /victory|wins|game.*over|completed/i.test(content);
+      return /victory|wins|winner|game.*complete|game.*conclusion/i.test(content);
     });
   }
 
@@ -91,10 +87,13 @@ export class GameEventParser {
 
         // Look for victory patterns
         const patterns = [
-          /(\w+).*wins/i,
-          /(\w+).*victory/i,
+          /the (\w+) wins/i,
+          /(\w+).*wins the game/i,
+          /victory for the (\w+)/i,
+          /(\w+) has won/i,
+          /(\w+) victory/i,
           /winner.*(\w+)/i,
-          /(\w+).*\(winner\)/i,
+          /(\w+).*remains.*last.*player/i,
         ];
 
         for (const pattern of patterns) {

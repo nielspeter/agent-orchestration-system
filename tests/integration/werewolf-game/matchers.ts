@@ -30,13 +30,23 @@ expect.extend({
     const hasVictory = GameEventParser.hasVictory(messages);
     const winner = GameEventParser.extractWinner(messages);
 
+    // Debug: Check if messages are loaded
+    if (messages.length === 0) {
+      return {
+        pass: false,
+        message: () => 'No messages loaded from fixture',
+        actual: { messageCount: 0 },
+        expected: { messageCount: '>0' },
+      };
+    }
+
     return {
       pass: hasVictory,
       message: () =>
         hasVictory
           ? `Expected game to not have completion, but ${winner} won`
-          : 'Expected game to have completion (victory/win condition), but none found',
-      actual: { hasVictory, winner },
+          : `Expected game to have completion (victory/win condition), but none found. Loaded ${messages.length} messages`,
+      actual: { hasVictory, winner, messageCount: messages.length },
       expected: { hasVictory: true },
     };
   },
