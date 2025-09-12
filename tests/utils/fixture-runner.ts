@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import path from 'path';
 import fs from 'fs';
 
@@ -40,7 +40,9 @@ export function describeWithFixtures(
   // Allow configurable base path, default to fixture directory directly
   const fixturesDir = config.fixtureBasePath
     ? path.join(config.fixtureBasePath, config.fixtureDir)
-    : path.join(process.cwd(), config.fixtureDir);
+    : path.isAbsolute(config.fixtureDir)
+      ? config.fixtureDir
+      : path.join(process.cwd(), config.fixtureDir);
   const prefix = config.fixturePrefix || 'fixture';
 
   // Setup phase: Ensure fixtures exist
@@ -55,10 +57,21 @@ export function describeWithFixtures(
       for (let i = 1; i <= config.fixtureCount; i++) {
         const sessionId = `${prefix}-${String(i).padStart(3, '0')}`;
         const fixturePath = path.join(fixturesDir, sessionId);
+        const eventsPath = path.join(fixturePath, 'events.jsonl');
 
-        if (!fs.existsSync(fixturePath) && config.generator) {
-          console.log(`Generating fixture ${i}/${config.fixtureCount}: ${sessionId}`);
-          await config.generator(sessionId);
+        if (!fs.existsSync(eventsPath)) {
+          if (config.generator) {
+            console.log(`Generating fixture ${i}/${config.fixtureCount}: ${sessionId}`);
+            await config.generator(sessionId);
+          } else {
+            console.log(
+              `Fixture ${i}/${config.fixtureCount}: ${sessionId} - No generator provided, skipping`
+            );
+          }
+        } else {
+          console.log(
+            `Fixture ${i}/${config.fixtureCount}: ${sessionId} - Already exists, skipping`
+          );
         }
       }
 
@@ -76,28 +89,13 @@ export function describeWithFixtures(
   );
 
   describe.each(fixtureIds)(`${config.name} - %s`, (sessionId) => {
-    let fixtureData: FixtureData = { sessionId, messages: [], events: {} };
-
-    beforeAll(() => {
-      fixtureData = loadFixture(fixturesDir, sessionId);
-    });
-
-    // Run the user's test suite with the fixture data
-    // We need to wrap in a function that provides access to the loaded data
-    const getFixture = (): FixtureData => fixtureData;
+    // Load fixture immediately - don't wait for beforeAll
+    const fixtureData = loadFixture(fixturesDir, sessionId);
 
     testSuite({
-      get sessionId() {
-        return sessionId;
-      },
-      get messages() {
-        const data = getFixture();
-        return data.messages;
-      },
-      get events() {
-        const data = getFixture();
-        return data.events;
-      },
+      sessionId,
+      messages: fixtureData.messages,
+      events: fixtureData.events,
     });
   });
 }
