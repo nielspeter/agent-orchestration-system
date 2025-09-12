@@ -30,7 +30,7 @@ describe('AgentLoaderMiddleware - Tool Filtering', () => {
       {
         name: 'unlimited',
         prompt: 'You have all tools',
-        tools: [], // Empty means all tools
+        tools: '*', // '*' means all tools
       },
     ];
 
@@ -103,7 +103,7 @@ describe('AgentLoaderMiddleware - Tool Filtering', () => {
     expect(nextCalled).toBe(true);
   });
 
-  it('should give all tools when agent.tools is empty', async () => {
+  it('should give all tools when agent.tools is "*"', async () => {
     context.agentName = 'unlimited';
 
     await middleware(context, async () => {

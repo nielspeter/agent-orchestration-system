@@ -79,28 +79,26 @@ describe('ToolExecutionMiddleware - Result Logging', () => {
   });
 
   it('should log both tool call and result for successful execution', async () => {
-    // Add a message with tool call
-    context.messages = [
-      {
-        role: 'assistant',
-        content: '',
-        tool_calls: [
-          {
-            id: 'call_123',
-            type: 'function',
-            function: {
-              name: 'SuccessTool',
-              arguments: '{}',
-            },
+    // Set up response with tool call
+    context.response = {
+      role: 'assistant',
+      content: '',
+      tool_calls: [
+        {
+          id: 'call_123',
+          type: 'function',
+          function: {
+            name: 'SuccessTool',
+            arguments: '{}',
           },
-        ],
-      },
-    ];
+        },
+      ],
+    };
 
     await middleware(context, async () => {
       // Verify tool result was added to messages
       const hasToolResult = context.messages.some(
-        (msg) => msg.role === 'user' && msg.tool_call_id === 'call_123'
+        (msg) => msg.role === 'tool' && msg.tool_call_id === 'call_123'
       );
       expect(hasToolResult).toBe(true);
     });
@@ -112,27 +110,25 @@ describe('ToolExecutionMiddleware - Result Logging', () => {
   });
 
   it('should log tool result even when tool execution fails', async () => {
-    context.messages = [
-      {
-        role: 'assistant',
-        content: '',
-        tool_calls: [
-          {
-            id: 'call_error',
-            type: 'function',
-            function: {
-              name: 'ErrorTool',
-              arguments: '{}',
-            },
+    context.response = {
+      role: 'assistant',
+      content: '',
+      tool_calls: [
+        {
+          id: 'call_error',
+          type: 'function',
+          function: {
+            name: 'ErrorTool',
+            arguments: '{}',
           },
-        ],
-      },
-    ];
+        },
+      ],
+    };
 
     await middleware(context, async () => {
       // Find the tool result message
       const toolResult = context.messages.find(
-        (msg) => msg.role === 'user' && msg.tool_call_id === 'call_error'
+        (msg) => msg.role === 'tool' && msg.tool_call_id === 'call_error'
       );
 
       // Should have error in content
@@ -147,42 +143,40 @@ describe('ToolExecutionMiddleware - Result Logging', () => {
   });
 
   it('should handle multiple tool calls in sequence', async () => {
-    context.messages = [
-      {
-        role: 'assistant',
-        content: '',
-        tool_calls: [
-          {
-            id: 'call_1',
-            type: 'function',
-            function: {
-              name: 'SuccessTool',
-              arguments: '{}',
-            },
+    context.response = {
+      role: 'assistant',
+      content: '',
+      tool_calls: [
+        {
+          id: 'call_1',
+          type: 'function',
+          function: {
+            name: 'SuccessTool',
+            arguments: '{}',
           },
-          {
-            id: 'call_2',
-            type: 'function',
-            function: {
-              name: 'ErrorTool',
-              arguments: '{}',
-            },
+        },
+        {
+          id: 'call_2',
+          type: 'function',
+          function: {
+            name: 'ErrorTool',
+            arguments: '{}',
           },
-          {
-            id: 'call_3',
-            type: 'function',
-            function: {
-              name: 'SuccessTool',
-              arguments: '{}',
-            },
+        },
+        {
+          id: 'call_3',
+          type: 'function',
+          function: {
+            name: 'SuccessTool',
+            arguments: '{}',
           },
-        ],
-      },
-    ];
+        },
+      ],
+    };
 
     await middleware(context, async () => {
       // All tool results should be added
-      const toolResults = context.messages.filter((msg) => msg.role === 'user' && msg.tool_call_id);
+      const toolResults = context.messages.filter((msg) => msg.role === 'tool' && msg.tool_call_id);
       expect(toolResults.length).toBe(3);
     });
 
@@ -192,26 +186,24 @@ describe('ToolExecutionMiddleware - Result Logging', () => {
   });
 
   it('should handle invalid tool name gracefully', async () => {
-    context.messages = [
-      {
-        role: 'assistant',
-        content: '',
-        tool_calls: [
-          {
-            id: 'call_invalid',
-            type: 'function',
-            function: {
-              name: 'NonExistentTool',
-              arguments: '{}',
-            },
+    context.response = {
+      role: 'assistant',
+      content: '',
+      tool_calls: [
+        {
+          id: 'call_invalid',
+          type: 'function',
+          function: {
+            name: 'NonExistentTool',
+            arguments: '{}',
           },
-        ],
-      },
-    ];
+        },
+      ],
+    };
 
     await middleware(context, async () => {
       const toolResult = context.messages.find(
-        (msg) => msg.role === 'user' && msg.tool_call_id === 'call_invalid'
+        (msg) => msg.role === 'tool' && msg.tool_call_id === 'call_invalid'
       );
 
       expect(toolResult).toBeDefined();
@@ -224,26 +216,24 @@ describe('ToolExecutionMiddleware - Result Logging', () => {
   });
 
   it('should handle malformed tool arguments', async () => {
-    context.messages = [
-      {
-        role: 'assistant',
-        content: '',
-        tool_calls: [
-          {
-            id: 'call_malformed',
-            type: 'function',
-            function: {
-              name: 'SuccessTool',
-              arguments: 'not valid json{',
-            },
+    context.response = {
+      role: 'assistant',
+      content: '',
+      tool_calls: [
+        {
+          id: 'call_malformed',
+          type: 'function',
+          function: {
+            name: 'SuccessTool',
+            arguments: 'not valid json{',
           },
-        ],
-      },
-    ];
+        },
+      ],
+    };
 
     await middleware(context, async () => {
       const toolResult = context.messages.find(
-        (msg) => msg.role === 'user' && msg.tool_call_id === 'call_malformed'
+        (msg) => msg.role === 'tool' && msg.tool_call_id === 'call_malformed'
       );
 
       expect(toolResult).toBeDefined();
@@ -268,22 +258,20 @@ describe('ToolExecutionMiddleware - Result Logging', () => {
       const scenario = scenarios[i];
       const callId = `call_${i}`;
 
-      context.messages = [
-        {
-          role: 'assistant',
-          content: '',
-          tool_calls: [
-            {
-              id: callId,
-              type: 'function',
-              function: {
-                name: scenario.name,
-                arguments: '{}',
-              },
+      context.response = {
+        role: 'assistant',
+        content: '',
+        tool_calls: [
+          {
+            id: callId,
+            type: 'function',
+            function: {
+              name: scenario.name,
+              arguments: '{}',
             },
-          ],
-        },
-      ];
+          },
+        ],
+      };
 
       await middleware(context, async () => {});
     }

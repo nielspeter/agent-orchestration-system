@@ -154,11 +154,17 @@ export async function executeSingleTool(
     return createErrorResult(toolCall.id, `Tool ${toolCall.function.name} not found`, ctx);
   }
 
+  // Always log the tool call first (even if arguments are malformed)
+  let parsedArgs: Record<string, unknown> = {};
+  try {
+    parsedArgs = JSON.parse(toolCall.function.arguments);
+  } catch {
+    // If parsing fails, use empty object for logging
+  }
+  ctx.logger.logToolCall(ctx.agentName, tool.name, toolCall.id, parsedArgs);
+
   try {
     const args = JSON.parse(toolCall.function.arguments);
-
-    // Always log the tool call first
-    ctx.logger.logToolCall(ctx.agentName, tool.name, toolCall.id, args);
 
     let result: ToolResult;
 
