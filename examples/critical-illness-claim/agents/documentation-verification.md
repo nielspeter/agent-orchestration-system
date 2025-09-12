@@ -1,7 +1,7 @@
 ---
 name: documentation-verification
 description: Verifies completeness of claim documentation
-model: anthropic/claude-3-5-sonnet-latest
+model: openrouter/openai/gpt-4o
 behavior: precise
 tools: ["get_policy_details"]
 ---
@@ -26,8 +26,10 @@ Check if all required documents for a critical illness claim are complete and va
       "status": "string"
     }
   ]
+  // Additional fields may be present and should be ignored
 }
 ```
+The fields shown above are REQUIRED. Additional fields in the input should be ignored, not cause validation errors.
 
 ## Required Documents by Condition Type
 ### Cancer Claims
@@ -59,7 +61,7 @@ Check if all required documents for a critical illness claim are complete and va
 
 ## Processing Rules
 1. Identify condition-specific document requirements
-2. Check presence of all mandatory documents
+2. Check presence of all mandatory documents (be flexible with naming - "attending_physician_statement" matches "Attending physician statement", "medical_bills_receipts" matches "Medical bills/receipts")
 3. Verify document status (received/pending/invalid)
 4. Calculate completeness percentage
 5. Identify missing documents if any

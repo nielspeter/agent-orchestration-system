@@ -1,7 +1,7 @@
 ---
 name: notification-categorization
 description: Determines if a notification is a critical illness claim or other type
-model: anthropic/claude-3-5-sonnet-latest
+model: openrouter/openai/gpt-4o
 behavior: precise
 tools: []
 ---
@@ -25,11 +25,12 @@ Analyze incoming notifications to determine if they represent critical illness c
       "policyNumber": "string"
     }
   }
+  // Additional fields may be present and should be ignored
 }
 ```
-All fields shown above are REQUIRED.
+The fields shown above are REQUIRED. Additional fields in the input should be ignored, not cause validation errors.
 
-**If input is invalid, return:**
+**If input is invalid (missing required fields or not valid JSON), return:**
 ```json
 {
   "error": true,

@@ -1,7 +1,7 @@
 ---
 name: claim-registration
 description: Registers critical illness claims in the system
-model: anthropic/claude-3-5-sonnet-latest
+model: openrouter/openai/gpt-4o
 behavior: precise
 tools: ["claim_id_generator", "timestamp_generator"]
 ---
@@ -26,13 +26,16 @@ Register validated critical illness claims with all necessary information and ge
       "policyNumber": "string",
       "contactInfo": "string"
     }
+    // Additional fields may be present and should be ignored
   },
   "categorization": {
     "identifiedCondition": "string"
+    // Additional fields may be present and should be ignored
   }
+  // Additional top-level fields may be present and should be ignored
 }
 ```
-All fields shown above are REQUIRED.
+The fields shown above are REQUIRED. Additional fields in the input should be ignored, not cause validation errors.
 
 **If input is invalid, return:**
 ```json
@@ -87,6 +90,11 @@ All fields shown above are REQUIRED.
 - Policy number must match format POL-XXXXX
 - All required fields must be present
 - Contact information must include either email or phone
+
+## Tool Usage
+- When using claim_id_generator, ALWAYS use "CI" as the claim_type parameter (not the condition name)
+- The claim ID format must be: CI-YYYYMMDD-XXXXX (e.g., CI-20250113-1D5C8)
+- Use timestamp_generator for consistent timestamps
 
 ## Error Handling
 - If validation fails, return registrationSuccess: false with error message

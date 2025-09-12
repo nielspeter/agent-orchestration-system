@@ -50,6 +50,16 @@
       "type": "policy_document",
       "name": "policy_smith.pdf",
       "status": "received"
+    },
+    {
+      "type": "attending_physician_statement",
+      "name": "physician_statement_smith.pdf",
+      "status": "received"
+    },
+    {
+      "type": "medical_bills_receipts",
+      "name": "medical_bills_smith.pdf",
+      "status": "received"
     }
   ],
   "diagnosisDate": "2024-12-15T00:00:00Z",
