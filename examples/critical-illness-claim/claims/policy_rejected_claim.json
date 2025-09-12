@@ -22,6 +22,11 @@
       "status": "received"
     },
     {
+      "type": "cardiac_enzyme_reports",
+      "name": "cardiac_enzymes_brown.pdf",
+      "status": "received"
+    },
+    {
       "type": "cardiologist_statement",
       "name": "cardio_statement_brown.pdf",
       "status": "received"
@@ -44,6 +49,16 @@
     {
       "type": "policy_document",
       "name": "policy_brown.pdf",
+      "status": "received"
+    },
+    {
+      "type": "attending_physician_statement",
+      "name": "physician_statement_brown.pdf",
+      "status": "received"
+    },
+    {
+      "type": "medical_bills_receipts",
+      "name": "medical_bills_brown.pdf",
       "status": "received"
     }
   ],

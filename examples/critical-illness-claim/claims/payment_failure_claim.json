@@ -50,13 +50,22 @@
       "type": "policy_document",
       "name": "policy_wilson.pdf",
       "status": "received"
+    },
+    {
+      "type": "attending_physician_statement",
+      "name": "physician_statement_wilson.pdf",
+      "status": "received"
+    },
+    {
+      "type": "medical_bills_receipts",
+      "name": "medical_bills_wilson.pdf",
+      "status": "received"
     }
   ],
   "diagnosisDate": "2025-01-02T00:00:00Z",
   "claimantBankDetails": {
     "accountName": "Sarah Wilson",
     "accountNumber": "INVALID",
-    "bankName": "Failed Transaction Bank",
-    "triggerFailure": true
+    "bankName": "Failed Transaction Bank"
   }
 }

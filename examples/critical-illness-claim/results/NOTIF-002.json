@@ -1,23 +1,23 @@
 {
-  "processId": "PROC-DE20A37E",
-  "timestamp": "2025-09-12T19:01:51.217353Z",
+  "processId": "PROC-ABC12345",
+  "timestamp": "2025-09-12T18:47:41.193487Z",
   "workflowPath": [
     "notification_received",
     "categorization_performed"
   ],
   "finalOutcome": "other",
   "details": {
-    "claimId": "",
+    "claimId": "N/A",
     "claimantName": "John Doe",
     "policyNumber": "POL-67890",
     "illness": "Hypertension (high blood pressure)",
-    "decision": "",
-    "notes": ""
+    "decision": "rejected",
+    "notes": "The claim was categorized as a general health claim for hypertension, which is not covered under critical illness policies."
   },
   "auditTrail": [
     {
       "sequence": 1,
-      "timestamp": "2025-09-12T19:01:51.217353Z",
+      "timestamp": "2025-09-12T18:47:41.193487Z",
       "agent": "Workflow Orchestrator",
       "action": "WORKFLOW_START",
       "input": {
@@ -67,11 +67,11 @@
         }
       },
       "output": {},
-      "reasoning": "Initial claim receipt."
+      "reasoning": "Received a notification for processing."
     },
     {
       "sequence": 2,
-      "timestamp": "2025-09-12T19:01:51.217353Z",
+      "timestamp": "2025-09-12T18:47:41.193487Z",
       "agent": "notification-categorization",
       "action": "DELEGATE",
       "target": "notification-categorization",
@@ -126,13 +126,13 @@
         "category": "general_health",
         "confidence": "high",
         "identifiedCondition": "Hypertension (high blood pressure)",
-        "reasoning": "The notification type is 'health_claim', and the content describes a diagnosis of hypertension, which is classified as a non-critical condition unless accompanied by severe complications. The claimant mentions experiencing headaches and dizziness, which are common symptoms of hypertension but do not indicate a critical illness. Therefore, this is categorized as a general health claim with high confidence."
+        "reasoning": "The notification type is 'health_claim' and the content describes a diagnosis of hypertension, which is a non-critical condition. There are no mentions of critical illnesses or severe complications that would elevate this to a critical illness claim."
       },
-      "reasoning": "Delegated to notification-categorization to determine if the claim is for a critical illness."
+      "reasoning": "Delegated to notification-categorization to determine if the claim is a critical illness."
     },
     {
       "sequence": 3,
-      "timestamp": "2025-09-12T19:01:51.217353Z",
+      "timestamp": "2025-09-12T18:47:41.193487Z",
       "agent": "Workflow Orchestrator",
       "action": "DECISION",
       "decisionPoint": "is_critical_illness",
@@ -140,25 +140,24 @@
         "isCriticalIllness": false
       },
       "output": {
-        "finalOutcome": "other",
-        "details": {
-          "illness": "Hypertension (high blood pressure)"
-        }
+        "decision": "The claim is not for a critical illness."
       },
-      "reasoning": "The claim was categorized as a general health claim for hypertension, which is not a critical illness."
+      "reasoning": "The claim was categorized as a general health claim for hypertension, which is not covered under critical illness policies."
     },
     {
       "sequence": 4,
-      "timestamp": "2025-09-12T19:01:51.217353Z",
+      "timestamp": "2025-09-12T18:47:41.193487Z",
       "agent": "Workflow Orchestrator",
       "action": "WORKFLOW_END",
       "output": {
         "finalOutcome": "other",
         "details": {
-          "illness": "Hypertension (high blood pressure)"
+          "illness": "Hypertension (high blood pressure)",
+          "decision": "rejected",
+          "notes": "The claim was categorized as a general health claim for hypertension, which is not covered under critical illness policies."
         }
       },
-      "reasoning": "The workflow ends here as the claim is not for a critical illness."
+      "reasoning": "Ending workflow as the claim does not qualify for critical illness processing."
     }
   ]
 }
