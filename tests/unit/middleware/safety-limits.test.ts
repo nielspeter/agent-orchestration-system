@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { createSafetyChecksMiddleware } from '@/middleware/safety-checks.middleware';
 import { MiddlewareContext } from '@/middleware/middleware-types';
 import { ConsoleLogger } from '@/logging/console.logger';

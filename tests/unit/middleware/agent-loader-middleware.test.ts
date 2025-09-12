@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { createAgentLoaderMiddleware } from '@/middleware/agent-loader.middleware';
 import { AgentLoader } from '@/agents/loader';
 import { ToolRegistry } from '@/tools/registry/registry';
