@@ -1,7 +1,7 @@
 ---
 name: payment-approval
 description: Handles payment approval decisions for approved claims
-model: anthropic/claude-3-5-sonnet-latest
+model: openrouter/openai/gpt-4o
 behavior: deterministic
 tools: ["validate_bank_account", "check_fraud_indicators", "process_payment"]
 ---

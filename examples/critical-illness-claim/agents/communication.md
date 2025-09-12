@@ -1,7 +1,7 @@
 ---
 name: communication
 description: Manages all notifications and communications to claimants
-model: anthropic/claude-3-5-sonnet-latest
+model: openrouter/openai/gpt-4o
 behavior: balanced
 tools: ["send_notification"]
 ---
