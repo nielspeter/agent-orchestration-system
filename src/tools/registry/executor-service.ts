@@ -154,55 +154,60 @@ export async function executeSingleTool(
     return createErrorResult(toolCall.id, `Tool ${toolCall.function.name} not found`, ctx);
   }
 
-  // Always log the tool call first (even if arguments are malformed)
+  // Parse arguments once and handle errors properly
   let parsedArgs: Record<string, unknown> = {};
+  let parseError: Error | null = null;
+
   try {
     parsedArgs = JSON.parse(toolCall.function.arguments);
-  } catch {
-    // If parsing fails, use empty object for logging
+  } catch (error) {
+    parseError = error as Error;
+    // Use empty object for logging when parsing fails
   }
+
+  // Always log the tool call first (even if arguments are malformed)
   ctx.logger.logToolCall(ctx.agentName, tool.name, toolCall.id, parsedArgs);
 
-  try {
-    const args = JSON.parse(toolCall.function.arguments);
-
-    let result: ToolResult;
-
-    try {
-      if (tool.name === 'Task') {
-        // Handle delegation to sub-agents
-        result = await handleDelegation(args, ctx, executeDelegate, toolCall.id);
-      } else {
-        // Regular tool execution
-        result = await tool.execute(args);
-      }
-    } catch (executionError) {
-      // Tool execution failed - create error result
-      result = {
-        content: null,
-        error: String(executionError),
-      };
-    }
-
-    // Always log the result, whether success or failure
-    ctx.logger.logToolResult(ctx.agentName, tool.name, toolCall.id, result);
-
+  // If parsing failed, return error result immediately
+  if (parseError) {
+    const errorResult = {
+      content: null,
+      error: `Invalid arguments: ${parseError.message}`,
+    };
+    ctx.logger.logToolResult(ctx.agentName, tool.name, toolCall.id, errorResult);
     return {
       role: 'tool',
       tool_call_id: toolCall.id,
-      content: JSON.stringify(result),
+      content: JSON.stringify(errorResult),
     };
-  } catch (error) {
-    // This catches JSON parse errors or other setup failures
-    // Still need to log a result for consistency
-    const errorResult = { error: true, message: `Tool setup failed: ${error}` };
-
-    if (tool) {
-      ctx.logger.logToolResult(ctx.agentName, tool.name, toolCall.id, errorResult);
-    }
-
-    return createErrorResult(toolCall.id, `Tool execution failed: ${error}`, ctx, tool?.name);
   }
+
+  // Execute the tool with parsed arguments
+  let result: ToolResult;
+  try {
+    if (tool.name === 'Task') {
+      // Handle delegation to sub-agents
+      result = await handleDelegation(parsedArgs as TaskArgs, ctx, executeDelegate, toolCall.id);
+    } else {
+      // Regular tool execution
+      result = await tool.execute(parsedArgs);
+    }
+  } catch (executionError) {
+    // Tool execution failed - create error result
+    result = {
+      content: null,
+      error: String(executionError),
+    };
+  }
+
+  // Always log the result, whether success or failure
+  ctx.logger.logToolResult(ctx.agentName, tool.name, toolCall.id, result);
+
+  return {
+    role: 'tool',
+    tool_call_id: toolCall.id,
+    content: JSON.stringify(result),
+  };
 }
 
 /**

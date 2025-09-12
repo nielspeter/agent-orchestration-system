@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createSafetyChecksMiddleware } from '@/middleware/safety-checks.middleware';
 import { MiddlewareContext } from '@/middleware/middleware-types';
 import { ConsoleLogger } from '@/logging/console.logger';
@@ -72,29 +72,22 @@ describe('SafetyChecksMiddleware - Execution Limits', () => {
       };
 
       const middleware = createSafetyChecksMiddleware(safetyConfig);
-      const warnings: string[] = [];
 
-      // Spy on console.warn
-      const originalWarn = console.warn;
-      console.warn = (msg: string) => {
-        if (msg.includes('High iteration count')) {
-          warnings.push(msg);
-        }
-      };
+      // Use vi.spyOn for cleaner mocking
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
       // Test below warning threshold - no warning
       context.iteration = 2;
       await middleware(context, async () => {});
-      expect(warnings.length).toBe(0);
+      expect(warnSpy).not.toHaveBeenCalled();
 
       // Test at warning threshold - should warn
       context.iteration = 3;
       await middleware(context, async () => {});
-      expect(warnings.length).toBe(1);
-      expect(warnings[0]).toContain('High iteration count');
+      expect(warnSpy).toHaveBeenCalledTimes(1);
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('High iteration count'));
 
-      // Restore console.warn
-      console.warn = originalWarn;
+      // No need to manually restore - handled by global afterEach hook
     });
   });
 
