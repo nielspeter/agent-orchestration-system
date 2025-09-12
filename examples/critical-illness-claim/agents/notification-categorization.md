@@ -41,17 +41,25 @@ The fields shown above are REQUIRED. Additional fields in the input should be ig
 
 ## Processing Rules
 1. Look for keywords indicating critical illness:
-   - Cancer, heart attack, stroke, kidney failure, organ transplant
+   - **CRITICAL ILLNESSES**: Cancer, heart attack, stroke, kidney failure, organ transplant
    - Major surgery, paralysis, coma, terminal illness
    - Critical care, life-threatening condition
 
-2. Check notification type field:
+2. **NON-CRITICAL CONDITIONS** (return `isCriticalIllness: false`):
+   - Hypertension (high blood pressure)
+   - Diabetes (unless with severe complications)
+   - Common infections (flu, cold, pneumonia)
+   - Minor injuries or fractures
+   - Routine medical conditions
+   - Chronic but manageable conditions
+
+3. Check notification type field:
    - "critical_illness_claim" → definitely critical illness
    - "health_claim" → analyze content for critical conditions
    - "general_inquiry" → likely not critical illness
    - "premium_payment" → not critical illness
 
-3. Analyze content for claim intent:
+4. Analyze content for claim intent:
    - Mentions of diagnosis or medical reports
    - References to policy coverage for serious conditions
    - Request for claim forms or procedures

@@ -1,0 +1,239 @@
+{
+  "processId": "PROC-DE20A37E",
+  "timestamp": "2025-09-12T19:33:54.182135Z",
+  "workflowPath": [
+    "notification_received",
+    "categorization_performed",
+    "claim_registered",
+    "documentation_verified",
+    "coverage_assessed",
+    "communication_sent"
+  ],
+  "finalOutcome": "rejected",
+  "details": {
+    "claimId": "CI-20250113-A44C8",
+    "claimantName": "Michael Brown",
+    "policyNumber": "POL-99999",
+    "illness": "heart attack",
+    "decision": "rejected",
+    "notes": "Diagnosis date is within the waiting period."
+  },
+  "auditTrail": [
+    {
+      "sequence": 1,
+      "timestamp": "2025-09-12T19:33:54.182135Z",
+      "agent": "Workflow Orchestrator",
+      "action": "WORKFLOW_START",
+      "input": {
+        "notification": {
+          "id": "NOTIF-004",
+          "type": "critical_illness_claim",
+          "content": "I am filing a claim for a recent heart attack I suffered. However, I should mention that I just started my policy 30 days ago, and the heart attack happened last week. I have all my medical documentation ready including ECG results and cardiologist reports.",
+          "timestamp": "2025-01-13T12:00:00Z",
+          "claimantInfo": {
+            "name": "Michael Brown",
+            "policyNumber": "POL-99999",
+            "contactInfo": "michael.brown@email.com, +1-555-0999"
+          }
+        }
+      },
+      "reasoning": "Initial claim notification received."
+    },
+    {
+      "sequence": 2,
+      "timestamp": "2025-09-12T19:34:00.000000Z",
+      "agent": "notification-categorization",
+      "action": "DELEGATE",
+      "input": {
+        "notification": {
+          "id": "NOTIF-004",
+          "type": "critical_illness_claim",
+          "content": "I am filing a claim for a recent heart attack I suffered. However, I should mention that I just started my policy 30 days ago, and the heart attack happened last week. I have all my medical documentation ready including ECG results and cardiologist reports.",
+          "timestamp": "2025-01-13T12:00:00Z",
+          "claimantInfo": {
+            "name": "Michael Brown",
+            "policyNumber": "POL-99999",
+            "contactInfo": "michael.brown@email.com, +1-555-0999"
+          }
+        }
+      },
+      "output": {
+        "isCriticalIllness": true,
+        "category": "critical_illness",
+        "confidence": "high",
+        "identifiedCondition": "heart attack",
+        "reasoning": "The notification type is 'critical_illness_claim', which directly indicates a critical illness. The content explicitly mentions a 'heart attack', which is a recognized critical illness. The claimant has provided medical documentation, further supporting the claim's validity."
+      },
+      "reasoning": "Delegated to notification-categorization to confirm if the claim is a critical illness."
+    },
+    {
+      "sequence": 3,
+      "timestamp": "2025-09-12T19:34:05.000000Z",
+      "agent": "claim-registration",
+      "action": "DELEGATE",
+      "input": {
+        "notification": {
+          "id": "NOTIF-004",
+          "type": "critical_illness_claim",
+          "content": "I am filing a claim for a recent heart attack I suffered. However, I should mention that I just started my policy 30 days ago, and the heart attack happened last week. I have all my medical documentation ready including ECG results and cardiologist reports.",
+          "timestamp": "2025-01-13T12:00:00Z",
+          "claimantInfo": {
+            "name": "Michael Brown",
+            "policyNumber": "POL-99999",
+            "contactInfo": "michael.brown@email.com, +1-555-0999"
+          }
+        },
+        "categorization": {
+          "isCriticalIllness": true,
+          "category": "critical_illness",
+          "confidence": "high",
+          "identifiedCondition": "heart attack"
+        }
+      },
+      "output": {
+        "claimId": "CI-20250113-A44C8",
+        "registrationTimestamp": "2025-09-12T19:34:08.507051Z",
+        "status": "registered",
+        "claimantInfo": {
+          "name": "Michael Brown",
+          "policyNumber": "POL-99999",
+          "contactInfo": "michael.brown@email.com, +1-555-0999"
+        },
+        "claimDetails": {
+          "condition": "heart attack",
+          "notificationId": "NOTIF-004",
+          "initialSubmissionDate": "2025-01-13T12:00:00Z"
+        },
+        "registrationSuccess": true,
+        "message": "Claim registered successfully.",
+        "reasoning": "The claim was registered with a unique ID and timestamp. All required claimant information was validated and included.",
+        "toolsUsed": ["claim_id_generator", "timestamp_generator"]
+      },
+      "reasoning": "Claim registration successful. Unique claim ID generated and registration timestamp recorded."
+    },
+    {
+      "sequence": 4,
+      "timestamp": "2025-09-12T19:34:15.000000Z",
+      "agent": "documentation-verification",
+      "action": "DELEGATE",
+      "input": {
+        "claimId": "CI-20250113-A44C8",
+        "condition": "heart attack",
+        "documents": [
+          {"type": "medical_diagnosis_report", "name": "diagnosis_report_brown.pdf", "status": "received"},
+          {"type": "ECG_results", "name": "ecg_brown.pdf", "status": "received"},
+          {"type": "cardiac_enzyme_reports", "name": "cardiac_enzymes_brown.pdf", "status": "received"},
+          {"type": "cardiologist_statement", "name": "cardio_statement_brown.pdf", "status": "received"},
+          {"type": "hospital_discharge_summary", "name": "discharge_brown.pdf", "status": "received"},
+          {"type": "claim_form", "name": "claim_form_brown.pdf", "status": "received"},
+          {"type": "id_proof", "name": "id_brown.pdf", "status": "received"},
+          {"type": "policy_document", "name": "policy_brown.pdf", "status": "received"},
+          {"type": "attending_physician_statement", "name": "physician_statement_brown.pdf", "status": "received"},
+          {"type": "medical_bills_receipts", "name": "medical_bills_brown.pdf", "status": "received"}
+        ]
+      },
+      "output": {
+        "verificationSummary": "All required documents for the heart attack claim have been received and verified as valid. The claim documentation is complete, and no further documents are required.",
+        "completenessPercentage": 100,
+        "missingDocuments": [],
+        "invalidDocuments": []
+      },
+      "reasoning": "All applicable documents have been received and verified as valid."
+    },
+    {
+      "sequence": 5,
+      "timestamp": "2025-09-12T19:34:25.000000Z",
+      "agent": "policy-assessment",
+      "action": "DELEGATE",
+      "input": {
+        "claimId": "CI-20250113-A44C8",
+        "policyNumber": "POL-99999",
+        "condition": "heart attack",
+        "diagnosisDate": "2025-01-06T00:00:00Z"
+      },
+      "output": {
+        "coverageDecision": "not_covered",
+        "reason": "Diagnosis date is within the waiting period.",
+        "assessmentDetails": {
+          "policyActive": true,
+          "conditionCovered": true,
+          "waitingPeriodMet": false,
+          "severityCriteriaMet": true,
+          "exclusionsApply": false
+        },
+        "policyDetails": {
+          "sumAssured": 100099000,
+          "coveragePercentage": 100,
+          "previousClaims": [],
+          "remainingCoverage": 100099000
+        },
+        "specificFindings": [
+          "Policy is active and premiums are paid.",
+          "Heart attack is a covered condition.",
+          "Diagnosis date (2025-01-06) is before the end of the waiting period (2025-11-11)."
+        ],
+        "recommendedAction": "reject"
+      },
+      "reasoning": "The claim is not covered due to the diagnosis date falling within the policy's waiting period."
+    },
+    {
+      "sequence": 6,
+      "timestamp": "2025-09-12T19:34:35.000000Z",
+      "agent": "communication",
+      "action": "DELEGATE",
+      "input": {
+        "communicationType": "Coverage Decision",
+        "claimId": "CI-20250113-A44C8",
+        "recipientInfo": {
+          "name": "Michael Brown",
+          "email": "michael.brown@email.com",
+          "phone": "+1-555-0999"
+        },
+        "context": {
+          "status": "rejected",
+          "details": {
+            "reason": "Diagnosis date is within the waiting period.",
+            "appealProcess": "You may appeal within 30 days"
+          }
+        }
+      },
+      "output": {
+        "messageId": "msg-987654321",
+        "claimId": "CI-20250113-A44C8",
+        "communicationType": "Coverage Decision",
+        "recipient": {
+          "name": "Michael Brown",
+          "contactMethod": "email"
+        },
+        "subject": "Critical Illness Claim Decision - CI-20250113-A44C8",
+        "messageBody": "Dear Michael Brown,\n\nRe: Critical Illness Claim Decision - CI-20250113-A44C8\n\nAfter careful review, we regret to inform you that your claim for Critical Illness has been declined.\n\nReason: Diagnosis date is within the waiting period.\n\nYou have the right to appeal this decision within 30 days. For the appeals process, visit www.insurance.com/appeals or call 1-800-APPEALS.\n\nSincerely,\nClaims Department",
+        "attachments": [],
+        "sentTimestamp": "2023-10-05T14:00:00Z",
+        "deliveryStatus": "pending",
+        "requiresResponse": true,
+        "responseDeadline": "2023-11-04T23:59:59Z",
+        "reasoning": "The claim was rejected due to the diagnosis date falling within the waiting period. The claimant is informed of the reason and provided with the appeal process details.",
+        "toolsUsed": ["send_notification"]
+      },
+      "reasoning": "Notified the claimant of the rejection decision due to the waiting period not being met."
+    },
+    {
+      "sequence": 7,
+      "timestamp": "2025-09-12T19:34:40.000000Z",
+      "agent": "Workflow Orchestrator",
+      "action": "WORKFLOW_END",
+      "output": {
+        "finalOutcome": "rejected",
+        "details": {
+          "claimId": "CI-20250113-A44C8",
+          "claimantName": "Michael Brown",
+          "policyNumber": "POL-99999",
+          "illness": "heart attack",
+          "decision": "rejected",
+          "notes": "Diagnosis date is within the waiting period."
+        }
+      },
+      "reasoning": "Final outcome determined. The claim is rejected due to the waiting period not being met."
+    }
+  ]
+}
