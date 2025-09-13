@@ -91,6 +91,8 @@ you step in to ensure the task gets completed by returning useful results.`,
           behavior: inlineAgent.behavior,
           temperature: inlineAgent.temperature,
           top_p: inlineAgent.top_p,
+          response_format: inlineAgent.response_format,
+          json_schema: inlineAgent.json_schema,
         };
       }
     }
@@ -115,6 +117,8 @@ you step in to ensure the task gets completed by returning useful results.`,
         behavior: data.behavior,
         temperature: data.temperature,
         top_p: data.top_p,
+        response_format: data.response_format,
+        json_schema: data.json_schema,
       };
     } catch (error) {
       // Provide more helpful error messages

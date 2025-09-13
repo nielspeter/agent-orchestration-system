@@ -1,0 +1,71 @@
+{
+  "notification": {
+    "id": "NOTIF-005",
+    "type": "critical_illness_claim",
+    "content": "I am submitting a claim for my recent stroke diagnosis. I suffered a major ischemic stroke on January 2, 2025. I have been a policyholder for 3 years and have complete medical documentation from the neurologist and hospital.",
+    "timestamp": "2025-01-13T14:00:00Z",
+    "claimantInfo": {
+      "name": "Sarah Wilson",
+      "policyNumber": "POL-67890",
+      "contactInfo": "sarah.wilson@email.com, +1-555-0456"
+    }
+  },
+  "documents": [
+    {
+      "type": "medical_diagnosis_report",
+      "name": "diagnosis_report_wilson.pdf",
+      "status": "received"
+    },
+    {
+      "type": "ct_scan_results",
+      "name": "ct_scan_wilson.pdf",
+      "status": "received"
+    },
+    {
+      "type": "neurologist_statement",
+      "name": "neurologist_statement_wilson.pdf",
+      "status": "received"
+    },
+    {
+      "type": "treatment_plan",
+      "name": "treatment_plan_wilson.pdf",
+      "status": "received"
+    },
+    {
+      "type": "hospital_admission_records",
+      "name": "hospital_records_wilson.pdf",
+      "status": "received"
+    },
+    {
+      "type": "claim_form",
+      "name": "claim_form_wilson.pdf",
+      "status": "received"
+    },
+    {
+      "type": "id_proof",
+      "name": "id_wilson.pdf",
+      "status": "received"
+    },
+    {
+      "type": "policy_document",
+      "name": "policy_wilson.pdf",
+      "status": "received"
+    },
+    {
+      "type": "attending_physician_statement",
+      "name": "physician_statement_wilson.pdf",
+      "status": "received"
+    },
+    {
+      "type": "medical_bills_receipts",
+      "name": "medical_bills_wilson.pdf",
+      "status": "received"
+    }
+  ],
+  "diagnosisDate": "2025-01-02T00:00:00Z",
+  "claimantBankDetails": {
+    "accountName": "Sarah Wilson",
+    "accountNumber": "INVALID",
+    "bankName": "Failed Transaction Bank"
+  }
+}

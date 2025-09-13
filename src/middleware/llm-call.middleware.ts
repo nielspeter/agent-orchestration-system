@@ -18,7 +18,16 @@ export function createLLMCallMiddleware(): Middleware {
     if (!ctx.provider) {
       throw new Error('No provider available in context');
     }
-    ctx.response = await ctx.provider.complete(ctx.messages, ctx.tools);
+
+    // Pass structured output config if agent has it configured
+    const structuredConfig = ctx.agent?.response_format
+      ? {
+          response_format: ctx.agent.response_format,
+          json_schema: ctx.agent.json_schema,
+        }
+      : undefined;
+
+    ctx.response = await ctx.provider.complete(ctx.messages, ctx.tools, structuredConfig);
 
     // Log response
     if (ctx.response.content) {

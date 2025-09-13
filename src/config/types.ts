@@ -36,6 +36,10 @@ export interface Agent {
   behavior?: string;
   /** Optional max delegation depth */
   maxDepth?: number;
+  /** Optional response format for structured output */
+  response_format?: 'text' | 'json' | 'json_schema';
+  /** Optional JSON schema for validation when using json_schema format */
+  json_schema?: object;
 }
 
 /**

@@ -1,0 +1,71 @@
+{
+  "notification": {
+    "id": "NOTIF-001",
+    "type": "critical_illness_claim",
+    "content": "I am submitting a claim for my recent cancer diagnosis. I was diagnosed with stage 2 breast cancer on December 15, 2024. I have been a policyholder for 2 years and have all the necessary medical documentation including pathology reports, oncologist statements, and treatment plans.",
+    "timestamp": "2025-01-13T09:00:00Z",
+    "claimantInfo": {
+      "name": "Jane Smith",
+      "policyNumber": "POL-54321",
+      "contactInfo": "jane.smith@email.com, +1-555-0123"
+    }
+  },
+  "documents": [
+    {
+      "type": "medical_diagnosis_report",
+      "name": "diagnosis_report_smith.pdf",
+      "status": "received"
+    },
+    {
+      "type": "pathology_results",
+      "name": "pathology_smith.pdf",
+      "status": "received"
+    },
+    {
+      "type": "oncologist_statement",
+      "name": "oncologist_statement_smith.pdf",
+      "status": "received"
+    },
+    {
+      "type": "treatment_plan",
+      "name": "treatment_plan_smith.pdf",
+      "status": "received"
+    },
+    {
+      "type": "hospital_admission_records",
+      "name": "hospital_records_smith.pdf",
+      "status": "received"
+    },
+    {
+      "type": "claim_form",
+      "name": "claim_form_smith.pdf",
+      "status": "received"
+    },
+    {
+      "type": "id_proof",
+      "name": "id_smith.pdf",
+      "status": "received"
+    },
+    {
+      "type": "policy_document",
+      "name": "policy_smith.pdf",
+      "status": "received"
+    },
+    {
+      "type": "attending_physician_statement",
+      "name": "physician_statement_smith.pdf",
+      "status": "received"
+    },
+    {
+      "type": "medical_bills_receipts",
+      "name": "medical_bills_smith.pdf",
+      "status": "received"
+    }
+  ],
+  "diagnosisDate": "2024-12-15T00:00:00Z",
+  "claimantBankDetails": {
+    "accountName": "Jane Smith",
+    "accountNumber": "9876543210",
+    "bankName": "National Trust Bank"
+  }
+}

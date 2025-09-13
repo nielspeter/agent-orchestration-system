@@ -1,5 +1,5 @@
 import OpenAI from 'openai';
-import { ILLMProvider, UsageMetrics } from './llm-provider.interface';
+import { ILLMProvider, UsageMetrics, StructuredOutputConfig } from './llm-provider.interface';
 import { BaseTool, Message } from '@/base-types';
 import { AgentLogger } from '@/logging';
 
@@ -64,7 +64,11 @@ export class OpenAICompatibleProvider implements ILLMProvider {
     });
   }
 
-  async complete(messages: Message[], tools?: BaseTool[]): Promise<Message> {
+  async complete(
+    messages: Message[],
+    tools?: BaseTool[],
+    config?: StructuredOutputConfig
+  ): Promise<Message> {
     // Convert our Message type to OpenAI's expected format
     // OpenAI needs tool messages to have tool_call_id
     const openAIMessages = messages.map((msg) => {
@@ -113,6 +117,27 @@ export class OpenAICompatibleProvider implements ILLMProvider {
         temperature: this.temperature,
         top_p: this.topP,
       };
+
+      // Add structured output support if configured
+      if (config?.response_format === 'json') {
+        // Simple JSON mode - model will try to output valid JSON
+        requestBody.response_format = { type: 'json_object' };
+      } else if (config?.response_format === 'json_schema' && config.json_schema) {
+        // JSON schema mode - model will output JSON matching the schema
+        // Note: This requires GPT-4o-2024-08-06 or later
+        // The OpenAI types don't yet include json_schema, but it's a valid option
+        // We use object spread to avoid type errors while keeping type safety
+        Object.assign(requestBody, {
+          response_format: {
+            type: 'json_schema',
+            json_schema: {
+              name: 'response',
+              strict: true,
+              schema: config.json_schema,
+            },
+          },
+        });
+      }
 
       // Add OpenRouter-specific provider routing if configured
       if (this.config.providerRouting && this.isOpenRouter()) {

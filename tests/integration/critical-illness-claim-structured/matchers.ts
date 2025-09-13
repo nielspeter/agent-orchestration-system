@@ -16,6 +16,7 @@ interface CustomMatchers<R = unknown> {
   toHaveSavedResultsFile(): R;
   toHaveUsedDynamicFilename(): R;
   toHaveCompleteAuditTrail(): R;
+  toHaveValidJsonResponses(agentNames: string[]): R;
 }
 
 declare module 'vitest' {
@@ -321,6 +322,63 @@ expect.extend({
       expected: {
         entries: '>=4',
         actions: requiredActions,
+      },
+    };
+  },
+
+  /**
+   * Check if agents with response_format: json output valid JSON
+   */
+  toHaveValidJsonResponses(messages: any[], agentNames: string[]) {
+    const invalidResponses: { agent: string; content: string; error: string }[] = [];
+
+    messages.forEach((msg) => {
+      if (msg.type === 'agent_response' && agentNames.includes(msg.agent)) {
+        if (msg.content && typeof msg.content === 'string') {
+          // Skip error messages and system messages
+          if (!msg.content.startsWith('Error:') && !msg.content.startsWith('System:')) {
+            try {
+              const parsed = JSON.parse(msg.content);
+              // Verify it's an object (not just a primitive)
+              if (typeof parsed !== 'object' || parsed === null) {
+                invalidResponses.push({
+                  agent: msg.agent,
+                  content: msg.content.substring(0, 100),
+                  error: 'Parsed value is not an object',
+                });
+              }
+            } catch (e) {
+              invalidResponses.push({
+                agent: msg.agent,
+                content: msg.content.substring(0, 100),
+                error: e instanceof Error ? e.message : 'JSON parse error',
+              });
+            }
+          }
+        }
+      }
+    });
+
+    const pass = invalidResponses.length === 0;
+
+    return {
+      pass,
+      message: () => {
+        if (!pass) {
+          const errors = invalidResponses
+            .map((r) => `${r.agent}: ${r.error} (content: "${r.content}...")`)
+            .join('\n');
+          return `Agents returned invalid JSON:\n${errors}`;
+        }
+        return 'All agents returned valid JSON responses';
+      },
+      actual: {
+        invalidResponses: invalidResponses.length,
+        errors: invalidResponses,
+      },
+      expected: {
+        invalidResponses: 0,
+        format: 'Valid JSON objects',
       },
     };
   },
