@@ -55,7 +55,7 @@ export class AnthropicProvider implements ILLMProvider {
   async complete(
     messages: Message[],
     tools?: BaseTool[],
-    config?: StructuredOutputConfig
+    _config?: StructuredOutputConfig
   ): Promise<Message> {
     const startTime = Date.now();
 
