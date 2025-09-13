@@ -10,22 +10,24 @@ import OpenAI from 'openai';
 
 // Create the mock implementation
 const mockCreate = vi.fn();
-vi.mocked(OpenAI).mockImplementation(
-  () =>
-    ({
-      chat: {
-        completions: {
-          create: mockCreate,
-        },
-      },
-    }) as any
-);
 
 describe('OpenAI Compatible Provider - Tool Message Handling', () => {
   let provider: OpenAICompatibleProvider;
 
   beforeEach(() => {
     vi.clearAllMocks();
+    
+    // Re-setup the mock implementation for each test
+    vi.mocked(OpenAI).mockImplementation(
+      () =>
+        ({
+          chat: {
+            completions: {
+              create: mockCreate,
+            },
+          },
+        }) as any
+    );
 
     const config = {
       baseURL: 'https://api.openrouter.ai/api/v1',
@@ -33,8 +35,6 @@ describe('OpenAI Compatible Provider - Tool Message Handling', () => {
     };
 
     provider = new OpenAICompatibleProvider('test-model', config);
-
-    // The mockCreate function is already available from the module mock
   });
 
   test('handles tool messages with tool_call_id', async () => {
