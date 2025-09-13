@@ -13,11 +13,23 @@ export interface UsageMetrics {
 }
 
 /**
+ * Configuration for structured output
+ */
+export interface StructuredOutputConfig {
+  response_format?: 'text' | 'json' | 'json_schema';
+  json_schema?: object;
+}
+
+/**
  * Common interface for all LLM providers
  * POC: Keep it simple, just the essentials
  */
 export interface ILLMProvider {
-  complete(messages: Message[], tools?: BaseTool[]): Promise<Message>;
+  complete(
+    messages: Message[],
+    tools?: BaseTool[],
+    config?: StructuredOutputConfig
+  ): Promise<Message>;
   getModelName(): string;
   supportsStreaming(): boolean;
   getLastUsageMetrics(): UsageMetrics | null;

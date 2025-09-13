@@ -1,0 +1,51 @@
+{
+  "notification": {
+    "id": "NOTIF-003",
+    "type": "critical_illness_claim",
+    "content": "I am filing a claim for a recent stroke I suffered on January 2, 2025. I have been hospitalized and am currently in rehabilitation. I have some of my medical documents ready but am still waiting for others from the hospital.",
+    "timestamp": "2025-01-13T11:00:00Z",
+    "claimantInfo": {
+      "name": "Robert Johnson",
+      "policyNumber": "POL-11111",
+      "contactInfo": "robert.j@email.com, +1-555-0789"
+    }
+  },
+  "documents": [
+    {
+      "type": "hospital_discharge_summary",
+      "name": "discharge_johnson.pdf",
+      "status": "received"
+    },
+    {
+      "type": "claim_form",
+      "name": "claim_form_johnson.pdf",
+      "status": "received"
+    },
+    {
+      "type": "id_proof",
+      "name": "id_johnson.pdf",
+      "status": "received"
+    },
+    {
+      "type": "CT_scan_report",
+      "name": "ct_scan_johnson.pdf",
+      "status": "pending"
+    },
+    {
+      "type": "neurologist_assessment",
+      "name": "neuro_assessment_johnson.pdf",
+      "status": "pending"
+    },
+    {
+      "type": "rehabilitation_plan",
+      "name": "rehab_plan_johnson.pdf",
+      "status": "pending"
+    }
+  ],
+  "diagnosisDate": "2025-01-02T00:00:00Z",
+  "claimantBankDetails": {
+    "accountName": "Robert Johnson",
+    "accountNumber": "5566778899",
+    "bankName": "Premier Bank"
+  }
+}
