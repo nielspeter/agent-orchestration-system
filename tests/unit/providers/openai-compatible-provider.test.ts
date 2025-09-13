@@ -16,7 +16,7 @@ describe('OpenAI Compatible Provider - Tool Message Handling', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     // Re-setup the mock implementation for each test
     vi.mocked(OpenAI).mockImplementation(
       () =>
