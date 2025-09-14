@@ -55,6 +55,9 @@ export interface MiddlewareContext {
 
   // Iteration tracking for child agents
   hasUsedTools?: boolean;
+
+  // LLM metadata for usage tracking across tool calls
+  lastLLMMetadata?: import('@/session/types').LLMMetadata;
 }
 
 /**

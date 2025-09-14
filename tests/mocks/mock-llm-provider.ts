@@ -182,6 +182,10 @@ export class MockLLMProvider implements ILLMProvider {
     return this.modelName;
   }
 
+  getProviderName(): string {
+    return 'mock';
+  }
+
   supportsStreaming(): boolean {
     return false;
   }

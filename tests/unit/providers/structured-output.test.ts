@@ -199,10 +199,15 @@ describe('Structured Output Support', () => {
           parameters: {
             type: 'object' as const,
             properties: {
-              param: { type: 'string' },
+              param: {
+                type: 'string',
+                description: 'Test parameter',
+              },
             },
             required: ['param'],
           },
+          execute: vi.fn(),
+          isConcurrencySafe: () => true,
         },
       ];
 

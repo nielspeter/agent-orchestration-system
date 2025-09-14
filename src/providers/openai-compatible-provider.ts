@@ -43,6 +43,7 @@ export interface OpenRouterProviderConfig {
 export class OpenAICompatibleProvider implements ILLMProvider {
   private readonly client: OpenAI;
   private readonly modelName: string;
+  private readonly providerName: string;
   private readonly logger?: AgentLogger;
   private lastUsage: UsageMetrics | null = null;
   private readonly config: OpenAICompatibleConfig;
@@ -56,6 +57,15 @@ export class OpenAICompatibleProvider implements ILLMProvider {
     this.config = config;
     this.temperature = config.temperature ?? 0.5;
     this.topP = config.topP ?? 0.9;
+
+    // Derive provider name from baseURL
+    if (config.baseURL.includes('openrouter.ai')) {
+      this.providerName = 'openrouter';
+    } else if (config.baseURL.includes('openai.com')) {
+      this.providerName = 'openai';
+    } else {
+      this.providerName = 'openai-compatible';
+    }
 
     this.client = new OpenAI({
       apiKey: config.apiKey || 'dummy', // Some providers don't need keys
@@ -212,6 +222,10 @@ export class OpenAICompatibleProvider implements ILLMProvider {
 
   getModelName(): string {
     return this.modelName;
+  }
+
+  getProviderName(): string {
+    return this.providerName;
   }
 
   supportsStreaming(): boolean {

@@ -146,7 +146,13 @@ export async function executeSingleTool(
 
   if (!tool) {
     // Log the missing tool as both a call and an error result
-    ctx.logger.logToolCall(ctx.agentName, toolCall.function.name, toolCall.id, {});
+    ctx.logger.logToolCall(
+      ctx.agentName,
+      toolCall.function.name,
+      toolCall.id,
+      {},
+      ctx.lastLLMMetadata
+    );
     ctx.logger.logToolResult(ctx.agentName, toolCall.function.name, toolCall.id, {
       error: true,
       message: `Tool ${toolCall.function.name} not found`,
@@ -166,7 +172,8 @@ export async function executeSingleTool(
   }
 
   // Always log the tool call first (even if arguments are malformed)
-  ctx.logger.logToolCall(ctx.agentName, tool.name, toolCall.id, parsedArgs);
+  // Include LLM metadata to track which model triggered this tool call
+  ctx.logger.logToolCall(ctx.agentName, tool.name, toolCall.id, parsedArgs, ctx.lastLLMMetadata);
 
   // If parsing failed, return error result immediately
   if (parseError) {
