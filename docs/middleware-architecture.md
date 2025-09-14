@@ -159,10 +159,10 @@ export function createSafetyChecksMiddleware(safetyLimits: SafetyConfig): Middle
 
 **Safety limits**:
 
-- `maxIterations`: Max LLM calls per execution (default: 10)
-- `maxDepth`: Max delegation chain depth (default: 5)
-- `warnAtIteration`: Warning threshold (default: 5)
-- `maxTokensEstimate`: Pre-flight token check (default: 100000)
+- `maxIterations`: Max LLM calls per execution (default: 20)
+- `maxDepth`: Max delegation chain depth (default: 10)
+- `warnAtIteration`: Warning threshold (default: 10)
+- `maxTokensEstimate`: Pre-flight token check (default: 50000)
 
 ### 6. LLMCallMiddleware
 

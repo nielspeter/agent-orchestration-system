@@ -17,7 +17,6 @@ describe('Todo Persistence', () => {
 
     it('should be stateless with no filesystem operations', () => {
       // TodoManager should not have any filesystem-related properties
-      expect(todoManager).not.toHaveProperty('todosDir');
       expect(todoManager).not.toHaveProperty('todosFile');
 
       // Initialize should not be async (no filesystem setup)

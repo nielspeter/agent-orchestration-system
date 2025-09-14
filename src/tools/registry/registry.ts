@@ -1,5 +1,5 @@
 import type { Tool } from '../types';
-import type { TestAgentConfig, Agent } from '@/config';
+import type { Agent, TestAgentConfig } from '@/config';
 import {
   DuplicateToolError,
   InvalidToolError,

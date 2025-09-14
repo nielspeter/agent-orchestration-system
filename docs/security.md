@@ -115,9 +115,9 @@ You can modify security patterns in:
 // In agent-config.json
 {
   "safety": {
-    "maxIterations": 10,      // Limit LLM calls
-    "maxDepth": 3,           // Limit delegation depth
-    "maxTokensEstimate": 50000  // Prevent large requests
+    "maxIterations": 20,      // Limit LLM calls (default)
+    "maxDepth": 10,           // Limit delegation depth (default)
+    "maxTokensEstimate": 50000  // Prevent large requests (default)
   },
   "tools": {
     "builtin": [

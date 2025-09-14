@@ -12,7 +12,7 @@ import {
 } from '@/tools';
 import { LoggerFactory } from './logging';
 import { TodoManager } from '@/todos';
-import { DEFAULT_SYSTEM_CONFIG, ResolvedSystemConfig } from '@/config';
+import { DEFAULT_SYSTEM_CONFIG, DEFAULTS, ResolvedSystemConfig } from '@/config';
 
 // Load environment variables
 dotenv.config();
@@ -57,7 +57,7 @@ export class AgentOrchestrationSystem {
       this.agentLoader,
       this.toolRegistry,
       this.config,
-      config.modelName || this.config.defaultModel || 'claude-3-5-haiku-latest',
+      config.modelName || this.config.defaultModel || DEFAULTS.DEFAULT_MODEL,
       logger
     );
   }
