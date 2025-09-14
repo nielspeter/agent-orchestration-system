@@ -139,7 +139,13 @@ describe('CompositeLogger Error Resilience', () => {
       expect(() => composite.logToolCall('agent', 'Read', 'call-id', {})).not.toThrow();
 
       // Console logger should execute - user sees output
-      expect(consoleLogger.logToolCall).toHaveBeenCalledWith('agent', 'Read', 'call-id', {});
+      expect(consoleLogger.logToolCall).toHaveBeenCalledWith(
+        'agent',
+        'Read',
+        'call-id',
+        {},
+        undefined
+      );
     });
 
     it('should continue local logging when network logger times out', () => {
@@ -157,7 +163,7 @@ describe('CompositeLogger Error Resilience', () => {
       expect(() => composite.logAssistantMessage('agent', 'response')).not.toThrow();
 
       // Local logging should continue despite network issue
-      expect(localLogger.logAssistantMessage).toHaveBeenCalledWith('agent', 'response');
+      expect(localLogger.logAssistantMessage).toHaveBeenCalledWith('agent', 'response', undefined);
     });
   });
 

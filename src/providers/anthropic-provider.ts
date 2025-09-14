@@ -350,6 +350,10 @@ export class AnthropicProvider implements ILLMProvider {
     return this.modelName;
   }
 
+  getProviderName(): string {
+    return 'anthropic';
+  }
+
   supportsStreaming(): boolean {
     return false; // POC: Keep it simple
   }

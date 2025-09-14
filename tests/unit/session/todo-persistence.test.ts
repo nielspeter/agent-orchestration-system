@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { TodoManager } from '@/todos/manager';
 import { SimpleSessionManager } from '@/session/manager';
 import { InMemoryStorage } from '@/session/memory.storage';
-import { EventLogger } from '@/logging/event.logger';
+import { EventLogger } from '@/logging/event.logger.js';
 import { TodoItem } from '@/tools/todowrite.tool';
 import { ToolCallEvent } from '@/session/types';
 

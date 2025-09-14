@@ -1,9 +1,17 @@
+import { LLMMetadata } from '@/session/types';
+
 export interface AgentLogger {
   logUserMessage(content: string): void;
-  logAssistantMessage(agent: string, text: string): void;
+  logAssistantMessage(agent: string, text: string, metadata?: LLMMetadata): void;
   logSystemMessage(message: string): void;
 
-  logToolCall(agent: string, tool: string, toolId: string, params: Record<string, unknown>): void;
+  logToolCall(
+    agent: string,
+    tool: string,
+    toolId: string,
+    params: Record<string, unknown>,
+    metadata?: LLMMetadata
+  ): void;
   logToolExecution(agent: string, tool: string, toolId: string): void;
   logToolResult(agent: string, tool: string, toolId: string, result: unknown): void;
   logToolError(agent: string, tool: string, toolId: string, error: Error): void;

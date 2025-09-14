@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { EventLogger } from '@/logging/event.logger';
+import { EventLogger } from '@/logging/event.logger.js';
 import { InMemoryStorage } from '@/session/memory.storage';
 import {
   AssistantMessageEvent,

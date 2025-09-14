@@ -31,6 +31,7 @@ export interface ILLMProvider {
     config?: StructuredOutputConfig
   ): Promise<Message>;
   getModelName(): string;
+  getProviderName(): string;
   supportsStreaming(): boolean;
   getLastUsageMetrics(): UsageMetrics | null;
 }

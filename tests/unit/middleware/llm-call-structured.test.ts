@@ -16,6 +16,7 @@ describe('LLM Call Middleware - Structured Output', () => {
         content: '{"result": "success"}',
       }),
       getModelName: vi.fn().mockReturnValue('test-model'),
+      getProviderName: vi.fn().mockReturnValue('test'),
       supportsStreaming: vi.fn().mockReturnValue(false),
       getLastUsageMetrics: vi.fn().mockReturnValue(null),
     };
@@ -47,7 +48,11 @@ describe('LLM Call Middleware - Structured Output', () => {
           description: 'Test agent',
           tools: [],
           response_format: 'json',
-        },
+          prompt: 'You are a test agent',
+        } as any,
+        prompt: 'Test prompt',
+        executionContext: {} as any,
+        modelName: 'test-model',
       } as MiddlewareContext;
 
       await middleware(ctx, mockNext);
@@ -88,7 +93,11 @@ describe('LLM Call Middleware - Structured Output', () => {
           tools: [],
           response_format: 'json_schema',
           json_schema: schema,
-        },
+          prompt: 'You are a test agent',
+        } as any,
+        prompt: 'Test prompt',
+        executionContext: {} as any,
+        modelName: 'test-model',
       } as MiddlewareContext;
 
       await middleware(ctx, mockNext);
@@ -116,8 +125,12 @@ describe('LLM Call Middleware - Structured Output', () => {
           name: 'test-agent',
           description: 'Test agent',
           tools: [],
+          prompt: 'You are a test agent',
           // No response_format
-        },
+        } as any,
+        prompt: 'Test prompt',
+        executionContext: {} as any,
+        modelName: 'test-model',
       } as MiddlewareContext;
 
       await middleware(ctx, mockNext);
@@ -143,7 +156,11 @@ describe('LLM Call Middleware - Structured Output', () => {
           description: 'Test agent',
           tools: [],
           response_format: 'text',
-        },
+          prompt: 'You are a test agent',
+        } as any,
+        prompt: 'Test prompt',
+        executionContext: {} as any,
+        modelName: 'test-model',
       } as MiddlewareContext;
 
       await middleware(ctx, mockNext);
@@ -179,7 +196,11 @@ describe('LLM Call Middleware - Structured Output', () => {
           description: 'Test agent',
           tools: [],
           response_format: 'json',
-        },
+          prompt: 'You are a test agent',
+        } as any,
+        prompt: 'Test prompt',
+        executionContext: {} as any,
+        modelName: 'test-model',
       } as MiddlewareContext;
 
       await middleware(ctx, mockNext);
@@ -187,7 +208,8 @@ describe('LLM Call Middleware - Structured Output', () => {
       expect(ctx.response).toEqual(jsonResponse);
       expect(mockLogger.logAssistantMessage).toHaveBeenCalledWith(
         'test-agent',
-        '{"status": "complete", "data": {"id": 123}}'
+        '{"status": "complete", "data": {"id": 123}}',
+        undefined
       );
     });
 
@@ -233,7 +255,8 @@ describe('LLM Call Middleware - Structured Output', () => {
           description: 'Test agent',
           tools: ['test_tool'],
           response_format: 'json',
-        },
+          prompt: 'You are a test agent',
+        } as any,
       } as MiddlewareContext;
 
       await middleware(ctx, mockNext);
@@ -241,7 +264,8 @@ describe('LLM Call Middleware - Structured Output', () => {
       expect(ctx.response).toEqual(toolResponse);
       expect(mockLogger.logAssistantMessage).toHaveBeenCalledWith(
         'test-agent',
-        '{"thinking": "I need to use a tool"}'
+        '{"thinking": "I need to use a tool"}',
+        undefined
       );
     });
   });
@@ -258,6 +282,9 @@ describe('LLM Call Middleware - Structured Output', () => {
         agentName: 'test-agent',
         provider: undefined,
         logger: mockLogger,
+        prompt: 'Test prompt',
+        executionContext: {} as any,
+        modelName: 'test-model',
       } as MiddlewareContext;
 
       await expect(middleware(ctx, mockNext)).rejects.toThrow('No provider available in context');
@@ -274,6 +301,9 @@ describe('LLM Call Middleware - Structured Output', () => {
         agentName: 'test-agent',
         provider: mockProvider,
         logger: mockLogger,
+        prompt: 'Test prompt',
+        executionContext: {} as any,
+        modelName: 'test-model',
       } as MiddlewareContext;
 
       await middleware(ctx, mockNext);
