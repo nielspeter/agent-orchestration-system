@@ -2,8 +2,6 @@
  * Agent domain types
  */
 
-import { ID } from '@/base-types';
-
 /**
  * Behavior presets for agents
  */
@@ -18,7 +16,7 @@ export type ResponseFormat = 'text' | 'json' | 'json_schema';
  * Agent definition loaded from markdown
  */
 export interface AgentDefinition {
-  id: ID;
+  id: string;
   name: string;
   description?: string;
   prompt: string;

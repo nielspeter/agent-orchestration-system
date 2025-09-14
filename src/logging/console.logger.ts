@@ -106,7 +106,8 @@ export class ConsoleLogger implements AgentLogger {
     }
 
     const timestamp = this.formatTimestamp();
-    console.log(`${timestamp}${this.color(`# ${message}`, 'dim')}`);
+    const formattedMessage = `# ${message}`;
+    console.log(`${timestamp}${this.color(formattedMessage, 'dim')}`);
   }
 
   logToolCall(
@@ -185,10 +186,12 @@ export class ConsoleLogger implements AgentLogger {
     console.log(''); // Add space before delegation
     if (this.verbosity === 'verbose') {
       const taskPreview = task.length > 100 ? task.substring(0, 100) + '...' : task;
-      console.log(`${indent}${timestamp}${this.color(`[Delegating to ${child}]`, 'magenta')}`);
+      const delegationMessage = `[Delegating to ${child}]`;
+      console.log(`${indent}${timestamp}${this.color(delegationMessage, 'magenta')}`);
       console.log(`${indent}${''.padStart(timestamp.length, ' ')}Task: ${taskPreview}`);
     } else {
-      console.log(`${indent}${timestamp}${this.color(`[Calling ${child}]`, 'magenta')}`);
+      const callingMessage = `[Calling ${child}]`;
+      console.log(`${indent}${timestamp}${this.color(callingMessage, 'magenta')}`);
     }
   }
 
@@ -202,9 +205,8 @@ export class ConsoleLogger implements AgentLogger {
     const indent = this.getIndent(parent);
     const timestamp = this.formatTimestamp();
     const resultPreview = result.length > 100 ? result.substring(0, 100) + '...' : result;
-    console.log(
-      `${indent}${timestamp}${this.color(`[${child} returned]`, 'magenta')}: ${resultPreview}`
-    );
+    const returnMessage = `[${child} returned]`;
+    console.log(`${indent}${timestamp}${this.color(returnMessage, 'magenta')}: ${resultPreview}`);
     console.log(''); // Add space after delegation completes
   }
 
@@ -218,11 +220,12 @@ export class ConsoleLogger implements AgentLogger {
     const timestamp = this.formatTimestamp();
 
     console.log(''); // Add blank line before agent starts
+    const agentHeader = `=== ${agent} ===`;
     if (task && this.verbosity === 'verbose') {
-      console.log(`${indent}${timestamp}${this.color(`=== ${agent} ===`, 'green')}`);
+      console.log(`${indent}${timestamp}${this.color(agentHeader, 'green')}`);
       console.log(`${indent}${''.padStart(timestamp.length, ' ')}Task: ${task}`);
     } else {
-      console.log(`${indent}${timestamp}${this.color(`=== ${agent} ===`, 'green')}`);
+      console.log(`${indent}${timestamp}${this.color(agentHeader, 'green')}`);
     }
   }
 
@@ -231,7 +234,8 @@ export class ConsoleLogger implements AgentLogger {
 
     const indent = this.getIndent(agent);
     const timestamp = this.formatTimestamp();
-    console.log(`${indent}${timestamp}${this.color(`(iteration ${iteration})`, 'dim')}`);
+    const iterationMessage = `(iteration ${iteration})`;
+    console.log(`${indent}${timestamp}${this.color(iterationMessage, 'dim')}`);
   }
 
   logAgentComplete(agent: string, duration: number): void {
@@ -240,9 +244,8 @@ export class ConsoleLogger implements AgentLogger {
     const indent = this.getIndent(agent);
     const timestamp = this.formatTimestamp();
     const durationStr = duration > 1000 ? `${(duration / 1000).toFixed(1)}s` : `${duration}ms`;
-    console.log(
-      `${indent}${timestamp}${this.color(`=== ${agent} completed (${durationStr}) ===`, 'dim')}`
-    );
+    const completionMessage = `=== ${agent} completed (${durationStr}) ===`;
+    console.log(`${indent}${timestamp}${this.color(completionMessage, 'dim')}`);
     console.log(''); // Add blank line after agent completes
 
     this.currentDepth.delete(agent);
@@ -257,7 +260,8 @@ export class ConsoleLogger implements AgentLogger {
   logAgentError(agent: string, error: Error): void {
     const indent = this.getIndent(agent);
     const timestamp = this.formatTimestamp();
-    console.log(`${indent}${timestamp}${this.color(`=== ${agent} ERROR ===`, 'red')}`);
+    const errorHeader = `=== ${agent} ERROR ===`;
+    console.log(`${indent}${timestamp}${this.color(errorHeader, 'red')}`);
     console.log(`${indent}${timestamp}${error.message}`);
 
     if (this.verbosity === 'verbose' && error.stack) {
@@ -279,9 +283,8 @@ export class ConsoleLogger implements AgentLogger {
     const inProgress = todos.filter((t) => t.status === 'in_progress').length;
     const completed = todos.filter((t) => t.status === 'completed').length;
 
-    console.log(
-      `${timestamp}${this.color(`# Todos: ${pending} pending, ${inProgress} active, ${completed} done`, 'dim')}`
-    );
+    const todoMessage = `# Todos: ${pending} pending, ${inProgress} active, ${completed} done`;
+    console.log(`${timestamp}${this.color(todoMessage, 'dim')}`);
   }
 
   async getSessionEvents(): Promise<import('@/session/types').AnySessionEvent[]> {

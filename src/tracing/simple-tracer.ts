@@ -14,8 +14,8 @@ interface SpanData {
 }
 
 export class SimpleTracer {
-  private spans = new Map<string, SpanData>();
-  private rootSpans: SpanData[] = [];
+  private readonly spans = new Map<string, SpanData>();
+  private readonly rootSpans: SpanData[] = [];
 
   loadSession(sessionId: string): void {
     const sessionPath = join(process.cwd(), 'sessions', `${sessionId}.jsonl`);
@@ -84,12 +84,14 @@ export class SimpleTracer {
     const duration = span.endTime ? span.endTime - span.startTime : 0;
     const durationStr = duration > 0 ? `${(duration / 1000).toFixed(2)}s` : 'pending';
 
-    const status =
-      span.status === 'error'
-        ? chalk.red('✗')
-        : span.status === 'ok'
-          ? chalk.green('✓')
-          : chalk.yellow('⟳');
+    let status: string;
+    if (span.status === 'error') {
+      status = chalk.red('✗');
+    } else if (span.status === 'ok') {
+      status = chalk.green('✓');
+    } else {
+      status = chalk.yellow('⟳');
+    }
 
     const name = chalk.cyan(span.name);
     const time = chalk.gray(durationStr);

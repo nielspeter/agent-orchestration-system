@@ -143,15 +143,17 @@ export function createShellTool(): BaseTool {
 
         // Check if it was a timeout
         if (killed && execError.signal === 'SIGTERM') {
+          const stderrInfo = stderr ? `, stderr: ${stderr}` : '';
           return {
             content: stdout || '',
-            error: `Command timed out after ${timeout}ms. Exit code: ${code}${stderr ? `, stderr: ${stderr}` : ''}`,
+            error: `Command timed out after ${timeout}ms. Exit code: ${code}${stderrInfo}`,
           };
         }
 
+        const stderrInfo = stderr ? `, stderr: ${stderr}` : '';
         return {
           content: stdout || '',
-          error: `${errorMessage}. Exit code: ${code}${stderr ? `, stderr: ${stderr}` : ''}`,
+          error: `${errorMessage}. Exit code: ${code}${stderrInfo}`,
         };
       }
     },

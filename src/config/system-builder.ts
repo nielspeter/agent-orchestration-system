@@ -367,9 +367,8 @@ export class AgentSystemBuilder {
     }
 
     if (errors.length > 0) {
-      throw new Error(
-        `Configuration validation failed:\n${errors.map((e) => `  - ${e}`).join('\n')}`
-      );
+      const errorList = errors.map((e) => `  - ${e}`).join('\n');
+      throw new Error(`Configuration validation failed:\n${errorList}`);
     }
   }
 
@@ -488,12 +487,14 @@ export class AgentSystemBuilder {
     }
 
     // Determine final logger
-    const logger =
-      loggers.length === 0
-        ? new NoOpLogger()
-        : loggers.length === 1
-          ? loggers[0]
-          : new CompositeLogger(loggers);
+    let logger: AgentLogger;
+    if (loggers.length === 0) {
+      logger = new NoOpLogger();
+    } else if (loggers.length === 1) {
+      logger = loggers[0];
+    } else {
+      logger = new CompositeLogger(loggers);
+    }
 
     return { logger, sessionManager };
   }

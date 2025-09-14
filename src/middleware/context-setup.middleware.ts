@@ -29,10 +29,11 @@ export function createContextSetupMiddleware(): Middleware {
       // Add dynamic tool availability information
       if (ctx.tools && ctx.tools.length > 0) {
         const toolNames = ctx.tools.map((t) => t.name).join(', ');
+        const toolDescriptions = ctx.tools.map((t) => `- ${t.name}: ${t.description}`).join('\n');
         systemPrompt += `\n\n### AVAILABLE TOOLS
 You have access to ONLY the following tools: ${toolNames}
 DO NOT attempt to use any other tools or delegate to other agents unless you have the Task tool.
-${ctx.tools.map((t) => `- ${t.name}: ${t.description}`).join('\n')}`;
+${toolDescriptions}`;
       } else {
         systemPrompt +=
           '\n\n### AVAILABLE TOOLS\nYou have no tools available. Provide your response as text only.';

@@ -94,15 +94,19 @@ export class ToolRegistry implements IToolRegistry {
     }
 
     // Create a minimal valid config with safe defaults
+    let tools: string[];
+    if (agentConfig.tools === '*') {
+      tools = ['*'];
+    } else if (Array.isArray(agentConfig.tools)) {
+      tools = agentConfig.tools;
+    } else {
+      tools = [];
+    }
+
     const validConfig: TestAgentConfig = {
-      name: typeof agentConfig.name === 'string' ? agentConfig.name : 'unknown',
-      prompt: typeof agentConfig.prompt === 'string' ? agentConfig.prompt : '',
-      tools:
-        agentConfig.tools === '*'
-          ? ['*']
-          : Array.isArray(agentConfig.tools)
-            ? agentConfig.tools
-            : [],
+      name: agentConfig.name,
+      prompt: agentConfig.prompt,
+      tools: tools,
     };
 
     return this.getToolsForAgent(validConfig);

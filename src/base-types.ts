@@ -2,9 +2,6 @@
  * Core type definitions for the agent orchestration system
  */
 
-// Basic type aliases
-export type ID = string;
-
 export interface ToolParameter {
   type: string;
   description: string;
