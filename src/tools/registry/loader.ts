@@ -1,6 +1,6 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { BaseTool, ToolResult } from '@/base-types';
+import { BaseTool, ToolParameter, ToolResult } from '@/base-types';
 import { AgentLogger } from '@/logging';
 import { createShellTool } from '@/tools/shell.tool';
 
@@ -165,6 +165,7 @@ export class ToolLoader {
 
         // Parse type and optional description
         // Format: "type" or "type - description"
+        // Type can be: "string", "array", "array<string>", "object", etc.
         const dashIndex = rest.indexOf(' - ');
         let type: string;
         let description: string;
@@ -176,6 +177,12 @@ export class ToolLoader {
           // Just type, no description
           type = rest.trim();
           description = `Parameter ${key}`;
+        }
+
+        // Normalize array types: "array<string>" -> "array"
+        // (item type will be handled in createScriptTool)
+        if (type.startsWith('array')) {
+          type = 'array';
         }
 
         if (key && type) {
@@ -246,15 +253,40 @@ export class ToolLoader {
    */
   private createScriptTool(name: string, scriptPath: string, metadata: ToolMetadata): BaseTool {
     // Build parameter schema from metadata
-    const properties: Record<string, { type: string; description: string }> = {};
+    const properties: Record<string, ToolParameter> = {};
     const required: string[] = [];
 
     if (metadata.parameters) {
       for (const [paramName, paramInfo] of Object.entries(metadata.parameters)) {
-        properties[paramName] = {
-          type: paramInfo.type || 'string',
-          description: paramInfo.description || `Parameter ${paramName}`,
-        };
+        // Handle different parameter types
+        const paramType = paramInfo.type || 'string';
+
+        if (paramType === 'array') {
+          // For arrays, create proper JSON schema with items
+          properties[paramName] = {
+            type: 'array',
+            description: paramInfo.description || `Parameter ${paramName}`,
+            items: {
+              type: 'string',
+              description: 'Array item',
+            } as ToolParameter, // Default to string items
+          };
+        } else if (paramType === 'object') {
+          // For objects, create proper JSON schema
+          properties[paramName] = {
+            type: 'object',
+            description: paramInfo.description || `Parameter ${paramName}`,
+            // Note: additionalProperties not supported in ToolParameter interface
+            // Objects will need to define their properties explicitly
+          };
+        } else {
+          // Simple types (string, number, boolean)
+          properties[paramName] = {
+            type: paramType,
+            description: paramInfo.description || `Parameter ${paramName}`,
+          };
+        }
+
         // For now, assume all parameters are required unless specified
         if (paramInfo.required !== false) {
           required.push(paramName);

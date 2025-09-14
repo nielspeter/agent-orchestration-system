@@ -1,4 +1,5 @@
 import { AgentLogger, ConsoleVerbosity } from './types';
+import { LLMMetadata } from '@/session/types';
 
 export class ConsoleLogger implements AgentLogger {
   private readonly colors = {
@@ -59,7 +60,7 @@ export class ConsoleLogger implements AgentLogger {
     console.log(`${timestamp}${this.color('> User', 'cyan')}: ${content}`);
   }
 
-  logAssistantMessage(agent: string, text: string): void {
+  logAssistantMessage(agent: string, text: string, _metadata?: LLMMetadata): void {
     if (this.verbosity === 'minimal' && text.length > 100) {
       text = text.substring(0, 100) + '...';
     }
@@ -108,7 +109,13 @@ export class ConsoleLogger implements AgentLogger {
     console.log(`${timestamp}${this.color(`# ${message}`, 'dim')}`);
   }
 
-  logToolCall(agent: string, tool: string, _toolId: string, params: Record<string, unknown>): void {
+  logToolCall(
+    agent: string,
+    tool: string,
+    _toolId: string,
+    params: Record<string, unknown>,
+    _metadata?: LLMMetadata
+  ): void {
     const indent = this.getIndent(agent);
     const timestamp = this.formatTimestamp();
 

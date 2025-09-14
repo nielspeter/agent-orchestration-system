@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { executeSingleTool } from '@/tools/registry/executor-service';
 import { MiddlewareContext } from '@/middleware/middleware-types';
 import type { ToolCall } from '@/base-types';
@@ -61,7 +61,13 @@ describe('Tool Result Logging Atomicity', () => {
       await executeSingleTool(toolCall, mockContext, toolRegistry, vi.fn());
 
       // Verify both call and result were logged
-      expect(mockLogger.logToolCall).toHaveBeenCalledWith('test-agent', 'TestTool', 'call-123', {});
+      expect(mockLogger.logToolCall).toHaveBeenCalledWith(
+        'test-agent',
+        'TestTool',
+        'call-123',
+        {},
+        undefined
+      );
       expect(mockLogger.logToolResult).toHaveBeenCalledWith('test-agent', 'TestTool', 'call-123', {
         content: 'success',
       });
@@ -94,7 +100,8 @@ describe('Tool Result Logging Atomicity', () => {
         'test-agent',
         'FailingTool',
         'call-456',
-        {}
+        {},
+        undefined
       );
 
       // Verify error result was logged
@@ -251,7 +258,8 @@ describe('Tool Result Logging Atomicity', () => {
         'test-agent',
         'Tool1',
         'call-1',
-        {}
+        {},
+        undefined
       );
       expect(mockLogger.logToolResult).toHaveBeenNthCalledWith(1, 'test-agent', 'Tool1', 'call-1', {
         content: 'result1',
@@ -262,7 +270,8 @@ describe('Tool Result Logging Atomicity', () => {
         'test-agent',
         'Tool2',
         'call-2',
-        {}
+        {},
+        undefined
       );
       expect(mockLogger.logToolResult).toHaveBeenNthCalledWith(2, 'test-agent', 'Tool2', 'call-2', {
         content: null,
@@ -296,7 +305,7 @@ describe('Tool Result Logging Atomicity', () => {
 
       // Should still log a result even with malformed arguments
       expect(mockLogger.logToolResult).toHaveBeenCalled();
-      expect(result.content).toContain('Tool execution failed');
+      expect(result.content).toContain('Invalid arguments');
     });
 
     it('should handle missing tool', async () => {

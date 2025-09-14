@@ -2,6 +2,7 @@ import { AgentLogger } from './types.js';
 import {
   AnySessionEvent,
   AssistantMessageEvent,
+  LLMMetadata,
   SessionStorage,
   ToolCallEvent,
   ToolResultEvent,
@@ -46,7 +47,7 @@ export class EventLogger implements AgentLogger {
     });
   }
 
-  logAssistantMessage(agent: string, content: string): void {
+  logAssistantMessage(agent: string, content: string, metadata?: LLMMetadata): void {
     const event: AssistantMessageEvent = {
       type: 'assistant',
       timestamp: Date.now(),
@@ -55,6 +56,7 @@ export class EventLogger implements AgentLogger {
         content,
         agent,
       },
+      metadata,
     };
 
     // Fire and forget - don't await
@@ -69,7 +71,13 @@ export class EventLogger implements AgentLogger {
     this.logAssistantMessage('system', message);
   }
 
-  logToolCall(agent: string, tool: string, toolId: string, params: Record<string, unknown>): void {
+  logToolCall(
+    agent: string,
+    tool: string,
+    toolId: string,
+    params: Record<string, unknown>,
+    metadata?: LLMMetadata
+  ): void {
     // Store mapping for later use
     this.toolCallMap.set(toolId, { tool, agent });
 
@@ -84,6 +92,7 @@ export class EventLogger implements AgentLogger {
         traceId: this.traceId,
         parentCallId: this.parentCallId,
       },
+      metadata,
     };
 
     // Fire and forget - don't await
@@ -99,12 +108,30 @@ export class EventLogger implements AgentLogger {
   }
 
   logToolResult(_agent: string, _tool: string, toolId: string, result: unknown): void {
+    // Calculate size for token estimation with circular reference protection
+    let resultStr: string;
+    let resultSizeBytes: number;
+    let estimatedTokens: number;
+
+    try {
+      resultStr = JSON.stringify(result);
+      resultSizeBytes = new TextEncoder().encode(resultStr).length;
+      estimatedTokens = Math.ceil(resultSizeBytes / 4); // Rough estimate: 1 token ≈ 4 bytes
+    } catch {
+      // Handle circular references or non-serializable objects
+      resultStr = '[Circular or non-serializable]';
+      resultSizeBytes = resultStr.length;
+      estimatedTokens = Math.ceil(resultSizeBytes / 4);
+    }
+
     const event: ToolResultEvent = {
       type: 'tool_result',
       timestamp: Date.now(),
       data: {
         toolCallId: toolId,
         result,
+        resultSizeBytes,
+        estimatedTokens,
       },
     };
 

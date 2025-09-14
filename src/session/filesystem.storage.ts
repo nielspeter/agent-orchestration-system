@@ -107,4 +107,15 @@ export class FilesystemStorage implements SessionStorage {
       throw error;
     }
   }
+
+  /**
+   * Flush pending writes - for FilesystemStorage this is a no-op
+   * since we use await on all writes, but we provide it for
+   * compatibility and future-proofing
+   */
+  async flush(_sessionId: string): Promise<void> {
+    // All writes are already awaited in appendEvent
+    // This is here for interface compatibility
+    return Promise.resolve();
+  }
 }

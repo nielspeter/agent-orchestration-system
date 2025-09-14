@@ -1,4 +1,5 @@
 import { AgentLogger } from './types';
+import { LLMMetadata } from '@/session/types';
 
 export class CompositeLogger implements AgentLogger {
   private readonly loggers: AgentLogger[];
@@ -29,9 +30,9 @@ export class CompositeLogger implements AgentLogger {
     this.executeWithErrorIsolation((logger) => logger.logUserMessage(content), 'logUserMessage');
   }
 
-  logAssistantMessage(agent: string, text: string): void {
+  logAssistantMessage(agent: string, text: string, metadata?: LLMMetadata): void {
     this.executeWithErrorIsolation(
-      (logger) => logger.logAssistantMessage(agent, text),
+      (logger) => logger.logAssistantMessage(agent, text, metadata),
       'logAssistantMessage'
     );
   }
@@ -43,9 +44,15 @@ export class CompositeLogger implements AgentLogger {
     );
   }
 
-  logToolCall(agent: string, tool: string, toolId: string, params: Record<string, unknown>): void {
+  logToolCall(
+    agent: string,
+    tool: string,
+    toolId: string,
+    params: Record<string, unknown>,
+    metadata?: LLMMetadata
+  ): void {
     this.executeWithErrorIsolation(
-      (logger) => logger.logToolCall(agent, tool, toolId, params),
+      (logger) => logger.logToolCall(agent, tool, toolId, params, metadata),
       'logToolCall'
     );
   }

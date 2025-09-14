@@ -13,6 +13,7 @@ import { createProviderSelectionMiddleware } from '@/middleware/provider-selecti
 import { createLLMCallMiddleware } from '@/middleware/llm-call.middleware';
 import { createToolExecutionMiddleware } from '@/middleware/tool-execution.middleware';
 import { createErrorHandlerMiddleware } from '@/middleware/error-handler.middleware';
+import { DEFAULTS } from '@/config/defaults';
 
 /**
  * AgentExecutor - Core orchestration engine for agent-based task execution
@@ -112,7 +113,7 @@ export class AgentExecutor {
       depth: 0,
       parentAgent: undefined,
       startTime: Date.now(),
-      maxDepth: 10,
+      maxDepth: DEFAULTS.MAX_DEPTH,
       isSidechain: false,
       parentMessages: undefined,
       traceId: crypto.randomUUID(),

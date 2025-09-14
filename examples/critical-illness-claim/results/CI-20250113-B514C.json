@@ -1,0 +1,291 @@
+{
+  "processId": "PROC-9B820",
+  "timestamp": "2025-09-12T19:35:11.922945Z",
+  "workflowPath": [
+    "notification_received",
+    "categorization_performed",
+    "claim_registered",
+    "documentation_verified",
+    "coverage_assessed",
+    "payment_approved",
+    "payment_failed"
+  ],
+  "finalOutcome": "payment_failed",
+  "details": {
+    "claimId": "CI-20250113-B514C",
+    "claimantName": "Sarah Wilson",
+    "policyNumber": "POL-67890",
+    "illness": "stroke",
+    "decision": "rejected",
+    "notes": "Invalid bank account number provided"
+  },
+  "auditTrail": [
+    {
+      "sequence": 1,
+      "timestamp": "2025-09-12T19:35:11.922945Z",
+      "agent": "Workflow Orchestrator",
+      "action": "WORKFLOW_START",
+      "input": {
+        "notification": {
+          "id": "NOTIF-005",
+          "type": "critical_illness_claim",
+          "content": "I am submitting a claim for my recent stroke diagnosis. I suffered a major ischemic stroke on January 2, 2025. I have been a policyholder for 3 years and have complete medical documentation from the neurologist and hospital.",
+          "timestamp": "2025-01-13T14:00:00Z",
+          "claimantInfo": {
+            "name": "Sarah Wilson",
+            "policyNumber": "POL-67890",
+            "contactInfo": "sarah.wilson@email.com, +1-555-0456"
+          }
+        },
+        "documents": [
+          {"type": "medical_diagnosis_report", "name": "diagnosis_report_wilson.pdf", "status": "received"},
+          {"type": "ct_scan_results", "name": "ct_scan_wilson.pdf", "status": "received"},
+          {"type": "neurologist_statement", "name": "neurologist_statement_wilson.pdf", "status": "received"},
+          {"type": "treatment_plan", "name": "treatment_plan_wilson.pdf", "status": "received"},
+          {"type": "hospital_admission_records", "name": "hospital_records_wilson.pdf", "status": "received"},
+          {"type": "claim_form", "name": "claim_form_wilson.pdf", "status": "received"},
+          {"type": "id_proof", "name": "id_wilson.pdf", "status": "received"},
+          {"type": "policy_document", "name": "policy_wilson.pdf", "status": "received"},
+          {"type": "attending_physician_statement", "name": "physician_statement_wilson.pdf", "status": "received"},
+          {"type": "medical_bills_receipts", "name": "medical_bills_wilson.pdf", "status": "received"}
+        ],
+        "diagnosisDate": "2025-01-02T00:00:00Z",
+        "claimantBankDetails": {
+          "accountName": "Sarah Wilson",
+          "accountNumber": "INVALID",
+          "bankName": "Failed Transaction Bank"
+        }
+      },
+      "reasoning": "Initial receipt of claim notification and documents."
+    },
+    {
+      "sequence": 2,
+      "timestamp": "2025-09-12T19:35:11.922945Z",
+      "agent": "notification-categorization",
+      "action": "DELEGATE",
+      "target": "notification-categorization",
+      "input": {
+        "notification": {
+          "id": "NOTIF-005",
+          "type": "critical_illness_claim",
+          "content": "I am submitting a claim for my recent stroke diagnosis. I suffered a major ischemic stroke on January 2, 2025. I have been a policyholder for 3 years and have complete medical documentation from the neurologist and hospital.",
+          "timestamp": "2025-01-13T14:00:00Z",
+          "claimantInfo": {
+            "name": "Sarah Wilson",
+            "policyNumber": "POL-67890",
+            "contactInfo": "sarah.wilson@email.com, +1-555-0456"
+          }
+        }
+      },
+      "output": {
+        "isCriticalIllness": true,
+        "category": "critical_illness",
+        "confidence": "high",
+        "identifiedCondition": "stroke"
+      },
+      "reasoning": "The notification type is 'critical_illness_claim', and the content explicitly mentions a 'stroke diagnosis', which is a recognized critical illness."
+    },
+    {
+      "sequence": 3,
+      "timestamp": "2025-09-12T19:35:11.922945Z",
+      "agent": "claim-registration",
+      "action": "DELEGATE",
+      "target": "claim-registration",
+      "input": {
+        "notification": {
+          "id": "NOTIF-005",
+          "type": "critical_illness_claim",
+          "content": "I am submitting a claim for my recent stroke diagnosis. I suffered a major ischemic stroke on January 2, 2025. I have been a policyholder for 3 years and have complete medical documentation from the neurologist and hospital.",
+          "timestamp": "2025-01-13T14:00:00Z",
+          "claimantInfo": {
+            "name": "Sarah Wilson",
+            "policyNumber": "POL-67890",
+            "contactInfo": "sarah.wilson@email.com, +1-555-0456"
+          }
+        },
+        "categorization": {
+          "isCriticalIllness": true,
+          "category": "critical_illness",
+          "confidence": "high",
+          "identifiedCondition": "stroke"
+        }
+      },
+      "output": {
+        "claimId": "CI-20250113-B514C",
+        "registrationTimestamp": "2025-09-12T19:35:39.318637Z",
+        "status": "registered",
+        "claimantInfo": {
+          "name": "Sarah Wilson",
+          "policyNumber": "POL-67890",
+          "contactInfo": "sarah.wilson@email.com, +1-555-0456"
+        },
+        "claimDetails": {
+          "condition": "stroke",
+          "notificationId": "NOTIF-005",
+          "initialSubmissionDate": "2025-01-13T14:00:00Z"
+        },
+        "registrationSuccess": true,
+        "message": "Claim registered successfully."
+      },
+      "reasoning": "The claim was registered with a unique ID and timestamp after validating the input format and claimant information."
+    },
+    {
+      "sequence": 4,
+      "timestamp": "2025-09-12T19:35:39.318637Z",
+      "agent": "documentation-verification",
+      "action": "DELEGATE",
+      "target": "documentation-verification",
+      "input": {
+        "claimId": "CI-20250113-B514C",
+        "condition": "stroke",
+        "documents": [
+          {"type": "medical_diagnosis_report", "name": "diagnosis_report_wilson.pdf", "status": "received"},
+          {"type": "ct_scan_results", "name": "ct_scan_wilson.pdf", "status": "received"},
+          {"type": "neurologist_statement", "name": "neurologist_statement_wilson.pdf", "status": "received"},
+          {"type": "treatment_plan", "name": "treatment_plan_wilson.pdf", "status": "received"},
+          {"type": "hospital_admission_records", "name": "hospital_records_wilson.pdf", "status": "received"},
+          {"type": "claim_form", "name": "claim_form_wilson.pdf", "status": "received"},
+          {"type": "id_proof", "name": "id_wilson.pdf", "status": "received"},
+          {"type": "policy_document", "name": "policy_wilson.pdf", "status": "received"},
+          {"type": "attending_physician_statement", "name": "physician_statement_wilson.pdf", "status": "received"},
+          {"type": "medical_bills_receipts", "name": "medical_bills_wilson.pdf", "status": "received"}
+        ]
+      },
+      "output": {
+        "claimId": "CI-20250113-B514C",
+        "documentationComplete": true,
+        "completenessPercentage": 100,
+        "requiredDocuments": [
+          "CT/MRI scan reports",
+          "Neurologist assessment",
+          "Hospital records",
+          "Rehabilitation plan",
+          "Completed claim form",
+          "Valid ID proof",
+          "Policy document copy",
+          "Attending physician statement",
+          "Medical bills/receipts"
+        ],
+        "receivedDocuments": [
+          "medical_diagnosis_report",
+          "ct_scan_results",
+          "neurologist_statement",
+          "treatment_plan",
+          "hospital_admission_records",
+          "claim_form",
+          "id_proof",
+          "policy_document",
+          "attending_physician_statement",
+          "medical_bills_receipts"
+        ],
+        "missingDocuments": [],
+        "invalidDocuments": [],
+        "verificationNotes": "All required documents for a stroke claim have been received and are valid.",
+        "nextAction": "proceed"
+      },
+      "reasoning": "The claim documentation is complete with all required documents received and valid."
+    },
+    {
+      "sequence": 5,
+      "timestamp": "2025-09-12T19:35:39.318637Z",
+      "agent": "policy-assessment",
+      "action": "DELEGATE",
+      "target": "policy-assessment",
+      "input": {
+        "claimId": "CI-20250113-B514C",
+        "policyNumber": "POL-67890",
+        "condition": "stroke",
+        "diagnosisDate": "2025-01-02T00:00:00Z"
+      },
+      "output": {
+        "claimId": "CI-20250113-B514C",
+        "coverageDecision": "covered",
+        "reason": "All criteria met: active policy, covered condition, waiting period passed, no exclusions apply.",
+        "assessmentDetails": {
+          "policyActive": true,
+          "conditionCovered": true,
+          "waitingPeriodMet": true,
+          "severityCriteriaMet": true,
+          "exclusionsApply": false
+        },
+        "policyDetails": {
+          "sumAssured": 67990000,
+          "coveragePercentage": 100,
+          "previousClaims": [],
+          "remainingCoverage": 67990000
+        },
+        "specificFindings": [
+          "Policy is active and premiums are paid.",
+          "Stroke is a covered condition under the policy.",
+          "Diagnosis date is after the waiting period of 90 days.",
+          "No exclusions apply to this claim."
+        ],
+        "recommendedAction": "approve"
+      },
+      "reasoning": "The policy covers the condition as all criteria are met and there are no exclusions."
+    },
+    {
+      "sequence": 6,
+      "timestamp": "2025-09-12T19:35:39.318637Z",
+      "agent": "payment-approval",
+      "action": "DELEGATE",
+      "target": "payment-approval",
+      "input": {
+        "claimId": "CI-20250113-B514C",
+        "policyNumber": "POL-67890",
+        "condition": "stroke",
+        "coverageDecision": "covered",
+        "policyDetails": {
+          "sumAssured": 67990000,
+          "coveragePercentage": 100,
+          "previousClaims": [],
+          "remainingCoverage": 67990000
+        },
+        "claimantBankDetails": {
+          "accountName": "Sarah Wilson",
+          "accountNumber": "INVALID",
+          "bankName": "Failed Transaction Bank"
+        }
+      },
+      "output": {
+        "paymentApproved": false,
+        "error": true,
+        "message": "Invalid input format. Expected JSON with claimId, policyNumber, condition, coverageDecision, policyDetails, and claimantBankDetails",
+        "receivedInput": "Invalid bank account number provided"
+      },
+      "reasoning": "The payment could not be processed due to an invalid bank account number provided by the claimant."
+    },
+    {
+      "sequence": 7,
+      "timestamp": "2025-09-12T19:35:39.318637Z",
+      "agent": "Workflow Orchestrator",
+      "action": "DECISION",
+      "decisionPoint": "payment_approved",
+      "input": {
+        "paymentApproved": false
+      },
+      "output": {
+        "decision": "rejected"
+      },
+      "reasoning": "Payment was rejected due to invalid bank account number."
+    },
+    {
+      "sequence": 8,
+      "timestamp": "2025-09-12T19:35:39.318637Z",
+      "agent": "Workflow Orchestrator",
+      "action": "WORKFLOW_END",
+      "output": {
+        "finalOutcome": "payment_failed",
+        "details": {
+          "claimId": "CI-20250113-B514C",
+          "claimantName": "Sarah Wilson",
+          "policyNumber": "POL-67890",
+          "illness": "stroke",
+          "decision": "rejected",
+          "notes": "Invalid bank account number provided"
+        }
+      },
+      "reasoning": "The workflow ended with a payment failure due to invalid bank account details provided."
+    }
+  ]
+}

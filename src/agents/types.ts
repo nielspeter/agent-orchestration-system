@@ -10,6 +10,11 @@ import { ID } from '@/base-types';
 export type BehaviorPreset = 'deterministic' | 'precise' | 'balanced' | 'creative' | 'exploratory';
 
 /**
+ * Response format for structured output
+ */
+export type ResponseFormat = 'text' | 'json' | 'json_schema';
+
+/**
  * Agent definition loaded from markdown
  */
 export interface AgentDefinition {
@@ -23,6 +28,8 @@ export interface AgentDefinition {
   behavior?: BehaviorPreset;
   tools?: string[] | '*';
   maxDepth?: number;
+  response_format?: ResponseFormat;
+  json_schema?: object; // Optional JSON schema for validation
   [key: string]: unknown; // Allow additional properties
 }
 

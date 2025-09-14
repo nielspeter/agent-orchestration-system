@@ -8,3 +8,4 @@ export { LoggerFactory } from './factory';
 export { ConsoleLogger } from './console.logger';
 export { CompositeLogger } from './composite.logger';
 export { NoOpLogger } from './noop.logger';
+export { EventLogger } from './event.logger';
