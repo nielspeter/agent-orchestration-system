@@ -2,7 +2,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { BaseTool, Message, ToolCall } from '@/base-types';
 import { AgentLogger } from '@/logging';
 import { CacheMetricsCollector, ModelPricing } from '@/metrics/cache-collector';
-import { ILLMProvider, UsageMetrics, StructuredOutputConfig } from './llm-provider.interface';
+import { ILLMProvider, StructuredOutputConfig, UsageMetrics } from './llm-provider.interface';
 
 export interface CacheMetrics {
   inputTokens: number;

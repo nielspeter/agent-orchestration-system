@@ -19,3 +19,4 @@ export type {
 
 // Export utilities
 export { DEFAULT_SYSTEM_CONFIG, TEST_CONFIG_MINIMAL, mergeConfigs, resolveConfig } from './types';
+export { DEFAULTS } from './defaults';

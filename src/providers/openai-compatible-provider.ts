@@ -1,7 +1,8 @@
 import OpenAI from 'openai';
-import { ILLMProvider, UsageMetrics, StructuredOutputConfig } from './llm-provider.interface';
+import { ILLMProvider, StructuredOutputConfig, UsageMetrics } from './llm-provider.interface';
 import { BaseTool, Message } from '@/base-types';
 import { AgentLogger } from '@/logging';
+import { DEFAULTS } from '@/config/defaults';
 
 // Extended usage type for providers that support caching
 interface ExtendedUsage extends OpenAI.Completions.CompletionUsage {
@@ -55,8 +56,8 @@ export class OpenAICompatibleProvider implements ILLMProvider {
     this.modelName = modelName;
     this.logger = logger;
     this.config = config;
-    this.temperature = config.temperature ?? 0.5;
-    this.topP = config.topP ?? 0.9;
+    this.temperature = config.temperature ?? DEFAULTS.TEMPERATURE;
+    this.topP = config.topP ?? DEFAULTS.TOP_P;
 
     // Derive provider name from baseURL
     if (config.baseURL.includes('openrouter.ai')) {
