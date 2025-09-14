@@ -71,7 +71,7 @@ export class AgentOrchestrationSystem {
    * @throws {Error} If initialization fails
    */
   async initialize(): Promise<void> {
-    await this.todoManager.initialize();
+    this.todoManager.initialize();
     await this.registerDefaultTools();
   }
 

@@ -40,7 +40,7 @@ export class SimpleSessionManager {
         case 'user': {
           messages.push({
             role: 'user',
-            content: typedEvent.data.content as string,
+            content: typedEvent.data.content,
           });
           break;
         }
