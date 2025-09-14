@@ -143,7 +143,7 @@ describe('ExecutorService - Critical Path (Minimal MVP Tests)', () => {
       const result = await executeSingleTool(toolCall, mockContext, registry, vi.fn());
 
       expect(result.role).toBe('tool');
-      expect(result.content).toContain('Tool execution failed');
+      expect(result.content).toContain('Invalid arguments');
     });
 
     it('should handle tool execution errors gracefully', async () => {

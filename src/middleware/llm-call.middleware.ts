@@ -1,4 +1,5 @@
 import { Middleware } from './middleware-types';
+import { LLMMetadata } from '@/session/types';
 
 /**
  * Calls the LLM and gets a response
@@ -18,11 +19,62 @@ export function createLLMCallMiddleware(): Middleware {
     if (!ctx.provider) {
       throw new Error('No provider available in context');
     }
-    ctx.response = await ctx.provider.complete(ctx.messages, ctx.tools);
 
-    // Log response
+    // Pass structured output config if agent has it configured
+    const structuredConfig = ctx.agent?.response_format
+      ? {
+          response_format: ctx.agent.response_format,
+          json_schema: ctx.agent.json_schema,
+        }
+      : undefined;
+
+    const startTime = Date.now();
+    ctx.response = await ctx.provider.complete(ctx.messages, ctx.tools, structuredConfig);
+    const latencyMs = Date.now() - startTime;
+
+    // Build metadata from provider metrics if available
+    let metadata: LLMMetadata | undefined;
+    const usageMetrics = ctx.provider.getLastUsageMetrics?.();
+
+    if (usageMetrics) {
+      // Get provider name directly from the provider instance if available
+      const providerName = ctx.provider.getProviderName?.() || 'unknown';
+      const modelName = ctx.provider.getModelName?.() || ctx.agent?.model || 'unknown';
+
+      metadata = {
+        model: modelName,
+        provider: providerName,
+        usage: {
+          promptTokens: usageMetrics.promptTokens,
+          completionTokens: usageMetrics.completionTokens,
+          totalTokens: usageMetrics.totalTokens,
+          ...(usageMetrics.promptCacheHitTokens !== undefined && {
+            promptCacheHitTokens: usageMetrics.promptCacheHitTokens,
+          }),
+          ...(usageMetrics.promptCacheMissTokens !== undefined && {
+            promptCacheMissTokens: usageMetrics.promptCacheMissTokens,
+          }),
+          ...(usageMetrics.cached_tokens !== undefined && {
+            cachedTokens: usageMetrics.cached_tokens,
+          }),
+        },
+        performance: {
+          latencyMs,
+        },
+        config: {
+          ...(ctx.agent?.temperature !== undefined && { temperature: ctx.agent.temperature }),
+          ...(ctx.agent?.top_p !== undefined && { topP: ctx.agent.top_p }),
+          ...(ctx.agent?.response_format && { responseFormat: ctx.agent.response_format }),
+        },
+      };
+    }
+
+    // Store metadata in context for tool calls to reference
+    ctx.lastLLMMetadata = metadata;
+
+    // Log response with metadata passed directly
     if (ctx.response.content) {
-      ctx.logger.logAssistantMessage(ctx.agentName, ctx.response.content);
+      ctx.logger.logAssistantMessage(ctx.agentName, ctx.response.content, metadata);
     }
 
     // Tool calls will be logged by the executor when they're actually executed

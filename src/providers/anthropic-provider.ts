@@ -2,7 +2,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { BaseTool, Message, ToolCall } from '@/base-types';
 import { AgentLogger } from '@/logging';
 import { CacheMetricsCollector, ModelPricing } from '@/metrics/cache-collector';
-import { ILLMProvider, UsageMetrics } from './llm-provider.interface';
+import { ILLMProvider, StructuredOutputConfig, UsageMetrics } from './llm-provider.interface';
 
 export interface CacheMetrics {
   inputTokens: number;
@@ -52,7 +52,11 @@ export class AnthropicProvider implements ILLMProvider {
     });
   }
 
-  async complete(messages: Message[], tools?: BaseTool[]): Promise<Message> {
+  async complete(
+    messages: Message[],
+    tools?: BaseTool[],
+    _config?: StructuredOutputConfig
+  ): Promise<Message> {
     const startTime = Date.now();
 
     // Separate system messages from conversation messages
@@ -344,6 +348,10 @@ export class AnthropicProvider implements ILLMProvider {
 
   getModelName(): string {
     return this.modelName;
+  }
+
+  getProviderName(): string {
+    return 'anthropic';
   }
 
   supportsStreaming(): boolean {

@@ -1,17 +1,19 @@
 import { AgentLogger } from './types';
+import { LLMMetadata } from '@/session/types';
 
 /**
  * No-op logger for when all logging is disabled
  */
 export class NoOpLogger implements AgentLogger {
   logUserMessage(_content: string): void {}
-  logAssistantMessage(_agent: string, _text: string): void {}
+  logAssistantMessage(_agent: string, _text: string, _metadata?: LLMMetadata): void {}
   logSystemMessage(_message: string): void {}
   logToolCall(
     _agent: string,
     _tool: string,
     _toolId: string,
-    _params: Record<string, unknown>
+    _params: Record<string, unknown>,
+    _metadata?: LLMMetadata
   ): void {}
   logToolExecution(_agent: string, _tool: string, _toolId: string): void {}
   logToolResult(_agent: string, _tool: string, _toolId: string, _result: unknown): void {}

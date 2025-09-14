@@ -1,0 +1,46 @@
+{
+  "notification": {
+    "id": "NOTIF-002",
+    "type": "health_claim",
+    "content": "I need to file a claim for a recent medical condition. I was diagnosed with hypertension (high blood pressure) last week and my doctor has prescribed medication. I've been experiencing headaches and dizziness. I have my diagnosis report and prescription.",
+    "timestamp": "2025-01-13T10:00:00Z",
+    "claimantInfo": {
+      "name": "John Doe",
+      "policyNumber": "POL-67890",
+      "contactInfo": "john.doe@email.com, +1-555-0456"
+    }
+  },
+  "documents": [
+    {
+      "type": "medical_diagnosis_report",
+      "name": "diagnosis_report_doe.pdf",
+      "status": "received"
+    },
+    {
+      "type": "prescription",
+      "name": "prescription_doe.pdf",
+      "status": "received"
+    },
+    {
+      "type": "claim_form",
+      "name": "claim_form_doe.pdf",
+      "status": "received"
+    },
+    {
+      "type": "id_proof",
+      "name": "id_doe.pdf",
+      "status": "received"
+    },
+    {
+      "type": "policy_document",
+      "name": "policy_doe.pdf",
+      "status": "received"
+    }
+  ],
+  "diagnosisDate": "2025-01-06T00:00:00Z",
+  "claimantBankDetails": {
+    "accountName": "John Doe",
+    "accountNumber": "1122334455",
+    "bankName": "Community Bank"
+  }
+}

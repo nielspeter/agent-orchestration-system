@@ -1,26 +1,33 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
-import { OpenAICompatibleProvider } from '@/providers/openai-compatible-provider';
 import { Message } from '@/base-types';
 
-// Mock OpenAI
-vi.mock('openai', () => {
-  return {
-    default: vi.fn().mockImplementation(() => ({
-      chat: {
-        completions: {
-          create: vi.fn(),
-        },
-      },
-    })),
-  };
-});
+// Mock must be at the top level for hoisting
+vi.mock('openai');
+
+// Import after mock declaration
+import { OpenAICompatibleProvider } from '@/providers/openai-compatible-provider';
+import OpenAI from 'openai';
+
+// Create the mock implementation
+const mockCreate = vi.fn();
 
 describe('OpenAI Compatible Provider - Tool Message Handling', () => {
   let provider: OpenAICompatibleProvider;
-  let mockCreate: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
     vi.clearAllMocks();
+
+    // Re-setup the mock implementation for each test
+    vi.mocked(OpenAI).mockImplementation(
+      () =>
+        ({
+          chat: {
+            completions: {
+              create: mockCreate,
+            },
+          },
+        }) as any
+    );
 
     const config = {
       baseURL: 'https://api.openrouter.ai/api/v1',
@@ -28,9 +35,6 @@ describe('OpenAI Compatible Provider - Tool Message Handling', () => {
     };
 
     provider = new OpenAICompatibleProvider('test-model', config);
-
-    // Get the mock create function
-    mockCreate = (provider as any).client.chat.completions.create;
   });
 
   test('handles tool messages with tool_call_id', async () => {

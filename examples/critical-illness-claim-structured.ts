@@ -1,0 +1,82 @@
+#!/usr/bin/env npx tsx
+/**
+ * Critical Illness Claim Processing Example (STRUCTURED OUTPUT VERSION)
+ *
+ * This example demonstrates a complex insurance claim workflow using:
+ * - Pure JSON structured output for agent communication
+ * - Schema validation for all agent inputs/outputs
+ * - Type-safe agent orchestration
+ * - Native LLM structured output mode (GPT-4o)
+ * - Decision points and routing logic with JSON schemas
+ */
+
+import { AgentSystemBuilder } from '@/config/system-builder';
+import * as fs from 'fs/promises';
+import * as path from 'path';
+import * as dotenv from 'dotenv';
+
+// Load environment variables from .env file
+dotenv.config();
+
+async function main() {
+  console.log('🏥 Critical Illness Claim Processing System (Structured Output)');
+  console.log('============================================================\n');
+
+  // Build the agent system with agents and tools from this example
+  const builder = AgentSystemBuilder.default()
+    .withAgentsFrom('examples/critical-illness-claim-structured/agents')
+    .withToolsFrom('examples/critical-illness-claim-structured/tools')
+    // Use default builtin tools which includes: read, write, list, task, todowrite
+    .withSafetyLimits({
+      maxIterations: 30, // Allow sufficient iterations for complex workflow
+      maxDepth: 8, // Allow deeper delegation chains
+      warnAtIteration: 20,
+      maxTokensEstimate: 80000, // Higher token limit for detailed processing
+    });
+
+  const system = await builder.build();
+
+  // Load claim notification data from JSON file
+  const claimPath = path.join(
+    'examples/critical-illness-claim-structured/claims/happy_path_claim.json'
+  );
+  const claimData = await fs.readFile(claimPath, 'utf-8');
+  const claimNotification = JSON.parse(claimData);
+
+  try {
+    console.log('📋 Processing claim notification from file: happy_path_claim.json\n');
+    console.log('Claim Details:');
+    console.log(`- Notification ID: ${claimNotification.notification.id}`);
+    console.log(`- Policy Number: ${claimNotification.notification.claimantInfo.policyNumber}`);
+    console.log(`- Claimant: ${claimNotification.notification.claimantInfo.name}`);
+    console.log(`- Type: ${claimNotification.notification.type}`);
+    console.log(`- Documents: ${claimNotification.documents?.length || 0} files received\n`);
+
+    // Process the claim through the orchestrator
+    const result = await system.executor.execute(
+      'claim-orchestrator',
+      `Process this critical illness claim notification:
+
+${JSON.stringify(claimNotification, null, 2)}`
+    );
+
+    console.log('\n✅ Claim Processing Complete!');
+    console.log('================================');
+    console.log(result);
+
+    // The orchestrator should have saved results to the results directory
+    console.log(
+      '\n📄 Results saved to: examples/critical-illness-claim-structured/results/{claimId}.json'
+    );
+    console.log(
+      'Check the results directory for the claim-specific JSON file with complete audit trail.'
+    );
+  } catch (error) {
+    console.error('❌ Processing error:', error);
+  } finally {
+    await system.cleanup();
+  }
+}
+
+// Run the example
+main().catch(console.error);

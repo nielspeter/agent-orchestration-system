@@ -11,6 +11,7 @@
 
 import { BaseTool } from '@/base-types';
 import type { ConsoleConfig } from '@/logging';
+import { DEFAULTS } from './defaults';
 
 /**
  * Agent definition
@@ -36,6 +37,10 @@ export interface Agent {
   behavior?: string;
   /** Optional max delegation depth */
   maxDepth?: number;
+  /** Optional response format for structured output */
+  response_format?: 'text' | 'json' | 'json_schema';
+  /** Optional JSON schema for validation when using json_schema format */
+  json_schema?: object;
 }
 
 /**
@@ -142,8 +147,6 @@ export interface SessionConfig {
  * Todo management configuration
  */
 export interface TodoConfig {
-  /** Directory for todo files */
-  todosDir: string;
   /** Maximum todos per session */
   maxTodosPerSession: number;
   /** Auto-cleanup after days */
@@ -235,27 +238,26 @@ export const DEFAULT_SYSTEM_CONFIG: ResolvedSystemConfig = {
   },
 
   safety: {
-    maxIterations: 20,
-    warnAtIteration: 10,
-    maxTokensEstimate: 50000,
-    maxDepth: 5,
+    maxIterations: DEFAULTS.MAX_ITERATIONS,
+    warnAtIteration: DEFAULTS.WARN_AT_ITERATION,
+    maxTokensEstimate: DEFAULTS.MAX_TOKENS_ESTIMATE,
+    maxDepth: DEFAULTS.MAX_DEPTH,
   },
 
   caching: {
     enabled: true,
-    maxCacheBlocks: 4,
-    cacheTTLMinutes: 5,
+    maxCacheBlocks: DEFAULTS.MAX_CACHE_BLOCKS,
+    cacheTTLMinutes: DEFAULTS.CACHE_TTL_MINUTES,
   },
 
   console: false, // Silent by default
 
   session: {
     sessionId: undefined,
-    timeout: 300000, // 5 minutes
+    timeout: DEFAULTS.SESSION_TIMEOUT,
   },
 
   todos: {
-    todosDir: 'todos',
     maxTodosPerSession: 50,
     autoCleanupAfterDays: 7,
   },

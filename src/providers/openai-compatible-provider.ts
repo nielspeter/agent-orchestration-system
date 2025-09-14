@@ -1,7 +1,8 @@
 import OpenAI from 'openai';
-import { ILLMProvider, UsageMetrics } from './llm-provider.interface';
+import { ILLMProvider, StructuredOutputConfig, UsageMetrics } from './llm-provider.interface';
 import { BaseTool, Message } from '@/base-types';
 import { AgentLogger } from '@/logging';
+import { DEFAULTS } from '@/config/defaults';
 
 // Extended usage type for providers that support caching
 interface ExtendedUsage extends OpenAI.Completions.CompletionUsage {
@@ -43,6 +44,7 @@ export interface OpenRouterProviderConfig {
 export class OpenAICompatibleProvider implements ILLMProvider {
   private readonly client: OpenAI;
   private readonly modelName: string;
+  private readonly providerName: string;
   private readonly logger?: AgentLogger;
   private lastUsage: UsageMetrics | null = null;
   private readonly config: OpenAICompatibleConfig;
@@ -54,8 +56,17 @@ export class OpenAICompatibleProvider implements ILLMProvider {
     this.modelName = modelName;
     this.logger = logger;
     this.config = config;
-    this.temperature = config.temperature ?? 0.5;
-    this.topP = config.topP ?? 0.9;
+    this.temperature = config.temperature ?? DEFAULTS.TEMPERATURE;
+    this.topP = config.topP ?? DEFAULTS.TOP_P;
+
+    // Derive provider name from baseURL
+    if (config.baseURL.includes('openrouter.ai')) {
+      this.providerName = 'openrouter';
+    } else if (config.baseURL.includes('openai.com')) {
+      this.providerName = 'openai';
+    } else {
+      this.providerName = 'openai-compatible';
+    }
 
     this.client = new OpenAI({
       apiKey: config.apiKey || 'dummy', // Some providers don't need keys
@@ -64,7 +75,11 @@ export class OpenAICompatibleProvider implements ILLMProvider {
     });
   }
 
-  async complete(messages: Message[], tools?: BaseTool[]): Promise<Message> {
+  async complete(
+    messages: Message[],
+    tools?: BaseTool[],
+    config?: StructuredOutputConfig
+  ): Promise<Message> {
     // Convert our Message type to OpenAI's expected format
     // OpenAI needs tool messages to have tool_call_id
     const openAIMessages = messages.map((msg) => {
@@ -113,6 +128,27 @@ export class OpenAICompatibleProvider implements ILLMProvider {
         temperature: this.temperature,
         top_p: this.topP,
       };
+
+      // Add structured output support if configured
+      if (config?.response_format === 'json') {
+        // Simple JSON mode - model will try to output valid JSON
+        requestBody.response_format = { type: 'json_object' };
+      } else if (config?.response_format === 'json_schema' && config.json_schema) {
+        // JSON schema mode - model will output JSON matching the schema
+        // Note: This requires GPT-4o-2024-08-06 or later
+        // The OpenAI types don't yet include json_schema, but it's a valid option
+        // We use object spread to avoid type errors while keeping type safety
+        Object.assign(requestBody, {
+          response_format: {
+            type: 'json_schema',
+            json_schema: {
+              name: 'response',
+              strict: true,
+              schema: config.json_schema,
+            },
+          },
+        });
+      }
 
       // Add OpenRouter-specific provider routing if configured
       if (this.config.providerRouting && this.isOpenRouter()) {
@@ -187,6 +223,10 @@ export class OpenAICompatibleProvider implements ILLMProvider {
 
   getModelName(): string {
     return this.modelName;
+  }
+
+  getProviderName(): string {
+    return this.providerName;
   }
 
   supportsStreaming(): boolean {

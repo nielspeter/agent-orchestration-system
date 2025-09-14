@@ -21,6 +21,11 @@ export interface SessionStorage {
    * Check if a session exists
    */
   sessionExists(sessionId: string): Promise<boolean>;
+
+  /**
+   * Flush any pending writes (optional - for ensuring writes complete)
+   */
+  flush?(sessionId: string): Promise<void>;
 }
 
 /**
@@ -29,12 +34,44 @@ export interface SessionStorage {
 export type SessionEventType = 'user' | 'assistant' | 'tool_call' | 'tool_result';
 
 /**
+ * Metadata captured for LLM interactions
+ */
+export interface LLMMetadata {
+  model?: string;
+  provider?: string;
+  usage?: {
+    promptTokens: number;
+    completionTokens: number;
+    totalTokens: number;
+    promptCacheHitTokens?: number;
+    promptCacheMissTokens?: number;
+    cachedTokens?: number;
+  };
+  cost?: {
+    inputCost?: number;
+    outputCost?: number;
+    totalCost?: number;
+  };
+  performance?: {
+    latencyMs?: number;
+    retries?: number;
+  };
+  config?: {
+    temperature?: number;
+    topP?: number;
+    maxTokens?: number;
+    responseFormat?: string;
+  };
+}
+
+/**
  * Base structure for session events
  */
 export interface SessionEvent {
   type: SessionEventType;
   timestamp: number;
   data: unknown;
+  metadata?: LLMMetadata;
 }
 
 /**
@@ -83,6 +120,9 @@ export interface ToolResultEvent extends SessionEvent {
   data: {
     toolCallId: string;
     result: unknown;
+    // Size tracking for token estimation
+    resultSizeBytes?: number;
+    estimatedTokens?: number;
   };
 }
 
