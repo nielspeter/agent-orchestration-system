@@ -49,7 +49,7 @@ function validateCommand(command: string): void {
  */
 export function createShellTool(): BaseTool {
   return {
-    name: 'shell',
+    name: 'Shell',
     description: 'Execute shell commands and scripts',
     parameters: {
       type: 'object' as const,

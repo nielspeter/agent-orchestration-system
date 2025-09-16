@@ -42,6 +42,27 @@ When agent A delegates to agent B:
 3. Anthropic's cache makes "redundant" reads efficient (90% cost savings)
 4. Clean separation - each agent has independent context
 
+## 🔄 Core Patterns
+
+### The Agentic Loop (ReAct Pattern)
+Each agent automatically implements the **Reason → Act → Observe** loop:
+1. **Reason**: Agent analyzes prompt and decides what to do
+2. **Act**: Agent calls tools to gather information or take action
+3. **Observe**: Agent processes tool results
+4. **Repeat**: Continue until task is complete (no more tool calls)
+
+This iterative refinement allows agents to:
+- Build understanding incrementally
+- Correct mistakes
+- Ground responses in actual data
+- Never hallucinate file contents
+
+See [Agentic Loop Pattern](docs/agentic-loop-pattern.md) for details.
+
+### Iteration vs Delegation
+- **Iteration**: Same agent refining its response (limited by MAX_ITERATIONS)
+- **Delegation**: Calling another agent via Task tool (limited by MAX_DEPTH)
+
 ## 🚀 Quick Start
 
 ```bash
@@ -70,6 +91,7 @@ npx tsx examples/configuration.ts       # Config file usage
 npx tsx examples/logging.ts             # Logging features
 npx tsx examples/mcp-integration.ts     # MCP server support
 npx tsx examples/werewolf-game.ts       # Autonomous multi-agent game
+npx tsx examples/coding-team/coding-team.ts  # Collaborative coding agents
 ```
 
 ## 🎮 Examples
@@ -95,13 +117,24 @@ This example showcases how agents can be truly autonomous entities that receive 
 ```bash
 # Run the werewolf game
 npx tsx examples/werewolf-game.ts
+```
 
-# The game-master will:
-# 1. Set up players and roles
-# 2. Run night phases (kills, investigations)
-# 3. Facilitate day discussions with evidence
-# 4. Manage voting and eliminations
-# 5. Continue until one side wins
+### Coding Team - Collaborative Development (coding-team/)
+Demonstrates how specialized agents collaborate to implement software features:
+- **Driver agent** orchestrates the development process and tracks progress
+- **Implementer agent** writes production code following existing patterns
+- **Test-writer agent** creates comprehensive test suites
+- **Shell tool integration** enables running tests and type checking
+- **TodoWrite tracking** provides real-time progress visibility
+
+This example shows the practical application of the pull architecture where each agent independently discovers what they need, rather than receiving massive context dumps.
+
+```bash
+# Set up the sample project
+cd examples/coding-team/sample-project && npm install && cd -
+
+# Run the coding team
+npx tsx examples/coding-team/coding-team.ts
 ```
 
 ## 🎨 Agent Behavior Configuration

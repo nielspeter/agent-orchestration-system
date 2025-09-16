@@ -22,7 +22,7 @@ import { createTaskTool } from '@/tools/task.tool';
 import { createTodoWriteTool } from '@/tools/todowrite.tool';
 import { createShellTool } from '@/tools/shell.tool';
 import { createGetSessionLogTool } from '@/tools/get-session-log.tool';
-import { BaseTool, ToolParameter, ToolResult, ToolSchema } from '@/base-types';
+import { BaseTool, Message, ToolParameter, ToolResult, ToolSchema } from '@/base-types';
 import {
   Agent,
   CachingConfig,
@@ -46,7 +46,7 @@ import { EventLogger } from '@/logging/event.logger';
 import { AgentLogger, ConsoleConfig, NoOpLogger } from '@/logging';
 import { ConsoleLogger } from '@/logging/console.logger';
 import { CompositeLogger } from '@/logging/composite.logger';
-import { Message, SimpleSessionManager } from '@/session/manager';
+import { SimpleSessionManager } from '@/session/manager';
 
 /**
  * MCP Client wrapper for managing connections
@@ -552,6 +552,54 @@ export class AgentSystemBuilder {
   }
 
   /**
+   * Validate that all agents can access their requested tools
+   */
+  private async validateAgentTools(
+    agentLoader: AgentLoader,
+    toolRegistry: ToolRegistry,
+    logger: AgentLogger
+  ): Promise<void> {
+    // Get all available agents
+    const agentNames = await agentLoader.listAgents();
+    const registeredTools = toolRegistry.getAllTools();
+    const registeredToolNames = new Set(registeredTools.map((t) => t.name));
+
+    for (const agentName of agentNames) {
+      const agent = await agentLoader.loadAgent(agentName);
+      if (!agent || !agent.tools) continue;
+
+      // Skip agents with wildcard access
+      if (agent.tools === '*' || (Array.isArray(agent.tools) && agent.tools.includes('*'))) {
+        continue;
+      }
+
+      const requestedTools = Array.isArray(agent.tools) ? agent.tools : [];
+      const missingTools: string[] = [];
+
+      for (const toolName of requestedTools) {
+        // Skip pattern matching (e.g., 'file-*')
+        if (toolName.endsWith('-*')) continue;
+
+        // Check if tool exists in registry
+        if (!registeredToolNames.has(toolName)) {
+          missingTools.push(toolName);
+        }
+      }
+
+      if (missingTools.length > 0) {
+        const availableTools = Array.from(registeredToolNames).sort().join(', ');
+        throw new Error(
+          `Agent "${agentName}" requests tools that don't exist: [${missingTools.join(', ')}]\n` +
+            `Available tools: [${availableTools}]\n` +
+            'Hint: Tool names are case-sensitive. Use exact names like "Read", "Write", "Task", etc.'
+        );
+      }
+    }
+
+    logger.logSystemMessage('✓ All agent tool requirements validated');
+  }
+
+  /**
    * Register custom tools and load from directories
    */
   private async registerCustomTools(
@@ -784,6 +832,9 @@ export class AgentSystemBuilder {
     // Initialize MCP if configured
     await this.initializeMCPServers(toolRegistry, resolvedConfig, logger);
 
+    // Validate that all agents can access their requested tools
+    await this.validateAgentTools(agentLoader, toolRegistry, logger);
+
     // Handle session recovery
     const recoveredMessages = await this.handleSessionRecovery(
       storage,
@@ -956,7 +1007,12 @@ export class AgentSystemBuilder {
    * Factory method: Test configuration
    */
   static forTest(config: Partial<SystemConfig> = {}): AgentSystemBuilder {
-    return new AgentSystemBuilder(mergeConfigs(TEST_CONFIG_MINIMAL, config));
+    // Don't load agents from current directory in tests unless explicitly specified
+    const testConfig = mergeConfigs(TEST_CONFIG_MINIMAL, config);
+    if (!config.agents?.directories) {
+      testConfig.agents = { ...testConfig.agents, directories: ['tests/unit/test-agents'] };
+    }
+    return new AgentSystemBuilder(testConfig);
   }
 }
 

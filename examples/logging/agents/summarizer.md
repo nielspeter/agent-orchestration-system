@@ -1,7 +1,7 @@
 ---
 name: summarizer
 behavior: precise
-tools: ["read"]
+tools: ["Read"]
 ---
 
 # Summarizer Agent

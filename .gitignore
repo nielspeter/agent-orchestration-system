@@ -40,3 +40,6 @@ logs/
 .agent-sessions/
 temp/
 tmp/
+
+# Examples
+examples/coding-team/sample-project/
