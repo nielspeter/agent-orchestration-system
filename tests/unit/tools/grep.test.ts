@@ -16,7 +16,7 @@ describe('Grep Tool - Essential Tests', () => {
   });
 
   test('has correct metadata', () => {
-    expect(grepTool.name).toBe('grep');
+    expect(grepTool.name).toBe('Grep');
     expect(grepTool.description).toContain('Search for text patterns');
   });
 

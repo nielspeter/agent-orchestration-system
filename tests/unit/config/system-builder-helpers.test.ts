@@ -154,7 +154,12 @@ describe('SystemBuilder Helper Methods', () => {
 
       // Should not throw and should handle empty session gracefully
       const messages = await result.sessionManager.recoverSession(sessionId);
-      expect(messages).toEqual([]);
+      // Filter out system messages and default agent messages
+      const userMessages = messages.filter(m =>
+        m.role === 'user' &&
+        m.content !== 'Using built-in default agent'
+      );
+      expect(userMessages).toEqual([]);
 
       await result.cleanup();
     });

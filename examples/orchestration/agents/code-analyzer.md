@@ -1,7 +1,7 @@
 ---
 name: code-analyzer
 behavior: precise
-tools: ["read", "list", "write"]
+tools: ["Read", "List", "Write"]
 ---
 
 # Code Analyzer Agent

@@ -48,12 +48,10 @@ export class SimpleSessionManager {
         case 'assistant': {
           // Check if this is a text response or tool call based on content
           const content = typedEvent.data.content;
-          if (typeof content === 'string') {
-            messages.push({
-              role: 'assistant',
-              content: content,
-            });
-          }
+          messages.push({
+            role: 'assistant',
+            content: content,
+          });
           break;
         }
 
@@ -150,175 +148,6 @@ export class SimpleSessionManager {
 
     return null;
   }
-
-  /**
-   * Add synthetic tool results for incomplete tool calls
-   *
-   * This fixes sessions that ended with tool calls but no results,
-   * making them valid for the Anthropic API again.
-   */
-  addMissingToolResults(messages: Message[]): Message[] {
-    const result: Message[] = [];
-    const pendingToolCalls = new Map<string, boolean>();
-
-    for (const message of messages) {
-      result.push(message);
-
-      // Track tool calls
-      if (message.role === 'assistant' && message.tool_calls) {
-        for (const toolCall of message.tool_calls) {
-          pendingToolCalls.set(toolCall.id, true);
-        }
-      }
-
-      // Mark tool calls as complete when we see their results
-      if (message.role === 'tool' && message.tool_call_id) {
-        pendingToolCalls.delete(message.tool_call_id);
-      }
-    }
-
-    // Add synthetic error results for any incomplete tool calls
-    for (const [toolCallId] of pendingToolCalls) {
-      result.push({
-        role: 'tool',
-        tool_call_id: toolCallId,
-        content: JSON.stringify({
-          error: 'Tool execution was interrupted. This result was added during session recovery.',
-        }),
-      });
-    }
-
-    return result;
-  }
-
-  /**
-   * Clean incomplete tool calls by removing them entirely
-   *
-   * Removes assistant messages with tool calls that don't have results,
-   * and any messages that came after them.
-   */
-  cleanIncompleteToolCalls(messages: Message[]): Message[] {
-    const result: Message[] = [];
-    const toolCallIds = new Set<string>();
-    const toolResultIds = new Set<string>();
-
-    // First pass: collect all tool call and result IDs
-    for (const message of messages) {
-      if (message.role === 'assistant' && message.tool_calls) {
-        for (const toolCall of message.tool_calls) {
-          toolCallIds.add(toolCall.id);
-        }
-      }
-      if (message.role === 'tool' && message.tool_call_id) {
-        toolResultIds.add(message.tool_call_id);
-      }
-    }
-
-    // Find incomplete tool call IDs
-    const incompleteIds = new Set<string>();
-    for (const id of toolCallIds) {
-      if (!toolResultIds.has(id)) {
-        incompleteIds.add(id);
-      }
-    }
-
-    // Second pass: build result excluding incomplete tool calls
-    let foundIncomplete = false;
-    for (const message of messages) {
-      if (foundIncomplete) {
-        // Skip all messages after an incomplete tool call
-        break;
-      }
-
-      if (message.role === 'assistant' && message.tool_calls) {
-        // Check if this message has any incomplete tool calls
-        const hasIncomplete = message.tool_calls.some((tc) => incompleteIds.has(tc.id));
-        if (hasIncomplete) {
-          foundIncomplete = true;
-          continue; // Skip this message
-        }
-      }
-
-      result.push(message);
-    }
-
-    return result;
-  }
-
-  /**
-   * Truncate messages to the last valid point
-   *
-   * Removes everything after the last complete exchange.
-   */
-  truncateToLastValidPoint(messages: Message[]): Message[] {
-    // Find the last point where we have a complete exchange
-    let lastValidIndex = messages.length;
-
-    for (let i = messages.length - 1; i >= 0; i--) {
-      const message = messages[i];
-
-      // If we find an assistant message with tool calls
-      if (message.role === 'assistant' && message.tool_calls && message.tool_calls.length > 0) {
-        // Check if all tool calls have results
-        const toolCallIds = message.tool_calls.map((tc) => tc.id);
-        let hasAllResults = true;
-
-        // Look for tool results after this message
-        for (const toolCallId of toolCallIds) {
-          let foundResult = false;
-          for (let j = i + 1; j < messages.length; j++) {
-            if (messages[j].role === 'tool' && messages[j].tool_call_id === toolCallId) {
-              foundResult = true;
-              break;
-            }
-          }
-          if (!foundResult) {
-            hasAllResults = false;
-            break;
-          }
-        }
-
-        if (!hasAllResults) {
-          // This tool call is incomplete, truncate here
-          lastValidIndex = i;
-          break;
-        }
-      }
-    }
-
-    return messages.slice(0, lastValidIndex);
-  }
-
-  /**
-   * Get IDs of incomplete tool calls
-   *
-   * Returns the IDs of tool calls that don't have corresponding results.
-   */
-  getIncompleteToolCallIds(messages: Message[]): string[] {
-    const toolCallIds = new Set<string>();
-    const toolResultIds = new Set<string>();
-
-    for (const message of messages) {
-      if (message.role === 'assistant' && message.tool_calls) {
-        for (const toolCall of message.tool_calls) {
-          toolCallIds.add(toolCall.id);
-        }
-      }
-      if (message.role === 'tool' && message.tool_call_id) {
-        toolResultIds.add(message.tool_call_id);
-      }
-    }
-
-    const incomplete: string[] = [];
-    for (const id of toolCallIds) {
-      if (!toolResultIds.has(id)) {
-        incomplete.push(id);
-      }
-    }
-
-    return incomplete;
-  }
-
   /**
    * Recover todos from session events
    *
@@ -368,6 +197,3 @@ export class SimpleSessionManager {
     );
   }
 }
-
-// Re-export Message from base-types for backward compatibility
-export type { Message } from '@/base-types';

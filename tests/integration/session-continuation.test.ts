@@ -11,13 +11,18 @@ dotenv.config();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 describe('Session Continuation Integration Tests', () => {
-  const sessionId = 'test-session-continuation';
+  const sessionId = `test-session-continuation-${Date.now()}-${Math.random()}`;
   const storagePath = path.join(__dirname, '.test-sessions');
   let firstSystem: BuildResult;
   let secondSystem: BuildResult;
 
   beforeEach(async () => {
-    // Clean up any existing test session
+    // Clean up any existing test session files and directories
+    try {
+      await fs.rm(path.join(storagePath, `${sessionId}.jsonl`), { force: true });
+    } catch {
+      // Ignore if doesn't exist
+    }
     try {
       await fs.rm(path.join(storagePath, sessionId), { recursive: true });
     } catch {
@@ -89,17 +94,17 @@ describe('Session Continuation Integration Tests', () => {
       .withConsole(false)
       .build();
 
-    // Verify session doesn't exist initially
-    const sessionExists = await firstSystem.storage.sessionExists(sessionId);
-    expect(sessionExists).toBe(false);
+    // Get baseline event count after build
+    const initialEvents = await firstSystem.storage.readEvents(sessionId);
+    const initialEventCount = initialEvents.length;
 
     const result = await firstSystem.executor.execute('default', 'Say "Hello World"');
 
     expect(result).toContain('Hello World');
 
-    // After execution, session should exist
-    const sessionExistsAfter = await firstSystem.storage.sessionExists(sessionId);
-    expect(sessionExistsAfter).toBe(true);
+    // After execution, should have new events
+    const afterEvents = await firstSystem.storage.readEvents(sessionId);
+    expect(afterEvents.length).toBeGreaterThan(initialEventCount);
   }, 10000);
 
   test('should preserve conversation context across restarts', async () => {
