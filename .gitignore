@@ -43,3 +43,11 @@ tmp/
 
 # Examples
 examples/coding-team/sample-project/
+examples/udbud/
+examples/critical-illness-claim/results/*.json
+
+# Test artifacts
+test-sessions/
+*.zip
+vite.config.ts
+vitest.config.ts
