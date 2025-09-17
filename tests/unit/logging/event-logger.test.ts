@@ -104,7 +104,7 @@ describe('EventLogger', () => {
   describe('logToolCall', () => {
     it('should log tool calls with provided ID', async () => {
       const params = { path: '/test/file.txt', encoding: 'utf-8' };
-      logger.logToolCall('test-agent', 'Read', 'call-123', params);
+      logger.logToolCall('test-agent', 'read', 'call-123', params);
 
       await new Promise((resolve) => setTimeout(resolve, 10));
 
@@ -115,7 +115,7 @@ describe('EventLogger', () => {
       expect(event.type).toBe('tool_call');
       expect(event.data.id).toBeDefined();
       expect(event.data.id.length).toBeGreaterThan(0);
-      expect(event.data.tool).toBe('Read');
+      expect(event.data.tool).toBe('read');
       expect(event.data.params).toEqual(params);
       expect(event.data.agent).toBe('test-agent');
     });
@@ -170,7 +170,7 @@ describe('EventLogger', () => {
   describe('logToolResult', () => {
     it('should log tool results with reference to tool call', async () => {
       const result = { success: true, data: 'File contents here' };
-      logger.logToolResult('agent', 'Read', 'call-123', result);
+      logger.logToolResult('agent', 'read', 'call-123', result);
 
       await new Promise((resolve) => setTimeout(resolve, 10));
 

@@ -3,7 +3,7 @@
 This document explains the tools each agent needs and why.
 
 ## Driver Agent
-**Tools:** `["List", "TodoWrite", "Task"]`
+**Tools:** `["list", "todowrite", "task"]`
 - **List** - Explores project structure to understand the codebase
 - **TodoWrite** - Tracks implementation progress with a task list
 - **Task** - Delegates work to specialist agents (implementer, test-writer, code-reviewer)
@@ -13,21 +13,21 @@ This document explains the tools each agent needs and why.
 - Shell - Driver doesn't run commands, delegates verification to implementer
 
 ## Implementer Agent
-**Tools:** `["Read", "Write", "List", "Shell"]`
+**Tools:** `["read", "write", "list", "shell"]`
 - **List** - Explores project structure to find appropriate locations
 - **Read** - Understands existing code patterns and conventions
 - **Write** - Creates the actual implementation files
 - **Shell** - Runs type checking and build commands to verify code compiles
 
 ## Test Writer Agent
-**Tools:** `["Read", "Write", "List", "Shell"]`
+**Tools:** `["read", "write", "list", "shell"]`
 - **List** - Explores project to find test directories
 - **Read** - Reads implementation to understand what to test
 - **Write** - Creates test files
 - **Shell** - Runs tests to verify they pass
 
 ## Code Reviewer Agent
-**Tools:** `["Read", "List"]`
+**Tools:** `["read", "list"]`
 - **List** - Explores project structure
 - **Read** - Examines implementation and test files for review
 

@@ -71,7 +71,7 @@ describe('SimpleSessionManager - Session Recovery', () => {
         timestamp: Date.now(),
         data: {
           id: 'call-123',
-          tool: 'Read',
+          tool: 'read',
           params: { path: 'file.txt' },
           agent: 'default',
         },
@@ -88,7 +88,7 @@ describe('SimpleSessionManager - Session Recovery', () => {
             id: 'call-123',
             type: 'function',
             function: {
-              name: 'Read',
+              name: 'read',
               arguments: JSON.stringify({ path: 'file.txt' }),
             },
           },
@@ -136,7 +136,7 @@ describe('SimpleSessionManager - Session Recovery', () => {
       await storage.appendEvent(sessionId, {
         type: 'tool_call',
         timestamp: 3000,
-        data: { id: 'call-456', tool: 'Read', params: { path: 'file.txt' }, agent: 'default' },
+        data: { id: 'call-456', tool: 'read', params: { path: 'file.txt' }, agent: 'default' },
       });
 
       // Tool result
@@ -160,7 +160,7 @@ describe('SimpleSessionManager - Session Recovery', () => {
       expect(messages[1].role).toBe('assistant');
       expect(messages[2].role).toBe('assistant');
       expect(messages[2].tool_calls).toBeDefined();
-      expect(messages[2].tool_calls?.[0]?.function.name).toBe('Read');
+      expect(messages[2].tool_calls?.[0]?.function.name).toBe('read');
       expect(messages[3].role).toBe('tool');
       expect(messages[3].tool_call_id).toBe('call-456');
       expect(messages[4].role).toBe('assistant');
@@ -224,7 +224,7 @@ describe('SimpleSessionManager - Session Recovery', () => {
               id: 'call-123',
               type: 'function' as const,
               function: {
-                name: 'Read',
+                name: 'read',
                 arguments: JSON.stringify({ path: 'file.txt' }),
               },
             },
@@ -243,7 +243,7 @@ describe('SimpleSessionManager - Session Recovery', () => {
               id: 'call-123',
               type: 'function' as const,
               function: {
-                name: 'Read',
+                name: 'read',
                 arguments: JSON.stringify({ path: 'file.txt' }),
               },
             },
@@ -282,7 +282,7 @@ describe('SimpleSessionManager - Session Recovery', () => {
               id: 'call-789',
               type: 'function' as const,
               function: {
-                name: 'Read',
+                name: 'read',
                 arguments: JSON.stringify({ path: '/tmp/test.txt' }),
               },
             },
@@ -293,7 +293,7 @@ describe('SimpleSessionManager - Session Recovery', () => {
       const toolCall = sessionManager.getLastToolCall(messages);
       expect(toolCall).toEqual({
         id: 'call-789',
-        name: 'Read',
+        name: 'read',
         input: { path: '/tmp/test.txt' },
       });
     });
@@ -317,7 +317,7 @@ describe('SimpleSessionManager - Session Recovery', () => {
               id: 'call-1',
               type: 'function' as const,
               function: {
-                name: 'Read',
+                name: 'read',
                 arguments: JSON.stringify({ path: 'file1.txt' }),
               },
             },
@@ -325,7 +325,7 @@ describe('SimpleSessionManager - Session Recovery', () => {
               id: 'call-2',
               type: 'function' as const,
               function: {
-                name: 'Write',
+                name: 'write',
                 arguments: JSON.stringify({ path: 'file2.txt', content: 'data' }),
               },
             },
@@ -337,7 +337,7 @@ describe('SimpleSessionManager - Session Recovery', () => {
       // Should return the first tool call found
       expect(toolCall).toEqual({
         id: 'call-1',
-        name: 'Read',
+        name: 'read',
         input: { path: 'file1.txt' },
       });
     });
@@ -357,7 +357,7 @@ describe('SimpleSessionManager - Session Recovery', () => {
         timestamp: 2000,
         data: {
           id: 'interrupted-call',
-          tool: 'Read',
+          tool: 'read',
           params: { path: 'important.txt' },
           agent: 'default',
         },
@@ -374,7 +374,7 @@ describe('SimpleSessionManager - Session Recovery', () => {
       const incompleteCall = sessionManager.getLastToolCall(messages);
       expect(incompleteCall).toEqual({
         id: 'interrupted-call',
-        name: 'Read',
+        name: 'read',
         input: { path: 'important.txt' },
       });
     });

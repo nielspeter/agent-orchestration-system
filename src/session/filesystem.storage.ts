@@ -26,8 +26,22 @@ export class FilesystemStorage implements SessionStorage {
   async appendEvent(sessionId: string, event: unknown): Promise<void> {
     const dir = this.getSessionDir(sessionId);
 
-    // Ensure directory exists
-    await fs.mkdir(dir, { recursive: true });
+    // Ensure directory exists - handle race conditions
+    try {
+      await fs.mkdir(dir, { recursive: true });
+    } catch (error: unknown) {
+      // If directory already exists or parent doesn't exist, try to handle it
+      const err = error as NodeJS.ErrnoException;
+      if (err.code !== 'EEXIST') {
+        // For ENOENT, try creating parent directory first
+        if (err.code === 'ENOENT') {
+          await fs.mkdir(this.basePath, { recursive: true });
+          await fs.mkdir(dir, { recursive: true });
+        } else {
+          throw error;
+        }
+      }
+    }
 
     // Append event as JSONL
     const eventsFile = this.getEventsFile(sessionId);

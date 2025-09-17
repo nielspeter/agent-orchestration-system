@@ -1,7 +1,7 @@
 ---
 name: session-analyzer
 behavior: precise
-tools: ["Read", "Write", "List"]
+tools: ["read", "write", "list"]
 ---
 
 # Session Analyzer Agent

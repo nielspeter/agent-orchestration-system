@@ -77,7 +77,7 @@ function validatePath(filePath: string): void {
  * Agent usage: Read path="src/index.ts"
  */
 export const createReadTool = (): BaseTool => ({
-  name: 'Read',
+  name: 'read',
   description: 'Read the contents of a file',
   parameters: {
     type: 'object',
@@ -157,7 +157,7 @@ export const createReadTool = (): BaseTool => ({
  * Returns: "Successfully saved to output.txt (13 chars, 1 lines)"
  */
 export const createWriteTool = (): BaseTool => ({
-  name: 'Write',
+  name: 'write',
   description: 'Write content to a file',
   parameters: {
     type: 'object',
@@ -228,7 +228,7 @@ export const createWriteTool = (): BaseTool => ({
  * Returns: List of files and directories in src/
  */
 export const createListTool = (): BaseTool => ({
-  name: 'List',
+  name: 'list',
   description: 'List files and directories in a given path',
   parameters: {
     type: 'object',

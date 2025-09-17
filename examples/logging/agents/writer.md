@@ -1,7 +1,7 @@
 ---
 name: writer
 behavior: creative
-tools: ["Write"]
+tools: ["write"]
 ---
 
 You are a writing specialist. You create high-quality written content including:

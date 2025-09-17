@@ -29,11 +29,11 @@ describe('AgentSystemBuilder Tests', () => {
       cleanup = result.cleanup;
 
       const toolNames = result.toolRegistry.getAllTools().map((t) => t.name);
-      expect(toolNames).toContain('Read');
-      expect(toolNames).toContain('Write');
-      expect(toolNames).toContain('List');
-      expect(toolNames).toContain('Task');
-      expect(toolNames).toContain('TodoWrite');
+      expect(toolNames).toContain('read');
+      expect(toolNames).toContain('write');
+      expect(toolNames).toContain('list');
+      expect(toolNames).toContain('task');
+      expect(toolNames).toContain('todowrite');
     });
 
     test('full() should create builder with all tools', async () => {
@@ -41,11 +41,11 @@ describe('AgentSystemBuilder Tests', () => {
       cleanup = result.cleanup;
 
       const toolNames = result.toolRegistry.getAllTools().map((t) => t.name);
-      expect(toolNames).toContain('Read');
-      expect(toolNames).toContain('Write');
-      expect(toolNames).toContain('List');
-      expect(toolNames).toContain('Task');
-      expect(toolNames).toContain('TodoWrite');
+      expect(toolNames).toContain('read');
+      expect(toolNames).toContain('write');
+      expect(toolNames).toContain('list');
+      expect(toolNames).toContain('task');
+      expect(toolNames).toContain('todowrite');
     });
   });
 
@@ -102,10 +102,10 @@ describe('AgentSystemBuilder Tests', () => {
       cleanup = result.cleanup;
 
       const toolNames = result.toolRegistry.getAllTools().map((t) => t.name);
-      expect(toolNames).toContain('Read');
-      expect(toolNames).toContain('Write');
-      expect(toolNames).toContain('List');
-      expect(toolNames).toContain('Task');
+      expect(toolNames).toContain('read');
+      expect(toolNames).toContain('write');
+      expect(toolNames).toContain('list');
+      expect(toolNames).toContain('task');
     });
 
     test('withTodoTool() should add TodoWrite tool', async () => {
@@ -113,7 +113,7 @@ describe('AgentSystemBuilder Tests', () => {
       cleanup = result.cleanup;
 
       const toolNames = result.toolRegistry.getAllTools().map((t) => t.name);
-      expect(toolNames).toContain('TodoWrite');
+      expect(toolNames).toContain('todowrite');
     });
   });
 

@@ -20,12 +20,12 @@ describe('AgentLoaderMiddleware - Tool Filtering', () => {
       {
         name: 'reader',
         prompt: 'You can only read',
-        tools: ['Read', 'List'],
+        tools: ['read', 'list'],
       },
       {
         name: 'writer',
         prompt: 'You can only write',
-        tools: ['Write'],
+        tools: ['write'],
       },
       {
         name: 'unlimited',
@@ -39,7 +39,7 @@ describe('AgentLoaderMiddleware - Tool Filtering', () => {
 
     // Register some tools
     toolRegistry.register({
-      name: 'Read',
+      name: 'read',
       description: 'Read files',
       parameters: { type: 'object', properties: {}, required: [] },
       execute: async () => ({ content: 'file content' }),
@@ -47,7 +47,7 @@ describe('AgentLoaderMiddleware - Tool Filtering', () => {
     });
 
     toolRegistry.register({
-      name: 'Write',
+      name: 'write',
       description: 'Write files',
       parameters: { type: 'object', properties: {}, required: [] },
       execute: async () => ({ content: 'file written' }),
@@ -55,7 +55,7 @@ describe('AgentLoaderMiddleware - Tool Filtering', () => {
     });
 
     toolRegistry.register({
-      name: 'List',
+      name: 'list',
       description: 'List files',
       parameters: { type: 'object', properties: {}, required: [] },
       execute: async () => ({ content: ['file1', 'file2'] }),
@@ -95,9 +95,9 @@ describe('AgentLoaderMiddleware - Tool Filtering', () => {
       expect(context.tools?.length).toBe(2);
 
       const toolNames = context.tools?.map((t) => t.name);
-      expect(toolNames).toContain('Read');
-      expect(toolNames).toContain('List');
-      expect(toolNames).not.toContain('Write');
+      expect(toolNames).toContain('read');
+      expect(toolNames).toContain('list');
+      expect(toolNames).not.toContain('write');
     });
 
     expect(nextCalled).toBe(true);
@@ -109,9 +109,9 @@ describe('AgentLoaderMiddleware - Tool Filtering', () => {
     await middleware(context, async () => {
       expect(context.tools?.length).toBe(3);
       const toolNames = context.tools?.map((t) => t.name);
-      expect(toolNames).toContain('Read');
-      expect(toolNames).toContain('Write');
-      expect(toolNames).toContain('List');
+      expect(toolNames).toContain('read');
+      expect(toolNames).toContain('write');
+      expect(toolNames).toContain('list');
     });
   });
 
@@ -120,7 +120,7 @@ describe('AgentLoaderMiddleware - Tool Filtering', () => {
 
     await middleware(context, async () => {
       expect(context.tools?.length).toBe(1);
-      expect(context.tools?.[0].name).toBe('Write');
+      expect(context.tools?.[0].name).toBe('write');
     });
   });
 
@@ -139,7 +139,7 @@ describe('AgentLoaderMiddleware - Tool Filtering', () => {
     const agentWithInvalidTools: Agent = {
       name: 'invalid',
       prompt: 'Has non-existent tools',
-      tools: ['Read', 'NonExistentTool', 'List'],
+      tools: ['read', 'NonExistentTool', 'list'],
     };
 
     const loader = new AgentLoader('.', new ConsoleLogger({ verbosity: 'minimal' }), [
@@ -153,8 +153,8 @@ describe('AgentLoaderMiddleware - Tool Filtering', () => {
       // Should only have the valid tools
       expect(context.tools?.length).toBe(2);
       const toolNames = context.tools?.map((t) => t.name);
-      expect(toolNames).toContain('Read');
-      expect(toolNames).toContain('List');
+      expect(toolNames).toContain('read');
+      expect(toolNames).toContain('list');
       expect(toolNames).not.toContain('NonExistentTool');
     });
   });

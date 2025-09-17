@@ -99,7 +99,7 @@ export class SimpleTracer {
     console.log(`${indent}├─ ${name} ${time} ${status}`);
 
     // Print attributes
-    if (span.attributes?.tool === 'Task') {
+    if (span.attributes?.tool === 'task') {
       const childAgents = span.children
         .map((c) => c.name.split(':')[0])
         .filter((v, i, a) => a.indexOf(v) === i);

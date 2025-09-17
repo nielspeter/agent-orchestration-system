@@ -131,7 +131,7 @@ describe('Todo Persistence', () => {
         timestamp: Date.now(),
         data: {
           id: 'call-123',
-          tool: 'TodoWrite',
+          tool: 'todowrite',
           params: { todos },
           agent: 'test-agent',
         },
@@ -170,7 +170,7 @@ describe('Todo Persistence', () => {
         timestamp: Date.now() - 1000,
         data: {
           id: 'call-old',
-          tool: 'TodoWrite',
+          tool: 'todowrite',
           params: { todos: oldTodos },
           agent: 'test-agent',
         },
@@ -182,7 +182,7 @@ describe('Todo Persistence', () => {
         timestamp: Date.now(),
         data: {
           id: 'call-new',
-          tool: 'TodoWrite',
+          tool: 'todowrite',
           params: { todos: newTodos },
           agent: 'test-agent',
         },
@@ -206,7 +206,7 @@ describe('Todo Persistence', () => {
         timestamp: Date.now(),
         data: {
           id: 'call-456',
-          tool: 'Read', // Not TodoWrite
+          tool: 'read', // Not TodoWrite
           params: { path: 'file.txt' },
           agent: 'test-agent',
         },
@@ -223,7 +223,7 @@ describe('Todo Persistence', () => {
         timestamp: Date.now(),
         data: {
           id: 'call-bad',
-          tool: 'TodoWrite',
+          tool: 'todowrite',
           // params is missing!
           agent: 'test-agent',
         },
@@ -261,7 +261,7 @@ describe('Todo Persistence', () => {
       ];
 
       // Simulate TodoWrite tool call
-      logger.logToolCall('test-agent', 'TodoWrite', 'todo-call-1', { todos });
+      logger.logToolCall('test-agent', 'todowrite', 'todo-call-1', { todos });
 
       // Verify event was stored
       const events = await storage.readEvents(sessionId);
@@ -269,7 +269,7 @@ describe('Todo Persistence', () => {
 
       const event = events[0] as ToolCallEvent;
       expect(event.type).toBe('tool_call');
-      expect(event.data.tool).toBe('TodoWrite');
+      expect(event.data.tool).toBe('todowrite');
       expect((event.data.params as any).todos).toEqual(todos);
     });
 
@@ -286,7 +286,7 @@ describe('Todo Persistence', () => {
 
       // Set todos and log the tool call
       todoManager.updateTodos(initialTodos);
-      logger.logToolCall('agent', 'TodoWrite', 'todo-call-2', { todos: initialTodos });
+      logger.logToolCall('agent', 'todowrite', 'todo-call-2', { todos: initialTodos });
 
       // Simulate crash - create new instances
       const newTodoManager = new TodoManager();
@@ -314,7 +314,7 @@ describe('Todo Persistence', () => {
           activeForm: 'Starting Task 1',
         },
       ];
-      logger.logToolCall('agent', 'TodoWrite', 'todo-call-3', { todos: todos1 });
+      logger.logToolCall('agent', 'todowrite', 'todo-call-3', { todos: todos1 });
 
       // Second update - mark as in progress
       const todos2: TodoItem[] = [
@@ -326,7 +326,7 @@ describe('Todo Persistence', () => {
           activeForm: 'Working on Task 1',
         },
       ];
-      logger.logToolCall('agent', 'TodoWrite', 'todo-call-4', { todos: todos2 });
+      logger.logToolCall('agent', 'todowrite', 'todo-call-4', { todos: todos2 });
 
       // Third update - mark as completed and add new
       const todos3: TodoItem[] = [
@@ -345,7 +345,7 @@ describe('Todo Persistence', () => {
           activeForm: 'Starting Task 2',
         },
       ];
-      logger.logToolCall('agent', 'TodoWrite', 'todo-call-5', { todos: todos3 });
+      logger.logToolCall('agent', 'todowrite', 'todo-call-5', { todos: todos3 });
 
       // Recover should get the latest state
       const recovered = await sessionManager.recoverTodos(sessionId);

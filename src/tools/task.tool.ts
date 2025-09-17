@@ -14,7 +14,7 @@ export const createTaskTool = async (agentLoader: AgentLoader): Promise<Tool> =>
       : '\n\nNo agents available in the agents directory. You can always use "default" for general-purpose tasks.';
 
   return {
-    name: 'Task',
+    name: 'task',
     description: `Launch a specialized agent to handle complex, multi-step tasks autonomously. 
 
 Use this tool proactively when:

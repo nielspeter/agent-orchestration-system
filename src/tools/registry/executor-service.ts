@@ -192,7 +192,7 @@ export async function executeSingleTool(
   // Execute the tool with parsed arguments
   let result: ToolResult;
   try {
-    if (tool.name === 'Task') {
+    if (tool.name === 'task') {
       // Handle delegation to sub-agents
       result = await handleDelegation(parsedArgs as TaskArgs, ctx, executeDelegate, toolCall.id);
     } else {

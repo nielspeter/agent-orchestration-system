@@ -46,7 +46,7 @@ describe('Metadata Tracking', () => {
       },
     };
 
-    logger.logToolCall('test-agent', 'Read', 'call-123', { path: '/tmp/file.txt' }, metadata);
+    logger.logToolCall('test-agent', 'read', 'call-123', { path: '/tmp/file.txt' }, metadata);
 
     const events = await logger.getSessionEvents();
     expect(events).toHaveLength(1);
@@ -59,7 +59,7 @@ describe('Metadata Tracking', () => {
       content: 'x'.repeat(4000), // Approximately 1000 tokens (4 bytes per token)
     };
 
-    logger.logToolResult('test-agent', 'Read', 'call-123', largeResult);
+    logger.logToolResult('test-agent', 'read', 'call-123', largeResult);
 
     const events = await logger.getSessionEvents();
     expect(events).toHaveLength(1);
@@ -78,7 +78,7 @@ describe('Metadata Tracking', () => {
   test('handles missing metadata gracefully', async () => {
     // Call without metadata
     logger.logAssistantMessage('test-agent', 'No metadata here', undefined);
-    logger.logToolCall('test-agent', 'Write', 'call-456', { content: 'test' }, undefined);
+    logger.logToolCall('test-agent', 'write', 'call-456', { content: 'test' }, undefined);
 
     const events = await logger.getSessionEvents();
     expect(events).toHaveLength(2);

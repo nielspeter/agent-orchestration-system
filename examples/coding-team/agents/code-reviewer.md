@@ -1,6 +1,6 @@
 ---
 name: code-reviewer
-tools: ['Read', 'List']
+tools: ['read', 'list']
 behavior: precise
 temperature: 0.2
 ---

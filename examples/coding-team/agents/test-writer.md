@@ -1,6 +1,6 @@
 ---
 name: test-writer
-tools: ['Read', 'Write', 'List', 'Shell']
+tools: ['read', 'write', 'list', 'shell']
 behavior: precise
 temperature: 0.2
 ---

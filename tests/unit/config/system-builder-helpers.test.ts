@@ -114,12 +114,12 @@ describe('SystemBuilder Helper Methods', () => {
       const result = await builder.withDefaultTools().build();
       const toolNames = result.toolRegistry.getAllTools().map((t) => t.name);
 
-      expect(toolNames).toContain('Read');
-      expect(toolNames).toContain('Write');
-      expect(toolNames).toContain('List');
+      expect(toolNames).toContain('read');
+      expect(toolNames).toContain('write');
+      expect(toolNames).toContain('list');
       // Grep is not in default tools
-      // expect(toolNames).toContain('Grep');
-      expect(toolNames).toContain('Task');
+      // expect(toolNames).toContain('grep');
+      expect(toolNames).toContain('task');
 
       await result.cleanup();
     });
@@ -128,7 +128,7 @@ describe('SystemBuilder Helper Methods', () => {
       const result = await builder.withTodoTool().build();
       const toolNames = result.toolRegistry.getAllTools().map((t) => t.name);
 
-      expect(toolNames).toContain('TodoWrite');
+      expect(toolNames).toContain('todowrite');
 
       await result.cleanup();
     });
@@ -155,9 +155,8 @@ describe('SystemBuilder Helper Methods', () => {
       // Should not throw and should handle empty session gracefully
       const messages = await result.sessionManager.recoverSession(sessionId);
       // Filter out system messages and default agent messages
-      const userMessages = messages.filter(m =>
-        m.role === 'user' &&
-        m.content !== 'Using built-in default agent'
+      const userMessages = messages.filter(
+        (m) => m.role === 'user' && m.content !== 'Using built-in default agent'
       );
       expect(userMessages).toEqual([]);
 
@@ -174,7 +173,7 @@ describe('SystemBuilder Helper Methods', () => {
         timestamp: Date.now(),
         data: {
           id: 'call-1',
-          tool: 'TodoWrite',
+          tool: 'todowrite',
           params: {
             todos: [
               {
@@ -248,8 +247,8 @@ describe('SystemBuilder Helper Methods', () => {
       // Verify tools are registered
       const toolNames = result.toolRegistry.getAllTools().map((t) => t.name);
       expect(toolNames.length).toBeGreaterThan(0);
-      expect(toolNames).toContain('Read');
-      expect(toolNames).toContain('Task');
+      expect(toolNames).toContain('read');
+      expect(toolNames).toContain('task');
 
       await result.cleanup();
     });

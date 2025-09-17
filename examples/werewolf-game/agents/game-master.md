@@ -2,7 +2,7 @@
 name: game-master
 model: openrouter/openai/gpt-4o
 behavior: deterministic
-tools: ["Task", "random_roles"]
+tools: ["task", "random_roles"]
 ---
 
 You are an instruction-following system.

@@ -15,7 +15,7 @@ describe('Memory Storage Session Events', () => {
       .build();
 
     // Clear any events that might have been created during build
-    const buildEvents = await result.logger.getSessionEvents?.() || [];
+    const buildEvents = (await result.logger.getSessionEvents?.()) || [];
     const eventCountAfterBuild = buildEvents.length;
 
     // The logger is now exposed and should be writing to memory storage
@@ -31,9 +31,12 @@ describe('Memory Storage Session Events', () => {
     // Should have session events
     expect(events).toBeDefined();
     // We should have exactly 2 more events than after build
-    expect(events!.length - eventCountAfterBuild).toBe(2);
+    if (!events) {
+      throw new Error('Events should be defined');
+    }
+    expect(events.length - eventCountAfterBuild).toBe(2);
     // Get only the new events we added
-    const newEvents = events!.slice(eventCountAfterBuild);
+    const newEvents = events.slice(eventCountAfterBuild);
     expect(newEvents[0]).toMatchObject({
       type: 'user',
       data: { content: 'Test message' },
@@ -62,7 +65,7 @@ describe('Memory Storage Session Events', () => {
       .build();
 
     // Get baseline event count for session 1
-    const session1BuildEvents = await session1.logger.getSessionEvents?.() || [];
+    const session1BuildEvents = (await session1.logger.getSessionEvents?.()) || [];
     const session1EventCountAfterBuild = session1BuildEvents.length;
 
     session1.logger.logUserMessage('Session 1 message');
@@ -75,7 +78,7 @@ describe('Memory Storage Session Events', () => {
       .build();
 
     // Get baseline event count for session 2
-    const session2BuildEvents = await session2.logger.getSessionEvents?.() || [];
+    const session2BuildEvents = (await session2.logger.getSessionEvents?.()) || [];
     const session2EventCountAfterBuild = session2BuildEvents.length;
 
     session2.logger.logUserMessage('Session 2 message');
@@ -88,16 +91,22 @@ describe('Memory Storage Session Events', () => {
     const events2 = await session2.logger.getSessionEvents?.();
 
     // Check we have exactly 1 new event for session 1
-    expect(events1!.length - session1EventCountAfterBuild).toBe(1);
-    const newEvents1 = events1!.slice(session1EventCountAfterBuild);
+    if (!events1) {
+      throw new Error('Events1 should be defined');
+    }
+    expect(events1.length - session1EventCountAfterBuild).toBe(1);
+    const newEvents1 = events1.slice(session1EventCountAfterBuild);
     expect(newEvents1[0]).toMatchObject({
       type: 'user',
       data: { content: 'Session 1 message' },
     });
 
     // Check we have exactly 1 new event for session 2
-    expect(events2!.length - session2EventCountAfterBuild).toBe(1);
-    const newEvents2 = events2!.slice(session2EventCountAfterBuild);
+    if (!events2) {
+      throw new Error('Events2 should be defined');
+    }
+    expect(events2.length - session2EventCountAfterBuild).toBe(1);
+    const newEvents2 = events2.slice(session2EventCountAfterBuild);
     expect(newEvents2[0]).toMatchObject({
       type: 'user',
       data: { content: 'Session 2 message' },

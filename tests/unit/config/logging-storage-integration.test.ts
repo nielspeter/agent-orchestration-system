@@ -79,7 +79,11 @@ describe('Logging and Storage Integration', () => {
       const events = await system.storage.readEvents('test-session');
 
       // Find our test event among system events
-      const testEvent = events.find(e => e.type === 'test' && e.data === 'memory');
+      const testEvent = events.find((e) => {
+        if (!e || typeof e !== 'object') return false;
+        const event = e as Record<string, unknown>;
+        return event.type === 'test' && event.data === 'memory';
+      });
       expect(testEvent).toBeDefined();
       expect(testEvent).toEqual({ type: 'test', data: 'memory' });
 
@@ -180,7 +184,7 @@ describe('Logging and Storage Integration', () => {
       // Recovery should work
       const messages = await system.sessionManager.recoverSession('test-session');
       // Find our user message among any system messages
-      const userMessage = messages.find(m => m.content === 'Hello');
+      const userMessage = messages.find((m) => m.content === 'Hello');
       expect(userMessage).toBeDefined();
       expect(userMessage?.content).toBe('Hello');
 
@@ -240,7 +244,14 @@ describe('Logging and Storage Integration', () => {
       // Both should see all events
       const events = await storage.readEvents('shared-session');
       // Find our two user events
-      const userEvents = events.filter(e => e.type === 'user' && e.data?.content?.startsWith('From system'));
+      const userEvents = events.filter((e) => {
+        if (!e || typeof e !== 'object') return false;
+        const event = e as Record<string, unknown>;
+        if (event.type !== 'user') return false;
+        const data = event.data as Record<string, unknown> | undefined;
+        const content = data?.content as string | undefined;
+        return content?.startsWith('From system') || false;
+      });
       expect(userEvents).toHaveLength(2);
 
       await system1.cleanup();

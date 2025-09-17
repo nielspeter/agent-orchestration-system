@@ -136,12 +136,12 @@ describe('CompositeLogger Error Resilience', () => {
       const composite = new CompositeLogger([fileLogger, consoleLogger]);
 
       // Should not throw - error is isolated
-      expect(() => composite.logToolCall('agent', 'Read', 'call-id', {})).not.toThrow();
+      expect(() => composite.logToolCall('agent', 'read', 'call-id', {})).not.toThrow();
 
       // Console logger should execute - user sees output
       expect(consoleLogger.logToolCall).toHaveBeenCalledWith(
         'agent',
-        'Read',
+        'read',
         'call-id',
         {},
         undefined

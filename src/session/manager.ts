@@ -183,13 +183,13 @@ export class SimpleSessionManager {
   private isTodoWriteCall(event: ToolCallEvent): event is ToolCallEvent & {
     data: {
       id: string;
-      tool: 'TodoWrite';
+      tool: 'todowrite';
       params: { todos: TodoItem[] };
       agent?: string;
     };
   } {
     return (
-      event.data.tool === 'TodoWrite' &&
+      event.data.tool === 'todowrite' &&
       typeof event.data.params === 'object' &&
       event.data.params !== null &&
       'todos' in event.data.params &&

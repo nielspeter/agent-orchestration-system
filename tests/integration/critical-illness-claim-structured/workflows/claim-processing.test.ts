@@ -253,14 +253,14 @@ describeWithFixtures(
       if (scenario.name === 'happy-path') {
         it('should use all required tools', () => {
           expect(fixture.messages).toHaveUsedTools([
-            'Task',
+            'task',
             'claim_id_generator',
             'timestamp_generator',
             'get_policy_details',
             'check_fraud_indicators',
             'validate_bank_account',
             'process_payment',
-            'Write',
+            'write',
           ]);
         });
 

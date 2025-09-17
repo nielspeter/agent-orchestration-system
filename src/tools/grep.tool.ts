@@ -8,7 +8,7 @@ import { BaseTool, ToolResult } from '@/base-types';
  * Returns matches in format: filename:line:content
  */
 export const createGrepTool = (): BaseTool => ({
-  name: 'Grep',
+  name: 'grep',
   description:
     'Search for text patterns in files. Returns matching lines with file and line number.',
   parameters: {

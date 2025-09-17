@@ -106,7 +106,7 @@ describe('Storage Implementations', () => {
         timestamp: Date.now(),
         data: {
           id: 'call-123',
-          tool: 'Read',
+          tool: 'read',
           params: {
             path: '/some/path',
             options: { recursive: true },
