@@ -43,8 +43,8 @@ tmp/
 
 # Examples
 examples/coding-team/sample-project/
-examples/udbud/
 examples/critical-illness-claim/results/*.json
+examples/udbud/output/
 
 # Test artifacts
 test-sessions/

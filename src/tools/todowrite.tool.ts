@@ -17,7 +17,7 @@ export interface TodoItem {
  * The TodoWrite tool - for task planning and progress tracking
  */
 export const createTodoWriteTool = (todoManager: TodoManager): Tool => ({
-  name: 'TodoWrite',
+  name: 'todowrite',
   description: `Use this tool to create and manage a structured task list for your current coding session. This helps you track progress, organize complex tasks, and demonstrate thoroughness to the user.
 It also helps the user understand the progress of the task and overall progress of their requests.
 

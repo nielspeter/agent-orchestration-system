@@ -51,7 +51,7 @@ export class ClaimEventParser {
   static extractWorkflowPath(messages: any[]): string[] {
     for (const msg of messages) {
       // Look for Write tool call with results
-      if (msg.type === 'tool_call' && msg.data?.tool === 'Write') {
+      if (msg.type === 'tool_call' && msg.data?.tool === 'write') {
         const content = msg.data.params?.content;
         if (content) {
           try {
@@ -87,7 +87,7 @@ export class ClaimEventParser {
   static extractFinalOutcome(messages: any[]): string | null {
     for (const msg of messages) {
       // Look for Write tool call with results
-      if (msg.type === 'tool_call' && msg.data?.tool === 'Write') {
+      if (msg.type === 'tool_call' && msg.data?.tool === 'write') {
         const content = msg.data.params?.content;
         if (content) {
           try {
@@ -110,7 +110,7 @@ export class ClaimEventParser {
   static extractClaimDetails(messages: any[]): ClaimDetails | null {
     for (const msg of messages) {
       // Look for Write tool call with complete results
-      if (msg.type === 'tool_call' && msg.data?.tool === 'Write') {
+      if (msg.type === 'tool_call' && msg.data?.tool === 'write') {
         const content = msg.data.params?.content;
         if (content) {
           try {
@@ -143,7 +143,7 @@ export class ClaimEventParser {
 
     for (const msg of messages) {
       // Check for Task tool calls (real delegation)
-      if (msg.type === 'tool_call' && msg.data?.tool === 'Task') {
+      if (msg.type === 'tool_call' && msg.data?.tool === 'task') {
         delegations.push({
           from: msg.data.agent || 'claim-orchestrator',
           to: msg.data.params?.subagent_type || 'unknown',
@@ -244,7 +244,7 @@ export class ClaimEventParser {
    */
   static extractWriteToolCall(messages: any[]): { file_path: string; content: any } | null {
     for (const msg of messages) {
-      if (msg.type === 'tool_call' && msg.data?.tool === 'Write') {
+      if (msg.type === 'tool_call' && msg.data?.tool === 'write') {
         return {
           // Support both 'file_path' and 'path' for compatibility
           file_path: msg.data.params?.file_path || msg.data.params?.path || '',
@@ -294,7 +294,7 @@ export class ClaimEventParser {
   static extractAuditTrail(messages: any[]): AuditEntry[] {
     for (const msg of messages) {
       // Look for Write tool call with audit trail
-      if (msg.type === 'tool_call' && msg.data?.tool === 'Write') {
+      if (msg.type === 'tool_call' && msg.data?.tool === 'write') {
         const content = msg.data.params?.content;
         if (content) {
           try {

@@ -30,7 +30,7 @@ describe('ExecutorService - Critical Path (Minimal MVP Tests)', () => {
     it('should group consecutive safe tools together', () => {
       // This is the ACTUAL behavior - groups consecutive tools with same safety
       registry.register({
-        name: 'Read',
+        name: 'read',
         description: 'Read file',
         parameters: { type: 'object', properties: {}, required: [] },
         execute: vi.fn(),
@@ -38,9 +38,9 @@ describe('ExecutorService - Critical Path (Minimal MVP Tests)', () => {
       });
 
       const toolCalls: ToolCall[] = [
-        { id: '1', type: 'function', function: { name: 'Read', arguments: '{}' } },
-        { id: '2', type: 'function', function: { name: 'Read', arguments: '{}' } },
-        { id: '3', type: 'function', function: { name: 'Read', arguments: '{}' } },
+        { id: '1', type: 'function', function: { name: 'read', arguments: '{}' } },
+        { id: '2', type: 'function', function: { name: 'read', arguments: '{}' } },
+        { id: '3', type: 'function', function: { name: 'read', arguments: '{}' } },
       ];
 
       const groups = groupToolsByConcurrency(toolCalls, registry);
@@ -54,7 +54,7 @@ describe('ExecutorService - Critical Path (Minimal MVP Tests)', () => {
     it('should NOT separate non-consecutive unsafe tools - this is the actual behavior', () => {
       // The implementation groups CONSECUTIVE tools with same safety
       registry.register({
-        name: 'Write',
+        name: 'write',
         description: 'Write file',
         parameters: { type: 'object', properties: {}, required: [] },
         execute: vi.fn(),
@@ -62,8 +62,8 @@ describe('ExecutorService - Critical Path (Minimal MVP Tests)', () => {
       });
 
       const toolCalls: ToolCall[] = [
-        { id: '1', type: 'function', function: { name: 'Write', arguments: '{}' } },
-        { id: '2', type: 'function', function: { name: 'Write', arguments: '{}' } },
+        { id: '1', type: 'function', function: { name: 'write', arguments: '{}' } },
+        { id: '2', type: 'function', function: { name: 'write', arguments: '{}' } },
       ];
 
       const groups = groupToolsByConcurrency(toolCalls, registry);
@@ -76,7 +76,7 @@ describe('ExecutorService - Critical Path (Minimal MVP Tests)', () => {
 
     it('should create new group when safety changes', () => {
       registry.register({
-        name: 'Read',
+        name: 'read',
         description: 'Read file',
         parameters: { type: 'object', properties: {}, required: [] },
         execute: vi.fn(),
@@ -84,7 +84,7 @@ describe('ExecutorService - Critical Path (Minimal MVP Tests)', () => {
       });
 
       registry.register({
-        name: 'Write',
+        name: 'write',
         description: 'Write file',
         parameters: { type: 'object', properties: {}, required: [] },
         execute: vi.fn(),
@@ -92,9 +92,9 @@ describe('ExecutorService - Critical Path (Minimal MVP Tests)', () => {
       });
 
       const toolCalls: ToolCall[] = [
-        { id: '1', type: 'function', function: { name: 'Read', arguments: '{}' } },
-        { id: '2', type: 'function', function: { name: 'Write', arguments: '{}' } },
-        { id: '3', type: 'function', function: { name: 'Read', arguments: '{}' } },
+        { id: '1', type: 'function', function: { name: 'read', arguments: '{}' } },
+        { id: '2', type: 'function', function: { name: 'write', arguments: '{}' } },
+        { id: '3', type: 'function', function: { name: 'read', arguments: '{}' } },
       ];
 
       const groups = groupToolsByConcurrency(toolCalls, registry);
@@ -202,7 +202,7 @@ describe('ExecutorService - Critical Path (Minimal MVP Tests)', () => {
       const mockDelegate = vi.fn().mockResolvedValue('delegation result');
 
       registry.register({
-        name: 'Task',
+        name: 'task',
         description: 'Delegate to sub-agent',
         parameters: { type: 'object', properties: {}, required: [] },
         execute: vi.fn(), // This won't be called
@@ -213,7 +213,7 @@ describe('ExecutorService - Critical Path (Minimal MVP Tests)', () => {
         id: 'test-1',
         type: 'function',
         function: {
-          name: 'Task',
+          name: 'task',
           arguments: JSON.stringify({
             subagent_type: 'helper',
             prompt: 'Do something',
@@ -243,7 +243,7 @@ describe('ExecutorService - Critical Path (Minimal MVP Tests)', () => {
       const mockDelegate = vi.fn().mockResolvedValue('result');
 
       registry.register({
-        name: 'Task',
+        name: 'task',
         description: 'Delegate',
         parameters: { type: 'object', properties: {}, required: [] },
         execute: vi.fn(),
@@ -263,7 +263,7 @@ describe('ExecutorService - Critical Path (Minimal MVP Tests)', () => {
         id: 'test-1',
         type: 'function',
         function: {
-          name: 'Task',
+          name: 'task',
           arguments: JSON.stringify({
             subagent_type: 'child',
             prompt: 'test',

@@ -27,9 +27,11 @@ async function runCodingTeam() {
   console.log('='.repeat(50));
 
   // Build the system with coding agents
+  // .default() already includes read, write, list, grep, task, todowrite
+  // We just need to add shell
   const system = await AgentSystemBuilder.default()
     .withAgentsFrom(path.join(__dirname, 'agents'))
-    .withBuiltinTools('read', 'write', 'list', 'grep', 'task', 'todowrite', 'shell')
+    .addBuiltinTools('shell') // Add shell to the default tools
     .with({
       safety: {
         maxIterations: 20, // Allow more iterations for complex coding tasks

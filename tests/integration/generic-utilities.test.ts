@@ -35,7 +35,7 @@ describe('Generic Test Utilities', () => {
         timestamp: BASE_TIMESTAMP + 2000,
         data: {
           agent: 'orchestrator',
-          tool: 'Read',
+          tool: 'read',
           tool_call_id: 'call_001',
           params: { file: 'data.json' },
         },
@@ -62,7 +62,7 @@ describe('Generic Test Utilities', () => {
         timestamp: BASE_TIMESTAMP + 5000,
         data: {
           agent: 'data-processor',
-          tool: 'Write',
+          tool: 'write',
           tool_call_id: 'call_002',
           params: { file: 'output.json', content: '{}' },
         },
@@ -89,7 +89,7 @@ describe('Generic Test Utilities', () => {
         timestamp: BASE_TIMESTAMP + 8000,
         data: {
           agent: 'validator',
-          tool: 'Grep',
+          tool: 'grep',
           tool_call_id: 'call_003',
           params: { pattern: 'error', path: 'logs/' },
         },
@@ -124,18 +124,18 @@ describe('Generic Test Utilities', () => {
     });
 
     it('should extract tool calls by type', () => {
-      const readCalls = EventStreamParser.extractToolCalls(messages, 'Read');
-      const writeCalls = EventStreamParser.extractToolCalls(messages, 'Write');
+      const readCalls = EventStreamParser.extractToolCalls(messages, 'read');
+      const writeCalls = EventStreamParser.extractToolCalls(messages, 'write');
       const allCalls = EventStreamParser.extractToolCalls(messages);
 
       expect(readCalls).toHaveLength(1);
-      expect(readCalls[0]?.tool).toBe('Read');
+      expect(readCalls[0]?.tool).toBe('read');
 
       expect(writeCalls).toHaveLength(1);
-      expect(writeCalls[0]?.tool).toBe('Write');
+      expect(writeCalls[0]?.tool).toBe('write');
 
       expect(allCalls).toHaveLength(3);
-      expect(allCalls.map((c) => c?.tool)).toEqual(['Read', 'Write', 'Grep']);
+      expect(allCalls.map((c) => c?.tool)).toEqual(['read', 'write', 'grep']);
     });
 
     it('should extract unique agent calls', () => {
@@ -179,8 +179,8 @@ describe('Generic Test Utilities', () => {
     });
 
     it('should work with toHaveExecutedTools matcher', () => {
-      expect(messages).toHaveExecutedTools(['Read', 'Write', 'Grep']);
-      expect(messages).not.toHaveExecutedTools(['TodoWrite', 'List']);
+      expect(messages).toHaveExecutedTools(['read', 'write', 'grep']);
+      expect(messages).not.toHaveExecutedTools(['todowrite', 'list']);
     });
 
     it('should work with toNotContainPatterns matcher', () => {
@@ -236,23 +236,23 @@ describe('Generic Test Utilities', () => {
         {
           type: 'tool_call',
           timestamp: BASE_TIMESTAMP + 1000,
-          data: { agent: 'worker', tool: 'Read', tool_call_id: '1', params: {} },
+          data: { agent: 'worker', tool: 'read', tool_call_id: '1', params: {} },
         },
         {
           type: 'tool_call',
           timestamp: BASE_TIMESTAMP + 1000,
-          data: { agent: 'worker', tool: 'Read', tool_call_id: '2', params: {} },
+          data: { agent: 'worker', tool: 'read', tool_call_id: '2', params: {} },
         },
         {
           type: 'tool_call',
           timestamp: BASE_TIMESTAMP + 1000,
-          data: { agent: 'worker', tool: 'Read', tool_call_id: '3', params: {} },
+          data: { agent: 'worker', tool: 'read', tool_call_id: '3', params: {} },
         },
       ];
 
-      const toolCalls = EventStreamParser.extractToolCalls(parallelMessages, 'Read');
+      const toolCalls = EventStreamParser.extractToolCalls(parallelMessages, 'read');
       expect(toolCalls).toHaveLength(3);
-      expect(toolCalls.every((tc) => tc?.tool === 'Read')).toBe(true);
+      expect(toolCalls.every((tc) => tc?.tool === 'read')).toBe(true);
     });
 
     it('should handle empty or minimal message streams', () => {

@@ -54,10 +54,10 @@ describe('System Structure Tests', () => {
       const tools = toolRegistry.getAllTools();
       const toolNames = tools.map((t) => t.name);
 
-      expect(toolNames).toContain('Read');
-      expect(toolNames).toContain('Write');
-      expect(toolNames).toContain('List');
-      expect(toolNames).toContain('Task');
+      expect(toolNames).toContain('read');
+      expect(toolNames).toContain('write');
+      expect(toolNames).toContain('list');
+      expect(toolNames).toContain('task');
       expect(tools.length).toBe(4);
     });
 
@@ -67,7 +67,7 @@ describe('System Structure Tests', () => {
 
       // Orchestrator with tools: "*" should have access to all tools
       expect(tools.length).toBe(4);
-      expect(tools.map((t) => t.name)).toContain('Task');
+      expect(tools.map((t) => t.name)).toContain('task');
     });
 
     test('should filter tools for code-analyzer (limited tools)', async () => {
@@ -107,7 +107,7 @@ describe('System Structure Tests', () => {
     test('orchestrator should have Task tool for delegation', async () => {
       const orchestrator = await agentLoader.loadAgent('orchestrator');
       const tools = toolRegistry.filterForAgent(orchestrator);
-      const hasTaskTool = tools.some((t) => t.name === 'Task');
+      const hasTaskTool = tools.some((t) => t.name === 'task');
 
       expect(hasTaskTool).toBe(true);
     });
@@ -115,7 +115,7 @@ describe('System Structure Tests', () => {
     test('child agents should not have Task tool', async () => {
       const analyzer = await agentLoader.loadAgent('code-analyzer');
       const tools = toolRegistry.filterForAgent(analyzer);
-      const hasTaskTool = tools.some((t) => t.name === 'Task');
+      const hasTaskTool = tools.some((t) => t.name === 'task');
 
       expect(hasTaskTool).toBe(false);
     });

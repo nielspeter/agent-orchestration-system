@@ -161,13 +161,29 @@ export class AgentSystemBuilder {
   }
 
   /**
-   * Configure built-in tools
+   * Configure built-in tools (replaces existing built-in tools)
+   * Use this when you want to specify exactly which tools are available.
+   * For adding tools to existing set, use addBuiltinTools() or specific methods like withTodoTool()
    */
   withBuiltinTools(...tools: string[]): AgentSystemBuilder {
     return this.with({
       tools: {
         ...this.config.tools,
         builtin: tools,
+      },
+    });
+  }
+
+  /**
+   * Add built-in tools to existing set (additive)
+   */
+  addBuiltinTools(...tools: string[]): AgentSystemBuilder {
+    const current = this.config.tools?.builtin || [];
+    const combined = [...new Set([...current, ...tools])]; // Use Set to avoid duplicates
+    return this.with({
+      tools: {
+        ...this.config.tools,
+        builtin: combined,
       },
     });
   }
@@ -183,8 +199,7 @@ export class AgentSystemBuilder {
    * Add todo management tool
    */
   withTodoTool(): AgentSystemBuilder {
-    const current = this.config.tools?.builtin || [];
-    return this.withBuiltinTools(...current, 'todowrite');
+    return this.addBuiltinTools('todowrite');
   }
 
   /**
@@ -591,7 +606,7 @@ export class AgentSystemBuilder {
         throw new Error(
           `Agent "${agentName}" requests tools that don't exist: [${missingTools.join(', ')}]\n` +
             `Available tools: [${availableTools}]\n` +
-            'Hint: Tool names are case-sensitive. Use exact names like "Read", "Write", "Task", etc.'
+            'Hint: Tool names are case-sensitive and lowercase. Use exact names like "read", "write", "task", etc.'
         );
       }
     }

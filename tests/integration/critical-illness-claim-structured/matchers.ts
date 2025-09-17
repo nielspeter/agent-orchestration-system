@@ -87,7 +87,7 @@ expect.extend({
   toHaveRealDelegations(messages: any[]) {
     const delegations = ClaimEventParser.extractRealDelegations(messages);
     const hasTaskCalls = messages.some(
-      (msg: any) => msg.type === 'tool_call' && msg.data?.tool === 'Task'
+      (msg: any) => msg.type === 'tool_call' && msg.data?.tool === 'task'
     );
     const hasDelegationEvents = messages.some((msg: any) => msg.type === 'delegation');
 

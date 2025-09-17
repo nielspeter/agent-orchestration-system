@@ -11,7 +11,7 @@ describe('CompositeLogger', () => {
 
       composite.logUserMessage('Test message');
       composite.logAssistantMessage('agent', 'Response');
-      composite.logToolCall('agent', 'Read', 'call-id', { file: 'test.txt' });
+      composite.logToolCall('agent', 'read', 'call-id', { file: 'test.txt' });
 
       expect(logger1.logUserMessage).toHaveBeenCalledWith('Test message');
       expect(logger2.logUserMessage).toHaveBeenCalledWith('Test message');
@@ -19,7 +19,7 @@ describe('CompositeLogger', () => {
       expect(logger2.logAssistantMessage).toHaveBeenCalledWith('agent', 'Response', undefined);
       expect(logger1.logToolCall).toHaveBeenCalledWith(
         'agent',
-        'Read',
+        'read',
         'call-id',
         {
           file: 'test.txt',
@@ -28,7 +28,7 @@ describe('CompositeLogger', () => {
       );
       expect(logger2.logToolCall).toHaveBeenCalledWith(
         'agent',
-        'Read',
+        'read',
         'call-id',
         {
           file: 'test.txt',
@@ -103,30 +103,30 @@ describe('CompositeLogger', () => {
       const logger = createMockLogger();
       const composite = new CompositeLogger([logger]);
 
-      composite.logToolCall('agent', 'Read', 'call-id', { file: 'test.txt' });
-      composite.logToolExecution('agent', 'Read', 'tool-id-1');
-      composite.logToolResult('agent', 'Read', 'tool-id-1', 'file contents');
-      composite.logToolError('agent', 'Read', 'tool-id-1', new Error('File not found'));
+      composite.logToolCall('agent', 'read', 'call-id', { file: 'test.txt' });
+      composite.logToolExecution('agent', 'read', 'tool-id-1');
+      composite.logToolResult('agent', 'read', 'tool-id-1', 'file contents');
+      composite.logToolError('agent', 'read', 'tool-id-1', new Error('File not found'));
 
       expect(logger.logToolCall).toHaveBeenCalledWith(
         'agent',
-        'Read',
+        'read',
         'call-id',
         {
           file: 'test.txt',
         },
         undefined
       );
-      expect(logger.logToolExecution).toHaveBeenCalledWith('agent', 'Read', 'tool-id-1');
+      expect(logger.logToolExecution).toHaveBeenCalledWith('agent', 'read', 'tool-id-1');
       expect(logger.logToolResult).toHaveBeenCalledWith(
         'agent',
-        'Read',
+        'read',
         'tool-id-1',
         'file contents'
       );
       expect(logger.logToolError).toHaveBeenCalledWith(
         'agent',
-        'Read',
+        'read',
         'tool-id-1',
         expect.any(Error)
       );
