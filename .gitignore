@@ -1,8 +1,6 @@
 # Dependencies
 node_modules/
 npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
 
 # Environment variables
 .env
@@ -38,6 +36,7 @@ logs/
 # Temporary files
 *.tmp.env.test
 .agent-sessions/
+.playwright-mcp/
 temp/
 tmp/
 
@@ -47,7 +46,7 @@ examples/critical-illness-claim/results/*.json
 examples/udbud/output/
 
 # Test artifacts
-test-sessions/
 *.zip
+test-sessions/
 vite.config.ts
 vitest.config.ts
