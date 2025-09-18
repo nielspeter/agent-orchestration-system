@@ -107,10 +107,10 @@ Tender: [Name]
 |-----------|---------|------|-------|
 | [Tech] | [Ver] | [MUST/SHOULD] | [FAKTA - doc] |
 
-### Nine's Match
-| Teknologi | Kompetence | Status |
-|-----------|------------|---------|
-| [Tech] | [INTERN VURDERING PÅKRÆVET] | ⚠️ |
+### Teknologi Krav Status
+| Teknologi | Krævet i Udbudsmateriale | Sektion |
+|-----------|--------------------------|----------|
+| [Tech] | [FAKTA - doc reference] | [Section] |
 
 ## 4. NON-FUNCTIONAL REQUIREMENTS
 ### Performance

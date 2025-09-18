@@ -139,37 +139,37 @@ Status: Initial Analysis
 |----------|------|--------|-------|
 | [filename] | [Type] | ✅ Analyseret | [Notes] |
 
-## 6. IDENTIFICEREDE GAPS
-- [Missing info] [UKENDT]
-- [Unclear requirement] [UKLAR]
+## 6. IDENTIFICEREDE INFORMATIONSMANGLER
+- [Missing info] [UKENDT - ikke fundet i materiale]
+- [Unclear requirement] [UKLAR - tvetydig formulering]
 
-## 7. NÆSTE SKRIDT
-1. [Action item]
-2. [Action item]
+## 7. DOKUMENTER DER SKAL ANALYSERES
+1. [Document name] - [Status: Ikke påbegyndt/Påbegyndt/Færdig]
+2. [Document name] - [Status: Ikke påbegyndt/Påbegyndt/Færdig]
 ```
 
 ### 6. Create Initial TODO List
 
-Use TodoWrite tool to create project tasks with the following items:
+Use TodoWrite tool to create project tracking with the following items:
 
-1. **Review all tender documents** - Go through all tender documentation thoroughly to understand requirements and scope
-2. **Identify clarification questions** - Note any unclear points or ambiguities that need clarification from the buyer
-3. **Technical analysis** - Analyze technical requirements and assess feasibility
-4. **Resource estimation** - Calculate required resources (hours, people, skills) for the project
-5. **Go/No-Go analysis** - Evaluate whether to proceed with the bid based on capabilities and risks
-6. **Prepare clarification questions** - Formulate questions for submission before the deadline
+1. **Document all tender files** - List all tender documentation files and their status
+2. **Track information gaps** - Document any missing or unclear information found
+3. **Technical information extraction** - Extract technical requirements from documents
+4. **Resource requirements documentation** - Document stated resource requirements from tender
+5. **Decision support compilation** - Compile factual information for management review
+6. **Information gap documentation** - Document all identified gaps and ambiguities
 
 Each task should be marked as "pending" initially and updated to "in_progress" when work begins, then "completed" when done.
 
 ### 7. Report Setup Completion
 
-Provide summary of setup:
+Provide status report:
 - Output directory created: `examples/udbud/output/`
 - Files created in output directory
-- Documents analyzed from `examples/udbud/dokumenter/udbud/`
-- Critical dates identified
-- Initial gaps found
-- Recommended next actions
+- Documents found in `examples/udbud/dokumenter/udbud/`
+- Dates extracted from tender [FAKTA]
+- Information gaps documented [UKENDT/UKLAR]
+- Document analysis status
 
 ## Important Notes
 
