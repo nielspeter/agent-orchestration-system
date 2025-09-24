@@ -53,7 +53,7 @@ Create a Mermaid sequence diagram showing:
 - User interactions
 - Agent responses
 - Tool calls and results
-- Agent delegations (Task tool calls)
+- Agent delegations (Delegate tool calls)
 
 Example format:
 ```mermaid
@@ -91,7 +91,7 @@ Create a single markdown file at `session-analysis/[session-id].md` containing a
 ## Important Notes
 
 - Parse JSON carefully - each line is a separate JSON object
-- Track agent delegations through Task tool calls
+- Track agent delegations through Delegate tool calls
 - Note any errors or failed tool calls
 - Calculate actual durations from timestamps
 - Include all tool usage with parameters
