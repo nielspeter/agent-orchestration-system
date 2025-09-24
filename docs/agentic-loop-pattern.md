@@ -63,7 +63,7 @@ Iteration 1:
 
 Iteration 2:
   Think: "Now I need to validate the illness type"
-  Act: Call Task tool to delegate to validator
+  Act: Call Delegate tool to delegate to validator
   Observe: Get validation result
   Continue: Yes (made tool call)
 
@@ -227,6 +227,6 @@ The agentic loop is not a bug or missing feature - **it's THE core feature**. Ev
 - Context building
 - Safe termination
 
-This pattern, combined with delegation via Task tool, creates a powerful system where agents can both **think deeply** (iteration) and **work together** (delegation).
+This pattern, combined with delegation via Delegate tool, creates a powerful system where agents can both **think deeply** (iteration) and **work together** (delegation).
 
 The system already implements this beautifully - it just wasn't explicitly documented as the "agentic loop" or "ReAct pattern". But it's there, in every agent execution.

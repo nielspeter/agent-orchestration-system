@@ -143,7 +143,7 @@ The CLI will search for the following in order:
     "read",
     "write",
     "shell",
-    "task"
+    "delegate"
   ],
   "safety": {
     "maxIterations": 20,

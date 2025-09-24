@@ -2,7 +2,7 @@
 export { createListTool, createReadTool, createWriteTool } from './file.tool';
 export { createGrepTool } from './grep.tool';
 export { createShellTool } from './shell.tool';
-export { createTaskTool } from './task.tool';
+export { createDelegateTool } from './delegate.tool';
 export { createTodoWriteTool } from './todowrite.tool';
 export { createGetSessionLogTool } from './get-session-log.tool';
 

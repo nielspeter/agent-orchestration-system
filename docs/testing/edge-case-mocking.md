@@ -18,7 +18,7 @@ describe('Network failure handling', () => {
       .withProvider(mock)
       .build();
 
-    await expect(system.executor.execute('agent', 'task'))
+    await expect(system.executor.execute('agent', 'delegate'))
       .rejects.toThrow('timeout');
   });
 
@@ -44,7 +44,7 @@ test('handles malformed JSON response', async () => {
     content: '{"status": "complete", "data": {broken json here'
   });
 
-  const result = await system.executor.execute('json-agent', 'task');
+  const result = await system.executor.execute('json-agent', 'delegate');
   expect(result).toContain('error'); // Should handle gracefully
 });
 
@@ -76,7 +76,7 @@ test('respects MAX_ITERATIONS limit', async () => {
     mock.mockToolCall('Read', { file_path: `/file${i}.ts` });
   }
 
-  const result = await system.executor.execute('agent', 'task');
+  const result = await system.executor.execute('agent', 'delegate');
 
   // Should stop at MAX_ITERATIONS (10), not continue to 20
   expect(mock.getCallCount()).toBeLessThanOrEqual(10);
@@ -94,7 +94,7 @@ test('respects MAX_DEPTH limit', async () => {
   }
 
   // Should stop at MAX_DEPTH (5)
-  const result = await system.executor.execute('parent', 'task');
+  const result = await system.executor.execute('parent', 'delegate');
   expect(result).not.toContain('Maximum depth exceeded');
 });
 ```

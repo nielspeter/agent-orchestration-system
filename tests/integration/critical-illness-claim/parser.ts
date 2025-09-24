@@ -136,17 +136,17 @@ export class ClaimEventParser {
   }
 
   /**
-   * Extract real delegations (via Task tool)
+   * Extract real delegations (via Delegate tool)
    */
   static extractRealDelegations(messages: any[]): Delegation[] {
     const delegations: Delegation[] = [];
 
     for (const msg of messages) {
-      // Check for Task tool calls (real delegation)
-      if (msg.type === 'tool_call' && msg.data?.tool === 'task') {
+      // Check for Delegate tool calls (real delegation)
+      if (msg.type === 'tool_call' && msg.data?.tool === 'delegate') {
         delegations.push({
           from: msg.data.agent || 'claim-orchestrator',
-          to: msg.data.params?.subagent_type || 'unknown',
+          to: msg.data.params?.agent || 'unknown',
           task: msg.data.params?.description || msg.data.params?.prompt?.substring(0, 100) || '',
         });
       }

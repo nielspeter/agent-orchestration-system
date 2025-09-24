@@ -42,7 +42,7 @@ User Request → Orchestrator (session_123)
 Every JSONL file contains:
 ```json
 {"type":"tool_call","timestamp":1234567890,"data":{"id":"call_123","tool":"Task","params":{"subagent_type":"claim-agent","prompt":"Analyze claim"},"agent":"orchestrator"}}
-{"type":"delegation","timestamp":1234567891,"data":{"parent":"orchestrator","child":"claim-agent","task":"Analyze claim"}}
+{"type":"delegation","timestamp":1234567891,"data":{"parent":"orchestrator","child":"claim-agent","delegate":"Analyze claim"}}
 {"type":"tool_call","timestamp":1234567892,"data":{"id":"call_456","tool":"Read","params":{"file":"claim.json"},"agent":"claim-agent"}}
 {"type":"tool_result","timestamp":1234567893,"data":{"toolCallId":"call_456","result":{...}}}
 ```

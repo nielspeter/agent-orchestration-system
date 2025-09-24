@@ -5,7 +5,7 @@ import { AgentExecutor, AgentLoader } from '@/agents';
 import {
   createListTool,
   createReadTool,
-  createTaskTool,
+  createDelegateTool,
   createTodoWriteTool,
   createWriteTool,
   ToolRegistry,
@@ -83,7 +83,7 @@ export class AgentOrchestrationSystem {
 
     // Task management tools
     this.toolRegistry.register(createTodoWriteTool(this.todoManager));
-    this.toolRegistry.register(await createTaskTool(this.agentLoader));
+    this.toolRegistry.register(await createDelegateTool(this.agentLoader));
   }
 
   /**
@@ -91,7 +91,7 @@ export class AgentOrchestrationSystem {
    *
    * This is the main execution method that delegates a task to a specialized agent.
    * The agent will have access to tools based on its configuration and can delegate
-   * to other agents using the Task tool.
+   * to other agents using the Delegate tool.
    *
    * @param agentName Name of the agent to execute (must exist in agentsDir)
    * @param prompt The task description or prompt for the agent

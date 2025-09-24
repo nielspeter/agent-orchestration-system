@@ -48,7 +48,7 @@ The system achieves complex multi-agent capabilities through simple abstractions
 - **Agent definition**: Markdown + YAML frontmatter
 - **Tool interface**: 5 methods
 - **Middleware**: Simple `(ctx, next) => {}` functions
-- **Delegation**: One tool (`Task`) handles all orchestration
+- **Delegation**: One tool (`Delegate`) handles all orchestration
 
 ## System Architecture
 

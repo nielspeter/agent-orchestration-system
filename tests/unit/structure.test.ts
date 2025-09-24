@@ -2,7 +2,7 @@ import { beforeAll, describe, expect, test } from 'vitest';
 import { AgentLoader } from '@/agents/loader';
 import { ToolRegistry } from '@/tools/registry/registry';
 import { createListTool, createReadTool, createWriteTool } from '@/tools/file.tool';
-import { createTaskTool } from '@/tools/task.tool';
+import { createDelegateTool } from '@/tools/delegate.tool';
 
 describe('System Structure Tests', () => {
   let agentLoader: AgentLoader;
@@ -17,7 +17,7 @@ describe('System Structure Tests', () => {
     toolRegistry.register(createReadTool());
     toolRegistry.register(createWriteTool());
     toolRegistry.register(createListTool());
-    toolRegistry.register(await createTaskTool(agentLoader));
+    toolRegistry.register(await createDelegateTool(agentLoader));
   });
 
   describe('Agent Loader', () => {
@@ -57,7 +57,7 @@ describe('System Structure Tests', () => {
       expect(toolNames).toContain('read');
       expect(toolNames).toContain('write');
       expect(toolNames).toContain('list');
-      expect(toolNames).toContain('task');
+      expect(toolNames).toContain('delegate');
       expect(tools.length).toBe(4);
     });
 
@@ -67,7 +67,7 @@ describe('System Structure Tests', () => {
 
       // Orchestrator with tools: "*" should have access to all tools
       expect(tools.length).toBe(4);
-      expect(tools.map((t) => t.name)).toContain('task');
+      expect(tools.map((t) => t.name)).toContain('delegate');
     });
 
     test('should filter tools for code-analyzer (limited tools)', async () => {
@@ -104,20 +104,20 @@ describe('System Structure Tests', () => {
   });
 
   describe('Agent Hierarchy', () => {
-    test('orchestrator should have Task tool for delegation', async () => {
+    test('orchestrator should have Delegate tool for delegation', async () => {
       const orchestrator = await agentLoader.loadAgent('orchestrator');
       const tools = toolRegistry.filterForAgent(orchestrator);
-      const hasTaskTool = tools.some((t) => t.name === 'task');
+      const hasDelegateTool = tools.some((t) => t.name === 'delegate');
 
-      expect(hasTaskTool).toBe(true);
+      expect(hasDelegateTool).toBe(true);
     });
 
-    test('child agents should not have Task tool', async () => {
+    test('child agents should not have Delegate tool', async () => {
       const analyzer = await agentLoader.loadAgent('code-analyzer');
       const tools = toolRegistry.filterForAgent(analyzer);
-      const hasTaskTool = tools.some((t) => t.name === 'task');
+      const hasDelegateTool = tools.some((t) => t.name === 'delegate');
 
-      expect(hasTaskTool).toBe(false);
+      expect(hasDelegateTool).toBe(false);
     });
 
     test('all agents should have defined tools', async () => {

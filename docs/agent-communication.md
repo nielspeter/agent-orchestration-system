@@ -26,7 +26,7 @@ graph LR
 
 ### From Parent to Child (Delegation)
 
-When a parent agent delegates to a child agent via the Task tool, **ONLY** the following is passed:
+When a parent agent delegates to a child agent via the Delegate tool, **ONLY** the following is passed:
 
 ```typescript
 // This is ALL that gets passed to child agent:

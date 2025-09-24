@@ -86,7 +86,7 @@ expect.extend({
   toHaveRealDelegations(messages: any[]) {
     const delegations = ClaimEventParser.extractRealDelegations(messages);
     const hasTaskCalls = messages.some(
-      (msg: any) => msg.type === 'tool_call' && msg.data?.tool === 'task'
+      (msg: any) => msg.type === 'tool_call' && msg.data?.tool === 'delegate'
     );
     const hasDelegationEvents = messages.some((msg: any) => msg.type === 'delegation');
 
@@ -97,7 +97,7 @@ expect.extend({
       message: () =>
         pass
           ? `Expected no real delegations, but found ${delegations.length}`
-          : 'Expected real delegations via Task tool, but found none. This suggests the orchestrator is simulating responses instead of delegating.',
+          : 'Expected real delegations via Delegate tool, but found none. This suggests the orchestrator is simulating responses instead of delegating.',
       actual: {
         delegations: delegations.length,
         hasTaskCalls,

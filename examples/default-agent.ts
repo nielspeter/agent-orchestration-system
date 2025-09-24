@@ -61,7 +61,7 @@ async function main() {
     // Create a simple orchestrator agent
     const orchestrator = await executor.execute(
       'default',
-      `You have the Task tool. Delegate this to the 'helper' agent (which doesn't exist):
+      `You have the Delegate tool. Delegate this to the 'helper' agent (which doesn't exist):
        "Create a list of 3 programming languages and their main use cases"
        
        Return the result you receive from the delegation.`

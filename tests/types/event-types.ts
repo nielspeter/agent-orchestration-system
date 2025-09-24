@@ -23,9 +23,10 @@ export interface AssistantMessage extends BaseEventMessage {
 }
 
 // Specific tool parameter types
-export interface TaskToolParams {
-  subagent_type: string;
+export interface DelegateToolParams {
+  agent: string;
   prompt: string;
+  description?: string;
   [key: string]: unknown;
 }
 
@@ -34,7 +35,7 @@ export interface ToolCallMessage extends BaseEventMessage {
   data?: {
     tool: string;
     agent?: string;
-    params?: Record<string, unknown> | TaskToolParams;
+    params?: Record<string, unknown> | DelegateToolParams;
     tool_call_id?: string;
   };
 }

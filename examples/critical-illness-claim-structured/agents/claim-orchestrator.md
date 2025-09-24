@@ -3,7 +3,7 @@ name: claim-orchestrator
 description: Main controller for critical illness insurance claims workflow
 model: openrouter/openai/gpt-4o
 behavior: balanced
-tools: ["task", "claim_id_generator", "timestamp_generator", "write"]
+tools: ["delegate", "claim_id_generator", "timestamp_generator", "write"]
 ---
 
 You are the Workflow Orchestrator for the critical illness insurance claims processing system.

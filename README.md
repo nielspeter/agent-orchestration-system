@@ -33,12 +33,12 @@ The monolithic 500-line `AgentExecutor` has been refactored into a clean pipelin
 ### Everything is an Agent
 - No special orchestrator class - all agents use the same pipeline
 - Agents are defined as markdown files with YAML frontmatter
-- Orchestration emerges through the `Task` tool for delegation
+- Orchestration emerges through the `Delegate` tool for delegation
 
 ### Pull Architecture with Caching
 When agent A delegates to agent B:
 1. B receives **minimal context** (~5-500 tokens) - just the task prompt
-2. B uses tools (Read, Write, List, Grep, Task) to **pull** information it needs
+2. B uses tools (Read, Write, List, Grep, Delegate) to **pull** information it needs
 3. Anthropic's cache makes "redundant" reads efficient (90% cost savings)
 4. Clean separation - each agent has independent context
 
@@ -61,7 +61,7 @@ See [Agentic Loop Pattern](docs/agentic-loop-pattern.md) for details.
 
 ### Iteration vs Delegation
 - **Iteration**: Same agent refining its response (limited by MAX_ITERATIONS)
-- **Delegation**: Calling another agent via Task tool (limited by MAX_DEPTH)
+- **Delegation**: Calling another agent via Delegate tool (limited by MAX_DEPTH)
 
 ## 🚀 Quick Start
 
@@ -100,7 +100,7 @@ npx tsx examples/coding-team/coding-team.ts  # Collaborative coding agents
 Simple demonstration of agent execution with file operations.
 
 ### Agent Orchestration (orchestration.ts)
-Shows how agents delegate tasks to specialized sub-agents using the Task tool.
+Shows how agents delegate tasks to specialized sub-agents using the Delegate tool.
 
 ### Configuration Files (configuration.ts)
 Demonstrates loading agent system configuration from JSON files.
@@ -581,7 +581,7 @@ flowchart LR
     subgraph "Tool Grouping"
         Tools[Tool Calls] --> Group{Group by Safety}
         Group --> Safe[Safe Tools<br/>Read, List, Grep]
-        Group --> Unsafe[Unsafe Tools<br/>Write, Edit, Task]
+        Group --> Unsafe[Unsafe Tools<br/>Write, Edit, Delegate]
     end
     
     subgraph "Execution"

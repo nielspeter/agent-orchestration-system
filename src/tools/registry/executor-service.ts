@@ -15,7 +15,7 @@ export interface ToolGroup {
 
 /**
  * Function signature for delegating execution to another agent
- * Used by the Task tool to recursively execute child agents
+ * Used by the Delegate tool to recursively execute child agents
  */
 export type ExecuteDelegate = (
   agentName: string,
@@ -127,7 +127,7 @@ export async function executeToolsConcurrently(
 /**
  * Executes a single tool call
  *
- * Handles special cases like Task delegation and provides
+ * Handles special cases like Delegate tool and provides
  * detailed logging and error handling for each tool execution.
  *
  * @param toolCall - The tool to execute
@@ -192,9 +192,14 @@ export async function executeSingleTool(
   // Execute the tool with parsed arguments
   let result: ToolResult;
   try {
-    if (tool.name === 'task') {
+    if (tool.name === 'delegate') {
       // Handle delegation to sub-agents
-      result = await handleDelegation(parsedArgs as TaskArgs, ctx, executeDelegate, toolCall.id);
+      result = await handleDelegation(
+        parsedArgs as DelegateArgs,
+        ctx,
+        executeDelegate,
+        toolCall.id
+      );
     } else {
       // Regular tool execution
       result = await tool.execute(parsedArgs);
@@ -218,11 +223,12 @@ export async function executeSingleTool(
 }
 
 /**
- * Task tool arguments interface
+ * Delegate tool arguments interface
  */
-interface TaskArgs {
-  subagent_type: string;
+interface DelegateArgs {
+  agent: string;
   prompt: string;
+  description?: string;
   [key: string]: unknown; // Allow additional properties
 }
 
@@ -230,7 +236,7 @@ interface TaskArgs {
  * Handles delegation to sub-agents
  */
 async function handleDelegation(
-  args: TaskArgs,
+  args: DelegateArgs,
   ctx: MiddlewareContext,
   executeDelegate: ExecuteDelegate,
   parentCallId: string
@@ -238,9 +244,9 @@ async function handleDelegation(
   // PULL ARCHITECTURE: Don't pass parent messages to child agents
   // will use tools to gather the information they need
 
-  ctx.logger.logDelegation(ctx.agentName, args.subagent_type, args.prompt);
+  ctx.logger.logDelegation(ctx.agentName, args.agent, args.prompt);
 
-  const subAgentResult = await executeDelegate(args.subagent_type, args.prompt, {
+  const subAgentResult = await executeDelegate(args.agent, args.prompt, {
     ...ctx.executionContext,
     depth: ctx.executionContext.depth + 1,
     parentAgent: ctx.agentName,

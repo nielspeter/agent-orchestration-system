@@ -44,7 +44,7 @@ const minimal = await AgentSystemBuilder.minimal()
   .withSessionId('minimal-demo')
   .build();
 
-// Default setup (includes task tool for delegation)
+// Default setup (includes delegate tool for delegation)
 const standard = await AgentSystemBuilder.default()
   .withSessionId('default-demo')
   .build();

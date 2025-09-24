@@ -162,7 +162,7 @@ test('delegates to validator', () => {
 ```typescript
 test('returns JSON', () => {
   mock.mockResponse({ content: '{"valid": "json"}' });
-  const result = await executor.execute('agent', 'task');
+  const result = await executor.execute('agent', 'delegate');
   expect(() => JSON.parse(result)).not.toThrow();
 });
 ```

@@ -231,7 +231,7 @@ export const DEFAULT_SYSTEM_CONFIG: ResolvedSystemConfig = {
   },
 
   tools: {
-    builtin: ['read', 'write', 'list', 'task'],
+    builtin: ['read', 'write', 'list', 'delegate'],
     custom: [],
     defaultTimeoutMs: 30000,
     maxConcurrentTools: 5,

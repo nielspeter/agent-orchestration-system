@@ -113,7 +113,7 @@ tools: [ "read" ]
 tools: [ "read", "write", "list" ]
 
 # Orchestrator
-tools: [ "task" ]
+tools: [ "delegate" ]
 
 # Full access (use sparingly)
 tools: [ "*" ]
@@ -158,7 +158,7 @@ Always test patterns with examples.
 ```markdown
 ---
 name: project-analyzer
-tools: ["task", "read", "list"]
+tools: ["delegate", "read", "list"]
 ---
 
 You analyze projects by coordinating specialists:

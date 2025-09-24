@@ -173,7 +173,7 @@ export class ToolRegistry {
 
 ```typescript
 {
-  name: 'task',
+  name: 'delegate',
   description: 'Delegate a task to another agent',
   inputSchema: {
     type: 'object',
@@ -193,7 +193,7 @@ export class ToolRegistry {
       }
     }
   ,
-    required: ['agent', 'task']
+    required: ['agent', 'delegate']
   }
 }
 ```
@@ -482,10 +482,10 @@ execute(input, context)
 {
   "tool_calls": [
     {
-      "name": "task",
+      "name": "delegate",
       "input": {
         "agent": "code-analyzer",
-        "task": "Analyze the architecture of src/"
+        "delegate": "Analyze the architecture of src/"
       }
     }
   ]
@@ -516,7 +516,7 @@ execute(input, context)
 
 1. **Parallel Execution**: Tools in same group run in parallel
 2. **Caching**: Read operations benefit from OS file cache
-3. **Delegation Overhead**: Task tool creates new execution context
+3. **Delegation Overhead**: Delegate tool creates new execution context
 4. **Resource Pooling**: Reuse connections/resources across calls
 
 ## Related Files

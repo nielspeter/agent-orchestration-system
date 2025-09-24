@@ -18,7 +18,7 @@ import { AgentExecutor } from '@/agents/executor';
 import { TodoManager } from '@/todos/manager';
 import { createListTool, createReadTool, createWriteTool } from '@/tools/file.tool';
 import { createGrepTool } from '@/tools/grep.tool';
-import { createTaskTool } from '@/tools/task.tool';
+import { createDelegateTool } from '@/tools/delegate.tool';
 import { createTodoWriteTool } from '@/tools/todowrite.tool';
 import { createShellTool } from '@/tools/shell.tool';
 import { createGetSessionLogTool } from '@/tools/get-session-log.tool';
@@ -189,10 +189,10 @@ export class AgentSystemBuilder {
   }
 
   /**
-   * Add default tools (read, write, list, task)
+   * Add default tools (read, write, list, delegate)
    */
   withDefaultTools(): AgentSystemBuilder {
-    return this.withBuiltinTools('read', 'write', 'list', 'task');
+    return this.withBuiltinTools('read', 'write', 'list', 'delegate');
   }
 
   /**
@@ -541,8 +541,8 @@ export class AgentSystemBuilder {
         case 'grep':
           toolRegistry.register(createGrepTool());
           break;
-        case 'task':
-          toolRegistry.register(await createTaskTool(agentLoader));
+        case 'delegate':
+          toolRegistry.register(await createDelegateTool(agentLoader));
           break;
         case 'todowrite': {
           todoManager = new TodoManager();
@@ -606,7 +606,7 @@ export class AgentSystemBuilder {
         throw new Error(
           `Agent "${agentName}" requests tools that don't exist: [${missingTools.join(', ')}]\n` +
             `Available tools: [${availableTools}]\n` +
-            'Hint: Tool names are case-sensitive and lowercase. Use exact names like "read", "write", "task", etc.'
+            'Hint: Tool names are case-sensitive and lowercase. Use exact names like "read", "write", "delegate", etc.'
         );
       }
     }
@@ -1011,7 +1011,7 @@ export class AgentSystemBuilder {
       agents: isTest
         ? { directories: ['tests/unit/test-agents'], agents: [] }
         : { directories: [] }, // Uses built-in default agent
-      tools: { builtin: ['read', 'write', 'list', 'grep', 'task', 'todowrite'] },
+      tools: { builtin: ['read', 'write', 'list', 'grep', 'delegate', 'todowrite'] },
       caching: { enabled: true, maxCacheBlocks: 4, cacheTTLMinutes: 5 },
       storage: { type: 'filesystem' }, // Implies event logging
       console: true, // Enable console with normal verbosity
