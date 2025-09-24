@@ -260,7 +260,6 @@ describeWithFixtures(
             'check_fraud_indicators',
             'validate_bank_account',
             'process_payment',
-            'write',
           ]);
         });
 

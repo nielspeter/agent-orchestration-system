@@ -373,7 +373,8 @@ export class AgentSystemBuilder {
     }
 
     // Check agent directories exist
-    if (this.config.agents?.directories) {
+    // Only validate directories if they are explicitly provided (non-empty array)
+    if (this.config.agents?.directories && this.config.agents.directories.length > 0) {
       for (const dir of this.config.agents.directories) {
         if (!fsSync.existsSync(dir)) {
           errors.push(`Agent directory not found: ${dir}`);
@@ -712,7 +713,9 @@ export class AgentSystemBuilder {
             : { type: 'object' as const, properties: {}, required: [] };
 
           const mcpTool: BaseTool = {
-            name: `${serverName}.${tool.name}`,
+            // Replace dots with underscores to comply with Anthropic's tool naming requirements
+            // Pattern: ^[a-zA-Z0-9_-]{1,128}
+            name: `${serverName}_${tool.name}`.replace(/\./g, '_'),
             description: tool.description || `Tool from ${serverName} MCP server`,
             parameters: toolSchema,
             execute: async (input: Record<string, unknown>) => {
@@ -825,8 +828,9 @@ export class AgentSystemBuilder {
       ...(resolvedConfig.agents.additionalDirectories || []),
     ];
 
-    // Use first directory or current directory if none specified
-    const primaryDir = allAgentDirs[0] || '.';
+    // Use first directory, or default to 'agents' directory
+    // If 'agents' doesn't exist, AgentLoader will gracefully fall back to just the default agent
+    const primaryDir = allAgentDirs[0] || 'agents';
     // Pass inline agents directly - they're already in the right format
     const inlineAgents = resolvedConfig.agents.agents;
     const agentLoader = new AgentLoader(primaryDir, logger, inlineAgents);
@@ -1010,7 +1014,7 @@ export class AgentSystemBuilder {
       model: isTest ? 'test-model' : DEFAULT_SYSTEM_CONFIG.model,
       agents: isTest
         ? { directories: ['tests/unit/test-agents'], agents: [] }
-        : { directories: [] }, // Uses built-in default agent
+        : { directories: [] }, // Empty directories - rely on built-in default agent
       tools: { builtin: ['read', 'write', 'list', 'grep', 'delegate', 'todowrite'] },
       caching: { enabled: true, maxCacheBlocks: 4, cacheTTLMinutes: 5 },
       storage: { type: 'filesystem' }, // Implies event logging

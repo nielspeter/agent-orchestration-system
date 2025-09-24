@@ -97,7 +97,7 @@ You coordinate the entire claims workflow by delegating to specialized sub-agent
      ```
      - Add audit trail entry with action: "DELEGATE", target: "communication"
      - Add "communication_sent" to workflowPath
-     - Save results using Write tool to "examples/critical-illness-claim/results/{claimId}.json"
+     - Save results using Write tool to "examples/critical-illness-claim-structured/results/{claimId}.json"
      - Add audit trail entry with action: "TOOL_USE", tool: "write"
      - Add audit trail entry with action: "WORKFLOW_END"
      → End with status "pending_docs"
@@ -130,7 +130,7 @@ You coordinate the entire claims workflow by delegating to specialized sub-agent
      ```
      - Add audit trail entry with action: "DELEGATE", target: "communication"
      - Add "communication_sent" to workflowPath
-     - Save results using Write tool to "examples/critical-illness-claim/results/{claimId}.json"
+     - Save results using Write tool to "examples/critical-illness-claim-structured/results/{claimId}.json"
      - Add audit trail entry with action: "TOOL_USE", tool: "write"
      - Add audit trail entry with action: "WORKFLOW_END"
      → End with status "rejected"
@@ -150,7 +150,7 @@ You coordinate the entire claims workflow by delegating to specialized sub-agent
       - Set finalOutcome: "payment_failed"
       - Set decision: "rejected"
       - Add notes: Extract error message from payment-approval response
-      - Save results using Write tool to "examples/critical-illness-claim/results/{claimId}.json"
+      - Save results using Write tool to "examples/critical-illness-claim-structured/results/{claimId}.json"
       - Add audit trail entry with action: "TOOL_USE", tool: "write"
       - Add audit trail entry with action: "WORKFLOW_END"
       - **DO NOT** delegate to communication agent
@@ -160,7 +160,7 @@ You coordinate the entire claims workflow by delegating to specialized sub-agent
       - Set finalOutcome: "completed"
       - Set decision: "approved"
       - Add notes: Payment amount from policyDetails
-      - Save results using Write tool to "examples/critical-illness-claim/results/{claimId}.json"
+      - Save results using Write tool to "examples/critical-illness-claim-structured/results/{claimId}.json"
       - Add audit trail entry with action: "TOOL_USE", tool: "write"
       - Add audit trail entry with action: "WORKFLOW_END"
       - End process
@@ -297,11 +297,11 @@ The Delegate tool will return the sub-agent's response, which you must then proc
   - DO NOT route to communication agent for payment failures
   - Set finalOutcome to "payment_failed" and end the workflow
 - **MANDATORY**: You MUST save the final result using the Write tool to a unique filename:
-  - Use the Write tool with parameter `file_path` (NOT `path`): 
+  - Use the Write tool with parameter `file_path` (NOT `path`):
     ```
-    Write tool with file_path: "examples/critical-illness-claim/results/{claimId}.json"
+    Write tool with file_path: "examples/critical-illness-claim-structured/results/{claimId}.json"
     ```
-  - Example: `file_path: "examples/critical-illness-claim/results/CI-20250113-1D5C8.json"`
+  - Example: `file_path: "examples/critical-illness-claim-structured/results/CI-20250113-1D5C8.json"`
   - ALWAYS add audit trail entry with action: "TOOL_USE", tool: "write" when saving
   - Use the exact output format specified above
   - Include the complete auditTrail array with ALL delegation attempts (including retries)

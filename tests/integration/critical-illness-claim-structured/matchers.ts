@@ -1,7 +1,5 @@
 import { expect } from 'vitest';
 import { ClaimEventParser } from './parser';
-import * as fs from 'fs';
-import * as path from 'path';
 
 interface CustomMatchers<R = unknown> {
   toHaveClaimDecision(expectedOutcome: string): R;

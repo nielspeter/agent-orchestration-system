@@ -52,6 +52,7 @@ async function defaultSetupExample() {
   // Default setup with file tools and example-specific agents
   const { executor, cleanup } = await AgentSystemBuilder.default()
     .withAgentsFrom('examples/configuration/agents')
+    .withSessionId(`config-default-${Date.now()}`) // Unique session for each run
     .build();
 
   const result = await executor.execute('orchestrator', 'List the files in the src directory');
@@ -68,6 +69,7 @@ async function fullSetupExample() {
   // Full setup with all tools including TodoWrite and example-specific agents
   const { executor, cleanup } = await AgentSystemBuilder.default()
     .withAgentsFrom('examples/configuration/agents')
+    .withSessionId(`config-full-${Date.now()}`) // Unique session for each run
     .build();
 
   const result = await executor.execute(
@@ -91,6 +93,7 @@ async function customConfigExample() {
     .withSafetyLimits({ maxIterations: 50 })
     .withConsole({ verbosity: 'verbose' })
     .withStorage('filesystem')
+    .withSessionId(`config-custom-${Date.now()}`) // Unique session for each run
     .build();
 
   // Use the custom setup
