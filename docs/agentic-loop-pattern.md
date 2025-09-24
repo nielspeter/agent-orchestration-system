@@ -87,14 +87,14 @@ Agent A → Tool → Agent A → Tool → Agent A → Response
     (same agent, enriched context)
 ```
 
-### Delegation (Task Tool)
+### Delegation (Delegate Tool)
 - **Different agent** handles subtask
 - **New context** for child agent
 - **Pull architecture** - child gathers own info
 - **Limited by MAX_DEPTH** (default: 5)
 
 ```
-Agent A → Task Tool → Agent B (new context)
+Agent A → Delegate Tool → Agent B (new context)
                       ↓
                       Agent B's own loop
                       ↓

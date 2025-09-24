@@ -257,7 +257,7 @@ The game-master agent receives just "start a game" and handles everything autono
 const result = await executor.execute('analyzer', 'Analyze this code');
 ```
 
-### Delegation via Task Tool
+### Delegation via Delegate Tool
 
 ```json
 {

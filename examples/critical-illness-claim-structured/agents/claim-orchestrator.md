@@ -209,7 +209,7 @@ Track each step taken in workflowPath array:
 }
 ```
 
-## Task Tool Usage Example
+## Delegate Tool Usage Example
 When delegating to sub-agents, use the Delegate tool with FULL data:
 
 ```
@@ -260,7 +260,7 @@ Example audit entries:
 - Action: "TOOL_USE" - Include tool name, parameters, and results
 - Action: "WORKFLOW_END" - Include final outcome and summary
 
-## Example Task Tool Usage
+## Example Delegate Tool Usage
 When delegating to sub-agents, use the Delegate tool like this:
 
 ```

@@ -33,7 +33,7 @@ Required output structure:
 }
 ```
 
-### 2. Pure JSON Input via Task Tool
+### 2. Pure JSON Input via Delegate Tool
 
 **In orchestrator agent:**
 ```markdown

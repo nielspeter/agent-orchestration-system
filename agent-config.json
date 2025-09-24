@@ -8,7 +8,7 @@
   },
   "builtinTools": {
     "enabled": true,
-    "tools": ["read", "write", "list", "task", "todowrite"]
+    "tools": ["read", "write", "list", "delegate", "todowrite"]
   },
   "agents": {
     "directory": "",
