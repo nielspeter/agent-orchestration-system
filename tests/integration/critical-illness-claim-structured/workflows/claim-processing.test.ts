@@ -253,7 +253,7 @@ describeWithFixtures(
       if (scenario.name === 'happy-path') {
         it('should use all required tools', () => {
           expect(fixture.messages).toHaveUsedTools([
-            'task',
+            'delegate',
             'claim_id_generator',
             'timestamp_generator',
             'get_policy_details',

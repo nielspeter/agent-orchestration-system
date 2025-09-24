@@ -164,8 +164,8 @@ async function orchestratedContext() {
     Available agents for delegation:
     - specialist: For scientific and technical explanations
     
-    Use the Task tool to delegate work when appropriate.`,
-    tools: ['Task'],
+    Use the Delegate tool to delegate work when appropriate.`,
+    tools: ['delegate'],
   };
 
   const specialist: Agent = {

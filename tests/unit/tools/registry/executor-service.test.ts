@@ -198,11 +198,11 @@ describe('ExecutorService - Critical Path (Minimal MVP Tests)', () => {
   });
 
   describe('Task Delegation - The Special Case', () => {
-    it('should handle Task tool delegation', async () => {
+    it('should handle Delegate tool delegation', async () => {
       const mockDelegate = vi.fn().mockResolvedValue('delegation result');
 
       registry.register({
-        name: 'task',
+        name: 'delegate',
         description: 'Delegate to sub-agent',
         parameters: { type: 'object', properties: {}, required: [] },
         execute: vi.fn(), // This won't be called
@@ -213,9 +213,9 @@ describe('ExecutorService - Critical Path (Minimal MVP Tests)', () => {
         id: 'test-1',
         type: 'function',
         function: {
-          name: 'task',
+          name: 'delegate',
           arguments: JSON.stringify({
-            subagent_type: 'helper',
+            agent: 'helper',
             prompt: 'Do something',
           }),
         },
@@ -243,7 +243,7 @@ describe('ExecutorService - Critical Path (Minimal MVP Tests)', () => {
       const mockDelegate = vi.fn().mockResolvedValue('result');
 
       registry.register({
-        name: 'task',
+        name: 'delegate',
         description: 'Delegate',
         parameters: { type: 'object', properties: {}, required: [] },
         execute: vi.fn(),
@@ -263,9 +263,9 @@ describe('ExecutorService - Critical Path (Minimal MVP Tests)', () => {
         id: 'test-1',
         type: 'function',
         function: {
-          name: 'task',
+          name: 'delegate',
           arguments: JSON.stringify({
-            subagent_type: 'child',
+            agent: 'child',
             prompt: 'test',
           }),
         },

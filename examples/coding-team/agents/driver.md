@@ -1,6 +1,6 @@
 ---
 name: driver
-tools: ["list", "todowrite", "task"]
+tools: ["list", "todowrite", "delegate"]
 behavior: balanced
 temperature: 0.5
 ---

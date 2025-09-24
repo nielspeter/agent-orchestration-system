@@ -32,7 +32,7 @@ export function createContextSetupMiddleware(): Middleware {
         const toolDescriptions = ctx.tools.map((t) => `- ${t.name}: ${t.description}`).join('\n');
         systemPrompt += `\n\n### AVAILABLE TOOLS
 You have access to ONLY the following tools: ${toolNames}
-DO NOT attempt to use any other tools or delegate to other agents unless you have the Task tool.
+DO NOT attempt to use any other tools or delegate to other agents unless you have the Delegate tool.
 ${toolDescriptions}`;
       } else {
         systemPrompt +=
@@ -68,7 +68,7 @@ Remember: You have full autonomy to investigate and discover. Use your tools!`;
         // Parent/orchestrator agent - manages workflow
         systemPrompt += `\n\n### ORCHESTRATION PROTOCOL
 As the orchestrator, you manage the overall workflow.
-When delegating to other agents via the Task tool, you will receive their response as the result.
+When delegating to other agents via the Delegate tool, you will receive their response as the result.
 Use these responses to coordinate the overall task completion.`;
       }
 

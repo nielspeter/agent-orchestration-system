@@ -191,7 +191,7 @@ export function createLLMCallMiddleware(provider: AnthropicProvider): Middleware
 - Parses tool calls from LLM response
 - Validates tool availability
 - Executes tools in parallel groups
-- Handles agent delegation (Task tool)
+- Handles agent delegation (Delegate tool)
 - Formats tool results for next iteration
 
 ## Middleware Context

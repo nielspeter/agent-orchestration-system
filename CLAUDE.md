@@ -69,13 +69,13 @@ The system uses a **Chain of Responsibility pattern** where each middleware hand
 ### Pull Architecture
 When agent A delegates to agent B:
 - B receives **only the task**, not parent's conversation history
-- B uses tools (Read, Write, List, Grep, Task) to gather needed information
+- B uses tools (Read, Write, List, Grep, Delegate) to gather needed information
 - Anthropic's cache makes repeated reads efficient (90% cost savings)
 - Each agent maintains independent context
 
 ### Key Design Decisions
 
-**Everything is an Agent**: No special orchestrator class. All agents use the same pipeline and can delegate to others via the Task tool.
+**Everything is an Agent**: No special orchestrator class. All agents use the same pipeline and can delegate to others via the Delegate tool.
 
 **Autonomous Agents**: Agents are self-contained entities with their own knowledge and decision-making:
 - Agent configuration lives in markdown files with YAML frontmatter
@@ -85,7 +85,7 @@ When agent A delegates to agent B:
 
 **Configuration via Builder Pattern**: `AgentSystemBuilder` provides fluent API with presets:
 - `.minimal()` - Just AgentExecutor, no tools
-- `.default()` - Standard tools (Read, Write, List, Grep, Task, TodoWrite)
+- `.default()` - Standard tools (Read, Write, List, Grep, Delegate, TodoWrite)
 - `.forTest()` - Optimized for testing
 
 **Safety First**: Hard limits prevent runaway execution:

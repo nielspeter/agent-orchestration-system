@@ -119,7 +119,7 @@ describe('SystemBuilder Helper Methods', () => {
       expect(toolNames).toContain('list');
       // Grep is not in default tools
       // expect(toolNames).toContain('grep');
-      expect(toolNames).toContain('task');
+      expect(toolNames).toContain('delegate');
 
       await result.cleanup();
     });
@@ -248,7 +248,7 @@ describe('SystemBuilder Helper Methods', () => {
       const toolNames = result.toolRegistry.getAllTools().map((t) => t.name);
       expect(toolNames.length).toBeGreaterThan(0);
       expect(toolNames).toContain('read');
-      expect(toolNames).toContain('task');
+      expect(toolNames).toContain('delegate');
 
       await result.cleanup();
     });

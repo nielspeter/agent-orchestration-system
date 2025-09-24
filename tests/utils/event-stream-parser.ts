@@ -3,7 +3,7 @@ import type {
   ParsedDelegation,
   ParsedExecution,
   ToolCallMessage,
-  TaskToolParams,
+  DelegateToolParams,
 } from '../types/event-types';
 
 /**
@@ -29,11 +29,11 @@ export class EventStreamParser {
         }
       } else if (msg.type === 'tool_call' && 'data' in msg) {
         const toolCallMsg = msg;
-        if (toolCallMsg.data?.tool === 'Task') {
-          const params = toolCallMsg.data.params as TaskToolParams | undefined;
+        if (toolCallMsg.data?.tool === 'Delegate') {
+          const params = toolCallMsg.data.params as DelegateToolParams | undefined;
           delegations.push({
             from: toolCallMsg.data.agent || 'unknown',
-            to: params?.subagent_type || 'unknown',
+            to: params?.agent || 'unknown',
             task: params?.prompt || '',
           });
         }

@@ -15,7 +15,7 @@ Agents are markdown files with three parts:
 ```markdown
 ---
 name: agent-name
-tools: ["read", "write", "task"]
+tools: ["read", "write", "delegate"]
 model: claude-3-5-haiku-latest  # optional
 ---
 
@@ -261,10 +261,10 @@ const result = await executor.execute('analyzer', 'Analyze this code');
 
 ```json
 {
-  "tool": "task",
+  "tool": "delegate",
   "input": {
     "agent": "specialist",
-    "task": "Handle this specific subtask"
+    "delegate": "Handle this specific subtask"
   }
 }
 ```
@@ -273,8 +273,8 @@ const result = await executor.execute('analyzer', 'Analyze this code');
 
 ```mermaid
 graph LR
-    A[orchestrator<br/>depth=0] -->|task tool| B[analyzer<br/>depth=1]
-    B -->|task tool| C[summarizer<br/>depth=2]
+    A[orchestrator<br/>depth=0] -->|delegate tool| B[analyzer<br/>depth=1]
+    B -->|delegate tool| C[summarizer<br/>depth=2]
 ```
 
 ## Agent Patterns
@@ -302,7 +302,7 @@ Coordinates other agents:
 ```markdown
 ---
 name: orchestrator
-tools: ["task"]
+tools: ["delegate"]
 ---
 
 You coordinate complex tasks by delegating to specialists:
@@ -334,7 +334,7 @@ Combines thinking and action:
 ```markdown
 ---
 name: debugger
-tools: ["read", "write", "task"]
+tools: ["read", "write", "delegate"]
 ---
 
 You debug code by:
@@ -531,7 +531,7 @@ Combine multiple agents:
 const metaAgent = {
   name: 'meta',
   prompt: 'You coordinate: ' + agents.map(a => a.name).join(', '),
-  tools: ['task']
+  tools: ['delegate']
 };
 ```
 

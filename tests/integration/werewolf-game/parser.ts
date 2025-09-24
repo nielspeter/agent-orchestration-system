@@ -55,10 +55,10 @@ export class GameEventParser {
           to: msg.data.child,
           task: msg.data.task,
         });
-      } else if (msg.type === 'tool_call' && msg.data?.tool === 'task') {
+      } else if (msg.type === 'tool_call' && msg.data?.tool === 'delegate') {
         delegations.push({
           from: msg.data.agent || 'unknown',
-          to: msg.data.params?.subagent_type || 'unknown',
+          to: msg.data.params?.agent || 'unknown',
           task: msg.data.params?.prompt || '',
         });
       }

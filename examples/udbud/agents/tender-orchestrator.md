@@ -1,6 +1,6 @@
 ---
 name: tender-orchestrator
-tools: ["task", "todowrite", "read", "list"]
+tools: ["delegate", "todowrite", "read", "list"]
 behavior: balanced
 temperature: 0.4
 ---

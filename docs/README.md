@@ -59,7 +59,7 @@ Agents don't receive full context from parents. Instead, they:
 
 - No special orchestrator class
 - All agents use the same middleware pipeline
-- Agents can delegate to other agents via Task tool
+- Agents can delegate to other agents via Delegate tool
 - Agents are defined as markdown files with YAML frontmatter
 
 ### Middleware Pipeline Pattern

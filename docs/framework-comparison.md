@@ -81,7 +81,7 @@ This document provides a comprehensive comparison between this agent orchestrati
 | Aspect | This System | CrewAI |
 |--------|-------------|---------|
 | **Agent Roles** | Defined via markdown prompts | Python class-based roles |
-| **Collaboration** | Delegation via Task tool | Process-driven collaboration |
+| **Collaboration** | Delegation via Delegate tool | Process-driven collaboration |
 | **Communication** | Pull architecture (agents query for info) | Direct message passing |
 | **Workflow** | Flexible, agent-determined | Structured processes |
 | **Configuration** | YAML frontmatter + markdown | Python code + YAML |

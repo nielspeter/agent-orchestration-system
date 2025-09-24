@@ -126,7 +126,7 @@ You can modify security patterns in:
       "list",    // Safe
       "grep",    // Safe
       // "shell" - Consider removing in production
-      "task"     // Safe
+      "delegate"     // Safe
     ]
   }
 }

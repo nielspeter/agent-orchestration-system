@@ -32,7 +32,7 @@ describe('AgentSystemBuilder Tests', () => {
       expect(toolNames).toContain('read');
       expect(toolNames).toContain('write');
       expect(toolNames).toContain('list');
-      expect(toolNames).toContain('task');
+      expect(toolNames).toContain('delegate');
       expect(toolNames).toContain('todowrite');
     });
 
@@ -44,7 +44,7 @@ describe('AgentSystemBuilder Tests', () => {
       expect(toolNames).toContain('read');
       expect(toolNames).toContain('write');
       expect(toolNames).toContain('list');
-      expect(toolNames).toContain('task');
+      expect(toolNames).toContain('delegate');
       expect(toolNames).toContain('todowrite');
     });
   });
@@ -105,7 +105,7 @@ describe('AgentSystemBuilder Tests', () => {
       expect(toolNames).toContain('read');
       expect(toolNames).toContain('write');
       expect(toolNames).toContain('list');
-      expect(toolNames).toContain('task');
+      expect(toolNames).toContain('delegate');
     });
 
     test('withTodoTool() should add TodoWrite tool', async () => {

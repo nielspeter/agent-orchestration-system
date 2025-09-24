@@ -409,7 +409,7 @@ describe('EventLogger', () => {
       failingLogger.logToolCall('agent', 'tool', 'call-id', {});
       failingLogger.logToolResult('agent', 'tool', 'id', {});
       failingLogger.logToolError('agent', 'tool', 'id', new Error('test'));
-      failingLogger.logDelegation('parent', 'child', 'task');
+      failingLogger.logDelegation('parent', 'child', 'delegate');
       failingLogger.logDelegationComplete('parent', 'child', 'result');
       failingLogger.logAgentStart('agent', 0);
       failingLogger.logAgentIteration('agent', 1);

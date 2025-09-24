@@ -32,7 +32,7 @@ it('should call tools in correct order', async () => {
   const events = [];
   system.on('tool:call', e => events.push(e.data.tool));
 
-  await system.execute('task');
+  await system.execute('delegate');
 
   expect(events).toEqual(['read', 'analyze', 'write']);
 });
