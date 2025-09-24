@@ -265,10 +265,7 @@ expect.extend({
     const expectedPath = `examples/critical-illness-claim/results/${claimId}.json`;
     const actualPath = writeCall.file_path;
     const matches = actualPath === expectedPath;
-
-    // Also check if file actually exists
-    const fullPath = path.join(process.cwd(), actualPath);
-    const fileExists = fs.existsSync(fullPath);
+    const fileExists = fs.existsSync(path.join(process.cwd(), expectedPath));
 
     return {
       pass: matches && fileExists,
@@ -277,7 +274,7 @@ expect.extend({
           return `Expected filename: ${expectedPath}\nActual filename: ${actualPath}`;
         }
         if (!fileExists) {
-          return `File does not exist at: ${fullPath}`;
+          return `File was not created at: ${expectedPath}`;
         }
         return 'Dynamic filename used correctly';
       },

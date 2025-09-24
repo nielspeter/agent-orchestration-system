@@ -87,11 +87,15 @@
       "apiKeyEnv": "OPENROUTER_API_KEY",
       "dynamicModels": true,
       "_comment": "OpenRouter handles :nitro and :floor modifiers directly in the model name",
+      "routing": {
+        "sort": "throughput"
+      },
       "models": [
         {
           "id": "*",
           "description": "OpenRouter supports 200+ models dynamically. Supports :nitro and :floor modifiers.",
           "examples": [
+            "openai/gpt-oss-120b",
             "x-ai/grok-code-fast-1",
             "meta-llama/llama-3.1-70b-instruct:nitro",
             "gpt-4:floor"
