@@ -70,10 +70,10 @@ examples/critical-illness-claim-structured/schemas/
 export class TaskStructuredTool extends TaskTool {
   async execute(args: TaskStructuredArgs): Promise<any> {
     // Pure JSON input, no text wrapper
-    const { subagent_type, input, output_schema } = args;
+    const { agent, input, output_schema } = args;
     
     // Pass structured_output flag to enable JSON mode
-    const result = await this.executor.execute(subagent_type, {
+    const result = await this.executor.execute(agent, {
       input,
       structured_output: true,
       output_schema
@@ -248,7 +248,7 @@ async function compareVersions() {
 ## Next Steps
 
 1. **Create schema files** for all agents
-2. **Update Task tool** to support structured input
+2. **Update Delegate tool** to support structured input
 3. **Add structured_output flags** to agent configs
 4. **Run tests** to generate new fixtures
 5. **Compare performance** with original version

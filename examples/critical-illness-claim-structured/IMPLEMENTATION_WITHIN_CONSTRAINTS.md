@@ -2,7 +2,7 @@
 
 ## The Reality Check
 
-The agent orchestration system is **generic** - we cannot modify core components (Task tool, LLM providers, middleware) for a specific example. We must work within the existing system.
+The agent orchestration system is **generic** - we cannot modify core components (Delegate tool, LLM providers, middleware) for a specific example. We must work within the existing system.
 
 ## What We CAN Implement
 
@@ -39,10 +39,10 @@ Required output structure:
 ```markdown
 When delegating, pass pure JSON as the prompt:
 
-Use Task tool:
+Use Delegate tool:
 - description: "Categorize notification"
 - prompt: <pure JSON object here, no wrapper text>
-- subagent_type: "notification-categorization"
+- agent: "notification-categorization"
 ```
 
 ### 3. Create Schema Documentation
@@ -79,7 +79,7 @@ def execute(args):
 ## What We CANNOT Implement
 
 ### ❌ Core System Modifications
-- Cannot modify Task tool to accept structured input
+- Cannot modify Delegate tool to accept structured input
 - Cannot add schema validation middleware
 - Cannot enable LLM structured output mode
 - Cannot change how agents are loaded/executed
