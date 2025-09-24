@@ -62,9 +62,9 @@ examples/critical-illness-claim-structured/schemas/
 }
 ```
 
-### Phase 2: Update Task Tool (Day 1)
+### Phase 2: Update Delegate Tool (Day 1)
 
-#### 2.1 Create Enhanced Task Tool
+#### 2.1 Create Enhanced Delegate Tool
 ```typescript
 // src/tools/task-structured.tool.ts
 export class TaskStructuredTool extends TaskTool {

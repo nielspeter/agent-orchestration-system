@@ -555,7 +555,7 @@ flowchart TD
     M6 --> M6A[Group Tools by Safety]
     M6A --> M6B[Execute Safe Tools in Parallel]
     M6B --> M6C[Execute Unsafe Tools Sequentially]
-    M6C --> M6D{Has Task Tool?}
+    M6C --> M6D{Has Delegate Tool?}
     M6D -->|Yes| M6E[Recursive Delegation]
     M6D -->|No| M6F[Add Results to Messages]
     M6E --> M6F
@@ -587,7 +587,7 @@ flowchart LR
     subgraph "Execution"
         Safe --> Parallel[Parallel Execution<br/>Up to 10 concurrent]
         Unsafe --> Sequential[Sequential Execution<br/>One at a time]
-        Sequential --> Delegate{Is Task Tool?}
+        Sequential --> Delegate{Is Delegate Tool?}
         Delegate -->|Yes| Recursive[Recursive Agent Call<br/>Minimal context only]
         Delegate -->|No| Direct[Direct Execution]
     end

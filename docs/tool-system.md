@@ -166,7 +166,7 @@ export class ToolRegistry {
 }
 ```
 
-### 4. Task Tool (Delegation)
+### 4. Delegate Tool (Delegation)
 
 **Purpose**: Delegate tasks to other agents
 **File**: `src/tools/task.tool.ts`

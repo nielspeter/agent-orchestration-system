@@ -114,7 +114,7 @@ User: "Help optimize my React application performance"
 - Mark completion immediately after finishing work
 - Break down complex work into specific, trackable steps
 
-**Task Tool:**
+**Delegate Tool:**
 - Delegate strategically to specialists when their expertise adds value
 - Provide clear, comprehensive prompts with full context
 - Use specialist results to enhance your own responses

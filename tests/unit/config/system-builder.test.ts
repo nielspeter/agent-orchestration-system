@@ -97,7 +97,7 @@ describe('AgentSystemBuilder Tests', () => {
   });
 
   describe('Tool Configuration', () => {
-    test('withDefaultTools() should add file and task tools', async () => {
+    test('withDefaultTools() should add file and delegate tools', async () => {
       const result = await AgentSystemBuilder.minimal().withDefaultTools().build();
       cleanup = result.cleanup;
 

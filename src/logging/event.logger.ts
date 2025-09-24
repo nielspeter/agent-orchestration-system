@@ -151,7 +151,7 @@ export class EventLogger implements AgentLogger {
   }
 
   logDelegation(parent: string, child: string, task: string): void {
-    // Delegation is tracked through tool calls to the Task tool
+    // Delegation is tracked through tool calls to the Delegate tool
     // This is additional metadata that could be stored if needed
     const event = {
       type: 'delegation',
