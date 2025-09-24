@@ -17,7 +17,6 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsx src/index.ts",
-    "test": "jest",
     "test:unit": "vitest run --config vitest.config.unit.ts",
     "test:unit:coverage": "vitest run --config vitest.config.unit.ts --coverage",
     "test:integration": "vitest run --config vitest.config.integration.ts",

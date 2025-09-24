@@ -32,7 +32,7 @@ interface ProviderConfig {
     order?: string[];
     only?: string[];
     allowFallbacks?: boolean;
-    sort?: 'latency' | 'throughput';
+    sort?: 'price' | 'latency' | 'throughput';
   };
 }
 
