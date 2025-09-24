@@ -17,7 +17,7 @@ async function main() {
       .withAgents({
         name: 'time-demo',
         prompt: 'You are a demo agent for testing MCP time tools.',
-        tools: ['time.get_current_time', 'time.convert_time'],
+        tools: ['time_get_current_time', 'time_convert_time'],
       })
       .withMCPServers({
         time: {
@@ -31,7 +31,7 @@ async function main() {
 
     console.log('Available tools:');
     toolRegistry.getAllTools().forEach((tool) => {
-      if (tool.name.startsWith('time.')) {
+      if (tool.name.startsWith('time_')) {
         console.log(`  - ${tool.name}: ${tool.description}`);
       }
     });
@@ -39,11 +39,11 @@ async function main() {
     console.log('\n📋 Testing MCP Time Tools:\n');
 
     // Test getting current time
-    const timeTools = toolRegistry.getAllTools().filter((t) => t.name.startsWith('time.'));
+    const timeTools = toolRegistry.getAllTools().filter((t) => t.name.startsWith('time_'));
 
     if (timeTools.length > 0) {
       // Get current time
-      const getCurrentTime = toolRegistry.getTool('time.get_current_time');
+      const getCurrentTime = toolRegistry.getTool('time_get_current_time');
       if (getCurrentTime) {
         console.log('1. Getting current time in different timezones:');
 
@@ -57,7 +57,7 @@ async function main() {
       }
 
       // Convert time between zones
-      const convertTime = toolRegistry.getTool('time.convert_time');
+      const convertTime = toolRegistry.getTool('time_convert_time');
       if (convertTime) {
         console.log('\n2. Converting time between zones:');
         const conversion = await convertTime.execute({
