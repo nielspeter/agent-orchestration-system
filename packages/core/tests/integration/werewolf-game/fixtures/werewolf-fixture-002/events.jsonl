@@ -1,7 +1,7 @@
-{"type":"assistant","timestamp":1758126706263,"data":{"role":"assistant","content":"Loading tools from directory: /Users/nps/Documents/Projects/NielsPeter/agent-orchestration-system/examples/werewolf-game/tools","agent":"system"}}
+{"type":"assistant","timestamp":1758126706263,"data":{"role":"assistant","content":"Loading tools from directory: /Users/nps/Documents/Projects/nielspeter/agent-orchestration-system/examples/werewolf-game/tools","agent":"system"}}
 {"type":"assistant","timestamp":1758126706264,"data":{"role":"assistant","content":"Found 1 tool(s): random_roles","agent":"system"}}
-{"type":"assistant","timestamp":1758126706264,"data":{"role":"assistant","content":"Loaded tool script: random_roles from /Users/nps/Documents/Projects/NielsPeter/agent-orchestration-system/examples/werewolf-game/tools/random_roles.py","agent":"system"}}
-{"type":"assistant","timestamp":1758126706264,"data":{"role":"assistant","content":"✓ Loaded tool: random_roles from /Users/nps/Documents/Projects/NielsPeter/agent-orchestration-system/examples/werewolf-game/tools","agent":"system"}}
+{"type":"assistant","timestamp":1758126706264,"data":{"role":"assistant","content":"Loaded tool script: random_roles from /Users/nps/Documents/Projects/nielspeter/agent-orchestration-system/examples/werewolf-game/tools/random_roles.py","agent":"system"}}
+{"type":"assistant","timestamp":1758126706264,"data":{"role":"assistant","content":"✓ Loaded tool: random_roles from /Users/nps/Documents/Projects/nielspeter/agent-orchestration-system/examples/werewolf-game/tools","agent":"system"}}
 {"type":"assistant","timestamp":1758126706264,"data":{"role":"assistant","content":"Using built-in default agent","agent":"system"}}
 {"type":"assistant","timestamp":1758126706265,"data":{"role":"assistant","content":"✓ All agent tool requirements validated","agent":"system"}}
 {"type":"assistant","timestamp":1758126706265,"data":{"role":"assistant","content":"Recovering session: werewolf-fixture-002","agent":"system"}}
