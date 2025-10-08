@@ -1,7 +1,9 @@
-# Agent CLI Tool Plan (DRAFT - Not Yet Implemented)
+# Agent CLI Tool (IMPLEMENTED)
 
-> **Note**: This document describes a planned feature that has not been implemented yet. The CLI tool described here is
-> a proposal for future development. Updated for workspace structure.
+> **Status**: ✅ Implemented on `feature/cli-package` branch
+>
+> The CLI tool is a thin wrapper around `@agent-system/core` that provides command-line access to agents.
+> Key insight: We don't duplicate core functionality - the CLI just parses args and delegates to the builder.
 
 ## Goal
 
@@ -106,8 +108,7 @@ cd packages/cli
 import * as dotenv from 'dotenv';
 import { Command } from 'commander';
 import { AgentSystemBuilder } from '@agent-system/core';
-import { discoverAgents } from './discovery.js';
-import { formatOutput } from './output.js';
+import { formatOutput, formatError, type OutputFormat } from './output.js';
 
 // Load environment variables (like examples do)
 dotenv.config();
@@ -123,10 +124,11 @@ program
   .option('-p, --prompt <text>', 'The prompt to send to the agent')
   .option('-a, --agent <name>', 'Agent to use', 'default')
   .option('-m, --model <model>', 'Model to use')
-  .option('-v, --verbose', 'Show detailed execution logs')
+  .option('--agents-dir <path>', 'Path to agents directory')
+  .option('-o, --output <format>', 'Output format: clean, verbose, json', 'clean')
   .option('--list-agents', 'List available agents')
   .option('--list-tools', 'List available tools')
-  .option('--json', 'Output as JSON');
+  .option('--json', 'Output as JSON (shorthand for --output json)');
 
 program.parse();
 
@@ -134,32 +136,43 @@ const options = program.opts();
 
 async function main() {
   try {
-    // Discover agents directory
-    const agentsDir = await discoverAgents();
+    // Build system using core's defaults - leverages built-in agent discovery
+    let builder = AgentSystemBuilder.default();
 
-    // Build system (similar to examples)
-    const builder = new AgentSystemBuilder();
-
+    // Apply optional overrides
     if (options.model) {
-      builder.withModel(options.model);
+      builder = builder.withModel(options.model);
     }
 
-    builder
-      .withAgentsFrom(agentsDir)
-      .withDefaultTools();
+    // If agents directory specified, use it; otherwise uses default agent
+    if (options.agentsDir) {
+      builder = builder.withAgentsFrom(options.agentsDir);
+    }
 
-    const { executor, toolRegistry, cleanup } = await builder.build();
+    const { executor, toolRegistry, agentLoader, cleanup } = await builder.build();
 
     // Handle --list-agents
     if (options.listAgents) {
-      // Implementation
+      const agents = await agentLoader.listAgents();
+      if (options.json) {
+        console.log(JSON.stringify({ agents }, null, 2));
+      } else {
+        console.log('Available agents:');
+        agents.forEach((agent: string) => console.log(`  - ${agent}`));
+      }
+      await cleanup();
       return;
     }
 
     // Handle --list-tools
     if (options.listTools) {
-      const tools = toolRegistry.getAllTools().map(t => t.name);
-      console.log(tools.join('\n'));
+      const tools = toolRegistry.getAllTools().map((t: { name: string }) => t.name);
+      if (options.json) {
+        console.log(JSON.stringify({ tools }, null, 2));
+      } else {
+        console.log('Available tools:');
+        tools.forEach((tool: string) => console.log(`  - ${tool}`));
+      }
       await cleanup();
       return;
     }
@@ -170,23 +183,25 @@ async function main() {
       process.exit(1);
     }
 
+    const startTime = Date.now();
     const result = await executor.execute(options.agent, options.prompt);
+    const duration = Date.now() - startTime;
 
-    // Format output
-    if (options.json) {
-      console.log(JSON.stringify({ success: true, result }, null, 2));
-    } else {
-      console.log(result);
-    }
+    // Determine output format (--json flag overrides --output)
+    const outputFormat: OutputFormat = options.json ? 'json' : options.output;
+
+    // Format and display output
+    const formatted = formatOutput(
+      { result, agentName: options.agent, duration },
+      outputFormat
+    );
+    console.log(formatted);
 
     // Cleanup (like examples do)
     await cleanup();
   } catch (error) {
-    if (options.json) {
-      console.log(JSON.stringify({ success: false, error: (error as Error).message }, null, 2));
-    } else {
-      console.error('Error:', (error as Error).message);
-    }
+    const outputFormat: OutputFormat = options.json ? 'json' : options.output;
+    console.error(formatError(error as Error, outputFormat));
     process.exit(1);
   }
 }
@@ -194,53 +209,27 @@ async function main() {
 main().catch(console.error);
 ```
 
-### 3. Auto-Discovery Logic
+**Key simplifications from original plan:**
+- NO agent discovery logic needed (core handles it!)
+- Uses `AgentSystemBuilder.default()` as base
+- Optional `--agents-dir` flag instead of automatic discovery
+- Relies entirely on core's validation and defaults
 
-**packages/cli/src/discovery.ts:**
-```typescript
-import * as fs from 'fs/promises';
-import * as path from 'path';
+### 3. ~~Auto-Discovery Logic~~ (NOT NEEDED)
 
-export async function discoverAgents(cwd: string = process.cwd()): Promise<string> {
-  // Search order:
-  // 1. ./agents
-  // 2. ../agents
-  // 3. From agent-config.json
+**Agent discovery is already handled by `@agent-system/core`!**
 
-  const candidates = [
-    path.join(cwd, 'agents'),
-    path.join(cwd, '..', 'agents'),
-  ];
+The CLI doesn't need its own discovery logic. The `AgentSystemBuilder` in core already:
+- Validates agent directories exist
+- Falls back to built-in default agent if no directory provided
+- Handles agent loading and validation
 
-  for (const dir of candidates) {
-    try {
-      await fs.access(dir);
-      return dir;
-    } catch {
-      continue;
-    }
-  }
+The CLI just needs to:
+1. Accept optional `--agents-dir` flag
+2. Pass it to `.withAgentsFrom()` if provided
+3. Let the builder use its default behavior otherwise
 
-  // Check for config file
-  const configPath = path.join(cwd, 'agent-config.json');
-  try {
-    const config = JSON.parse(await fs.readFile(configPath, 'utf-8'));
-    if (config.agents?.directory) {
-      return path.resolve(cwd, config.agents.directory);
-    }
-  } catch {
-    // No config file
-  }
-
-  // Default to current directory agents/
-  return path.join(cwd, 'agents');
-}
-
-export async function discoverTools(cwd: string = process.cwd()): Promise<string[]> {
-  // Similar logic for tools discovery
-  return [];
-}
-```
+This keeps the CLI thin and avoids duplicating core logic.
 
 ### 4. Update Root Workspace
 
@@ -263,13 +252,20 @@ Usage: agent [options]
 Options:
   -p, --prompt <text>     The prompt to send to the agent
   -a, --agent <name>      Agent to use (default: "default")
-  -m, --model <model>     Model to use (default: from config)
-  -v, --verbose           Show detailed execution logs
+  -m, --model <model>     Model to use (overrides default)
+  --agents-dir <path>     Path to agents directory (optional)
+  -o, --output <format>   Output format: clean, verbose, json (default: "clean")
   --list-agents           List available agents
   --list-tools            List available tools
+  --json                  Output as JSON (shorthand for --output json)
   -h, --help              Display help
   -V, --version           Display version
 ```
+
+**Actual implementation notes:**
+- Console output is controlled by core (not CLI flag)
+- If `--agents-dir` not specified, uses built-in default agent
+- `--json` is shorthand for `--output json`
 
 ## Development Workflow
 
@@ -516,8 +512,50 @@ graph TD
     Output --> User
 ```
 
+## Testing Results (✅ Verified)
+
+The following commands were tested and verified working:
+
+```bash
+# Default agent execution (no agents directory needed)
+npm run cli -- -p "What is 2+2? Just return the number."
+# Result: "4"
+
+# List default agent
+npm run cli -- --list-agents
+# Result: "default"
+
+# List tools in JSON format
+npm run cli -- --list-tools --json
+# Result: JSON array of all tools
+
+# Use custom agents directory
+npm run cli -- --agents-dir packages/core/examples/quickstart/agents --list-agents
+# Result: "default", "orchestrator"
+
+# Execute custom agent
+npm run cli -- --agents-dir packages/core/examples/quickstart/agents -a orchestrator -p "What tools do you have?"
+# Result: Lists all 7 available tools
+
+# JSON output format
+npm run cli -- -p "Calculate 5 * 7" --json
+# Result: JSON with result, agent, duration, metrics
+```
+
+**All features verified:**
+- ✅ Default agent execution (no setup needed)
+- ✅ Custom agents directory via `--agents-dir`
+- ✅ Agent listing (`--list-agents`)
+- ✅ Tool listing (`--list-tools`)
+- ✅ JSON output format
+- ✅ Clean output format (default)
+- ✅ Proper error handling
+- ✅ Cleanup on completion
+
 ## Notes
 
+- **Key insight**: No discovery logic needed! The core's `AgentSystemBuilder` already handles all agent loading and validation
+- CLI is truly just a thin wrapper: parse args → configure builder → execute → format output
 - This replaces the old single-package approach with workspace-aware design
 - The CLI can be published independently of core library
 - Users can `npm install -g @agent-system/cli` without full workspace
