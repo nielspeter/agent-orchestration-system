@@ -88,8 +88,13 @@
   font-family: 'Courier New', monospace;
 }
 
+.button-group {
+  display: flex;
+  gap: 0.5rem;
+}
+
 .start-button {
-  width: 100%;
+  flex: 1;
   padding: 1rem;
   background: #3b82f6;
   border: none;
@@ -106,6 +111,29 @@
 }
 
 .start-button:disabled {
+  background: #333;
+  color: #666;
+  cursor: not-allowed;
+}
+
+.new-session-button {
+  padding: 1rem;
+  background: #6b7280;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.new-session-button:hover:not(:disabled) {
+  background: #4b5563;
+}
+
+.new-session-button:disabled {
   background: #333;
   color: #666;
   cursor: not-allowed;
