@@ -4,16 +4,21 @@ import prettierPlugin from 'eslint-plugin-prettier';
 import prettierConfig from 'eslint-config-prettier';
 
 export default [
+  // Global ignores - must be first
+  {
+    ignores: ['**/node_modules/**', '**/dist/**', '**/coverage/**'],
+  },
   {
     files: ['**/*.ts'],
-    ignores: ['node_modules/**', 'dist/**', 'coverage/**'],
 
     languageOptions: {
       parser: tsparser,
       parserOptions: {
         ecmaVersion: 'latest',
         sourceType: 'module',
-        project: './tsconfig.json',
+        project: [
+          './packages/*/tsconfig.json',
+        ],
       },
     },
 
@@ -69,6 +74,13 @@ export default [
   {
     // The console logger implementation legitimately uses console methods
     files: ['src/core/logging/implementations/console-logger.ts'],
+    rules: {
+      'no-console': 'off',
+    },
+  },
+  {
+    // CLI package legitimately uses console for output
+    files: ['packages/cli/**/*.ts'],
     rules: {
       'no-console': 'off',
     },
