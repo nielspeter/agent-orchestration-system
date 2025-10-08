@@ -7,20 +7,54 @@
     "agent": "./dist/index.js"
   },
   "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "scripts": {
     "build": "tsc",
     "dev": "tsx src/index.ts",
     "test": "vitest run",
     "test:watch": "vitest watch",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run clean && npm run build && npm test"
   },
+  "keywords": [
+    "agent",
+    "orchestration",
+    "cli",
+    "llm",
+    "anthropic",
+    "claude",
+    "openai",
+    "autonomous",
+    "ai",
+    "agents",
+    "command-line"
+  ],
+  "author": "Niels Peter Strandberg",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nielspeter/agent-orchestration-system.git",
+    "directory": "packages/cli"
+  },
+  "bugs": {
+    "url": "https://github.com/nielspeter/agent-orchestration-system/issues"
+  },
+  "homepage": "https://github.com/nielspeter/agent-orchestration-system#readme",
   "dependencies": {
-    "@agent-system/core": "*",
     "commander": "^12.0.0",
     "chalk": "^5.3.0",
     "dotenv": "^16.4.5"
   },
+  "peerDependencies": {
+    "@agent-system/core": "^0.1.0"
+  },
   "devDependencies": {
+    "@agent-system/core": "*",
     "@types/node": "^20.11.30",
     "tsx": "^4.7.1",
     "typescript": "^5.9.2",
