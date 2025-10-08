@@ -44,7 +44,7 @@ A web UI for non-technical users **REQUIRES** events. Without them, it's impossi
 
 ## The Implementation (Simplified)
 
-### 1. Backend Events to WebSocket
+### 1. Backend Events to SSE
 ```typescript
 // This is ALL we need to add to current system
 class EventLogger {
@@ -60,22 +60,32 @@ class EventLogger {
   on(event, handler) { this.emitter.on(event, handler); }  // ADD THIS METHOD
 }
 
-// Wire to WebSocket
-const io = require('socket.io')(server);
+// Wire to SSE endpoint (Express)
+app.get('/events/:sessionId', (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
 
-eventLogger.on('*', (event) => {
-  io.emit('execution-event', event);  // That's it!
+  const handler = (event) => {
+    res.write(`data: ${JSON.stringify(event)}\n\n`);
+  };
+
+  eventLogger.on('*', handler);
+  req.on('close', () => eventLogger.off('*', handler));
 });
 ```
 
 ### 2. Frontend Receives & Displays
 ```jsx
-function AgentExecutionView() {
+function AgentExecutionView({ sessionId }) {
   const [events, setEvents] = useState([]);
   const [currentStatus, setStatus] = useState('idle');
 
   useEffect(() => {
-    socket.on('execution-event', (event) => {
+    const eventSource = new EventSource(`/events/${sessionId}`);
+
+    eventSource.onmessage = (e) => {
+      const event = JSON.parse(e.data);
       setEvents(prev => [...prev, event]);
 
       // Update UI based on event type
@@ -94,8 +104,10 @@ function AgentExecutionView() {
           showMetrics(event.metadata);
           break;
       }
-    });
-  }, []);
+    };
+
+    return () => eventSource.close();
+  }, [sessionId]);
 
   return <ExecutionTimeline events={events} status={currentStatus} />;
 }
@@ -136,8 +148,8 @@ Error: Cannot read property...
 
 ```mermaid
 graph LR
-    Events[Add Events] --> WebSocket[Add WebSocket]
-    WebSocket --> BasicUI[Basic UI]
+    Events[Add Events] --> SSE[Add SSE Endpoint]
+    SSE --> BasicUI[Basic UI]
     BasicUI --> Launch[Launch MVP]
     Launch --> Revenue[$$$ Revenue]
 ```
@@ -175,11 +187,14 @@ Without events, this entire path is **blocked**.
 // 20 lines of code total
 ```
 
-### Week 2: WebSocket Server (2 days)
+### Week 2: SSE Server (1 day)
 ```javascript
-// 50 lines of Socket.io
-io.on('connection', (socket) => {
-  eventLogger.on('*', e => socket.emit('event', e));
+// 15 lines of Express SSE endpoint
+app.get('/events/:sessionId', (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  const handler = (e) => res.write(`data: ${JSON.stringify(e)}\n\n`);
+  eventLogger.on('*', handler);
+  req.on('close', () => eventLogger.off('*', handler));
 });
 ```
 
@@ -231,8 +246,8 @@ Every hour spent on events returns 100x in user value.
 ## Next Action
 
 ```bash
-# 1. Add EventEmitter to EventLogger (30 min)
-# 2. Test with simple WebSocket server (1 hour)
+# 1. Add EventEmitter to EventLogger (30 min) ✅ DONE
+# 2. Test with simple SSE endpoint (30 min)
 # 3. Build prototype UI (1 day)
 # 4. Show to a non-technical friend
 # 5. Watch their mind blown 🤯

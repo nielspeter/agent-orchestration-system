@@ -1,0 +1,352 @@
+{
+  "processId": "PROC-DE20A37E",
+  "timestamp": "2025-09-24T19:12:37.246028Z",
+  "workflowPath": [
+    "notification_received",
+    "categorization_performed",
+    "claim_registered",
+    "documentation_verified",
+    "communication_sent"
+  ],
+  "finalOutcome": "pending_docs",
+  "details": {
+    "claimId": "CI-20250113-01B2E",
+    "claimantName": "Robert Johnson",
+    "policyNumber": "POL-11111",
+    "illness": "stroke",
+    "decision": "pending",
+    "notes": "Request for missing documents sent to claimant."
+  },
+  "auditTrail": [
+    {
+      "sequence": 1,
+      "timestamp": "2025-09-24T19:12:37.246028Z",
+      "agent": "Workflow Orchestrator",
+      "action": "WORKFLOW_START",
+      "input": {
+        "notification": {
+          "id": "NOTIF-003",
+          "type": "critical_illness_claim",
+          "content": "I am filing a claim for a recent stroke I suffered on January 2, 2025. I have been hospitalized and am currently in rehabilitation. I have some of my medical documents ready but am still waiting for others from the hospital.",
+          "timestamp": "2025-01-13T11:00:00Z",
+          "claimantInfo": {
+            "name": "Robert Johnson",
+            "policyNumber": "POL-11111",
+            "contactInfo": "robert.j@email.com, +1-555-0789"
+          }
+        },
+        "documents": [
+          {
+            "type": "hospital_discharge_summary",
+            "name": "discharge_johnson.pdf",
+            "status": "received"
+          },
+          { "type": "claim_form", "name": "claim_form_johnson.pdf", "status": "received" },
+          { "type": "id_proof", "name": "id_johnson.pdf", "status": "received" },
+          { "type": "CT_scan_report", "name": "ct_scan_johnson.pdf", "status": "pending" },
+          {
+            "type": "neurologist_assessment",
+            "name": "neuro_assessment_johnson.pdf",
+            "status": "pending"
+          },
+          { "type": "rehabilitation_plan", "name": "rehab_plan_johnson.pdf", "status": "pending" }
+        ],
+        "diagnosisDate": "2025-01-02T00:00:00Z",
+        "claimantBankDetails": {
+          "accountName": "Robert Johnson",
+          "accountNumber": "5566778899",
+          "bankName": "Premier Bank"
+        }
+      }
+    },
+    {
+      "sequence": 2,
+      "timestamp": "2025-09-24T19:12:37.246028Z",
+      "agent": "Workflow Orchestrator",
+      "action": "TOOL_USE",
+      "tool": "timestamp_generator",
+      "input": { "operation": "generate" },
+      "output": {
+        "success": true,
+        "timestamp": "2025-09-24T19:12:37.246028Z",
+        "formatted": "2025-09-24T19:12:37.246028Z"
+      },
+      "reasoning": "Generated a current timestamp for workflow tracking."
+    },
+    {
+      "sequence": 3,
+      "timestamp": "2025-09-24T19:12:37.246028Z",
+      "agent": "Workflow Orchestrator",
+      "action": "TOOL_USE",
+      "tool": "claim_id_generator",
+      "input": {
+        "policy_number": "POL-11111",
+        "timestamp": "2025-01-13T11:00:00Z",
+        "claim_type": "CI"
+      },
+      "output": {
+        "success": true,
+        "claim_id": "CI-20250113-01B2E",
+        "policy_number": "POL-11111",
+        "timestamp": "2025-01-13T11:00:00Z",
+        "claim_type": "CI"
+      },
+      "reasoning": "Generated a unique claim ID for the registration process."
+    },
+    {
+      "sequence": 4,
+      "timestamp": "2025-09-24T19:12:37.246028Z",
+      "agent": "Workflow Orchestrator",
+      "action": "DELEGATE",
+      "target": "notification-categorization",
+      "input": {
+        "notification": {
+          "id": "NOTIF-003",
+          "type": "critical_illness_claim",
+          "content": "I am filing a claim for a recent stroke I suffered on January 2, 2025. I have been hospitalized and am currently in rehabilitation. I have some of my medical documents ready but am still waiting for others from the hospital.",
+          "timestamp": "2025-01-13T11:00:00Z",
+          "claimantInfo": {
+            "name": "Robert Johnson",
+            "policyNumber": "POL-11111",
+            "contactInfo": "robert.j@email.com, +1-555-0789"
+          }
+        },
+        "documents": [
+          {
+            "type": "hospital_discharge_summary",
+            "name": "discharge_johnson.pdf",
+            "status": "received"
+          },
+          { "type": "claim_form", "name": "claim_form_johnson.pdf", "status": "received" },
+          { "type": "id_proof", "name": "id_johnson.pdf", "status": "received" },
+          { "type": "CT_scan_report", "name": "ct_scan_johnson.pdf", "status": "pending" },
+          {
+            "type": "neurologist_assessment",
+            "name": "neuro_assessment_johnson.pdf",
+            "status": "pending"
+          },
+          { "type": "rehabilitation_plan", "name": "rehab_plan_johnson.pdf", "status": "pending" }
+        ],
+        "diagnosisDate": "2025-01-02T00:00:00Z",
+        "claimantBankDetails": {
+          "accountName": "Robert Johnson",
+          "accountNumber": "5566778899",
+          "bankName": "Premier Bank"
+        }
+      },
+      "output": {
+        "isCriticalIllness": true,
+        "category": "critical_illness",
+        "confidence": "high",
+        "identifiedCondition": "stroke",
+        "reasoning": "The notification type is 'critical_illness_claim', which directly indicates a critical illness. The content explicitly mentions a 'stroke', which is a recognized critical illness. The claimant has been hospitalized and is undergoing rehabilitation, further supporting the severity of the condition."
+      },
+      "reasoning": "Delegated notification categorization to determine if the claim is for a critical illness."
+    },
+    {
+      "sequence": 5,
+      "timestamp": "2025-09-24T19:12:37.246028Z",
+      "agent": "Workflow Orchestrator",
+      "action": "DELEGATE",
+      "target": "claim-registration",
+      "input": {
+        "notification": {
+          "id": "NOTIF-003",
+          "type": "critical_illness_claim",
+          "content": "I am filing a claim for a recent stroke I suffered on January 2, 2025. I have been hospitalized and am currently in rehabilitation. I have some of my medical documents ready but am still waiting for others from the hospital.",
+          "timestamp": "2025-01-13T11:00:00Z",
+          "claimantInfo": {
+            "name": "Robert Johnson",
+            "policyNumber": "POL-11111",
+            "contactInfo": "robert.j@email.com, +1-555-0789"
+          }
+        },
+        "documents": [
+          {
+            "type": "hospital_discharge_summary",
+            "name": "discharge_johnson.pdf",
+            "status": "received"
+          },
+          { "type": "claim_form", "name": "claim_form_johnson.pdf", "status": "received" },
+          { "type": "id_proof", "name": "id_johnson.pdf", "status": "received" },
+          { "type": "CT_scan_report", "name": "ct_scan_johnson.pdf", "status": "pending" },
+          {
+            "type": "neurologist_assessment",
+            "name": "neuro_assessment_johnson.pdf",
+            "status": "pending"
+          },
+          { "type": "rehabilitation_plan", "name": "rehab_plan_johnson.pdf", "status": "pending" }
+        ],
+        "diagnosisDate": "2025-01-02T00:00:00Z",
+        "claimantBankDetails": {
+          "accountName": "Robert Johnson",
+          "accountNumber": "5566778899",
+          "bankName": "Premier Bank"
+        },
+        "categorization": {
+          "isCriticalIllness": true,
+          "category": "critical_illness",
+          "confidence": "high",
+          "identifiedCondition": "stroke",
+          "reasoning": "The notification type is 'critical_illness_claim', which directly indicates a critical illness. The content explicitly mentions a 'stroke', which is a recognized critical illness. The claimant has been hospitalized and is undergoing rehabilitation, further supporting the severity of the condition."
+        }
+      },
+      "output": {
+        "claimId": "CI-20250113-01B2E",
+        "registrationTimestamp": "2025-09-24T19:12:55.503941Z",
+        "status": "registered",
+        "claimantInfo": {
+          "name": "Robert Johnson",
+          "policyNumber": "POL-11111",
+          "contactInfo": "robert.j@email.com, +1-555-0789"
+        },
+        "claimDetails": {
+          "condition": "stroke",
+          "notificationId": "NOTIF-003",
+          "initialSubmissionDate": "2025-01-13T11:00:00Z"
+        },
+        "registrationSuccess": true,
+        "message": "Claim registered successfully.",
+        "reasoning": "The claim was registered with a unique ID and timestamp. The claimant's information and condition were validated and recorded.",
+        "toolsUsed": ["claim_id_generator", "timestamp_generator"]
+      },
+      "reasoning": "Delegated claim registration to record the claim with a unique ID and timestamp."
+    },
+    {
+      "sequence": 6,
+      "timestamp": "2025-09-24T19:12:37.246028Z",
+      "agent": "Workflow Orchestrator",
+      "action": "DELEGATE",
+      "target": "documentation-verification",
+      "input": {
+        "claimId": "CI-20250113-01B2E",
+        "condition": "stroke",
+        "documents": [
+          {
+            "type": "hospital_discharge_summary",
+            "name": "discharge_johnson.pdf",
+            "status": "received"
+          },
+          { "type": "claim_form", "name": "claim_form_johnson.pdf", "status": "received" },
+          { "type": "id_proof", "name": "id_johnson.pdf", "status": "received" },
+          { "type": "CT_scan_report", "name": "ct_scan_johnson.pdf", "status": "pending" },
+          {
+            "type": "neurologist_assessment",
+            "name": "neuro_assessment_johnson.pdf",
+            "status": "pending"
+          },
+          { "type": "rehabilitation_plan", "name": "rehab_plan_johnson.pdf", "status": "pending" }
+        ]
+      },
+      "output": {
+        "claimId": "CI-20250113-01B2E",
+        "documentationComplete": false,
+        "completenessPercentage": 30,
+        "requiredDocuments": [
+          "CT/MRI scan reports",
+          "Neurologist assessment",
+          "Hospital records",
+          "Rehabilitation plan",
+          "Completed claim form",
+          "Valid ID proof",
+          "Policy document copy",
+          "Attending physician statement",
+          "Medical bills/receipts"
+        ],
+        "receivedDocuments": [
+          "Completed claim form",
+          "Valid ID proof",
+          "Hospital discharge summary"
+        ],
+        "missingDocuments": [
+          "CT/MRI scan reports",
+          "Neurologist assessment",
+          "Rehabilitation plan",
+          "Policy document copy",
+          "Attending physician statement",
+          "Medical bills/receipts"
+        ],
+        "invalidDocuments": [],
+        "verificationNotes": "Several critical documents are pending or missing, including CT/MRI scan reports and neurologist assessment.",
+        "nextAction": "request_missing",
+        "reasoning": "The claim is incomplete as several required documents are either missing or pending. The completeness percentage is 30%, indicating that only a few documents have been received. The claim cannot proceed until all necessary documents are submitted and verified."
+      },
+      "reasoning": "Delegated documentation verification to assess completeness of submitted documents."
+    },
+    {
+      "sequence": 7,
+      "timestamp": "2025-09-24T19:12:37.246028Z",
+      "agent": "Workflow Orchestrator",
+      "action": "DECISION",
+      "decisionPoint": "documentation_complete",
+      "input": { "documentationComplete": false },
+      "output": { "decision": "pending_docs" },
+      "reasoning": "The claim is incomplete as several required documents are either missing or pending. The completeness percentage is 30%, indicating that only a few documents have been received. The claim cannot proceed until all necessary documents are submitted and verified."
+    },
+    {
+      "sequence": 8,
+      "timestamp": "2025-09-24T19:12:37.246028Z",
+      "agent": "Workflow Orchestrator",
+      "action": "DELEGATE",
+      "target": "communication",
+      "input": {
+        "communicationType": "Document Request",
+        "claimId": "CI-20250113-01B2E",
+        "recipientInfo": {
+          "name": "Robert Johnson",
+          "email": "robert.j@email.com",
+          "phone": "+1-555-0789"
+        },
+        "context": {
+          "status": "pending_docs",
+          "details": {
+            "missingDocuments": [
+              "CT/MRI scan reports",
+              "Neurologist assessment",
+              "Rehabilitation plan",
+              "Policy document copy",
+              "Attending physician statement",
+              "Medical bills/receipts"
+            ]
+          }
+        }
+      },
+      "output": {
+        "messageId": "msg-001",
+        "claimId": "CI-20250113-01B2E",
+        "communicationType": "Document Request",
+        "recipient": { "name": "Robert Johnson", "contactMethod": "email" },
+        "subject": "Critical Illness Claim - Document Request",
+        "messageBody": "Dear Robert Johnson,\n\nRe: Critical Illness Claim - CI-20250113-01B2E\n\nWe are processing your claim for a critical illness. To proceed, we require the following documents:\n\n- CT/MRI scan reports\n- Neurologist assessment\n- Rehabilitation plan\n- Policy document copy\n- Attending physician statement\n- Medical bills/receipts\n\nPlease submit these documents by [Deadline] via:\n- Email: claims@insurance.com\n- Portal: www.insurance.com/upload\n\nIf you have questions, contact us at 1-800-CLAIMS.\n\nSincerely,\nClaims Department",
+        "attachments": [],
+        "sentTimestamp": "2023-11-29T12:00:00Z",
+        "deliveryStatus": "sent",
+        "requiresResponse": true,
+        "responseDeadline": "2023-12-06T12:00:00Z",
+        "reasoning": "The claimant needs to provide missing documents to proceed with the claim assessment.",
+        "toolsUsed": ["send_notification"]
+      },
+      "reasoning": "Delegated communication to request missing documents from the claimant."
+    },
+    {
+      "sequence": 9,
+      "timestamp": "2025-09-24T19:12:37.246028Z",
+      "agent": "Workflow Orchestrator",
+      "action": "TOOL_USE",
+      "tool": "write",
+      "input": {
+        "path": "examples/critical-illness-claim/results/CI-20250113-01B2E.json",
+        "content": "{\"processId\": \"PROC-DE20A37E\", \"timestamp\": \"2025-09-24T19:12:37.246028Z\", \"workflowPath\": [\"notification_received\", \"categorization_performed\", \"claim_registered\", \"documentation_verified\", \"communication_sent\"], \"finalOutcome\": \"pending_docs\", \"details\": {\"claimId\": \"CI-20250113-01B2E\", \"claimantName\": \"Robert Johnson\", \"policyNumber\": \"POL-11111\", \"illness\": \"stroke\", \"decision\": \"pending\", \"notes\": \"Request for missing documents sent to claimant.\"}, \"auditTrail\": [{\"sequence\": 1, \"timestamp\": \"2025-09-24T19:12:37.246028Z\", \"agent\": \"Workflow Orchestrator\", \"action\": \"WORKFLOW_START\", \"input\": {\"notification\": {\"id\": \"NOTIF-003\", \"type\": \"critical_illness_claim\", \"content\": \"I am filing a claim for a recent stroke I suffered on January 2, 2025. I have been hospitalized and am currently in rehabilitation. I have some of my medical documents ready but am still waiting for others from the hospital.\", \"timestamp\": \"2025-01-13T11:00:00Z\", \"claimantInfo\": {\"name\": \"Robert Johnson\", \"policyNumber\": \"POL-11111\", \"contactInfo\": \"robert.j@email.com, +1-555-0789\"}}, \"documents\": [{\"type\": \"hospital_discharge_summary\", \"name\": \"discharge_johnson.pdf\", \"status\": \"received\"}, {\"type\": \"claim_form\", \"name\": \"claim_form_johnson.pdf\", \"status\": \"received\"}, {\"type\": \"id_proof\", \"name\": \"id_johnson.pdf\", \"status\": \"received\"}, {\"type\": \"CT_scan_report\", \"name\": \"ct_scan_johnson.pdf\", \"status\": \"pending\"}, {\"type\": \"neurologist_assessment\", \"name\": \"neuro_assessment_johnson.pdf\", \"status\": \"pending\"}, {\"type\": \"rehabilitation_plan\", \"name\": \"rehab_plan_johnson.pdf\", \"status\": \"pending\"}], \"diagnosisDate\": \"2025-01-02T00:00:00Z\", \"claimantBankDetails\": {\"accountName\": \"Robert Johnson\", \"accountNumber\": \"5566778899\", \"bankName\": \"Premier Bank\"}}}, {\"sequence\": 2, \"timestamp\": \"2025-09-24T19:12:37.246028Z\", \"agent\": \"Workflow Orchestrator\", \"action\": \"TOOL_USE\", \"tool\": \"timestamp_generator\", \"input\": {\"operation\": \"generate\"}, \"output\": {\"success\": true, \"timestamp\": \"2025-09-24T19:12:37.246028Z\", \"formatted\": \"2025-09-24T19:12:37.246028Z\"}, \"reasoning\": \"Generated a current timestamp for workflow tracking.\"}, {\"sequence\": 3, \"timestamp\": \"2025-09-24T19:12:37.246028Z\", \"agent\": \"Workflow Orchestrator\", \"action\": \"TOOL_USE\", \"tool\": \"claim_id_generator\", \"input\": {\"policy_number\": \"POL-11111\", \"timestamp\": \"2025-01-13T11:00:00Z\", \"claim_type\": \"CI\"}, \"output\": {\"success\": true, \"claim_id\": \"CI-20250113-01B2E\", \"policy_number\": \"POL-11111\", \"timestamp\": \"2025-01-13T11:00:00Z\", \"claim_type\": \"CI\"}, \"reasoning\": \"Generated a unique claim ID for the registration process.\"}, {\"sequence\": 4, \"timestamp\": \"2025-09-24T19:12:37.246028Z\", \"agent\": \"Workflow Orchestrator\", \"action\": \"DELEGATE\", \"target\": \"notification-categorization\", \"input\": {\"notification\": {\"id\": \"NOTIF-003\", \"type\": \"critical_illness_claim\", \"content\": \"I am filing a claim for a recent stroke I suffered on January 2, 2025. I have been hospitalized and am currently in rehabilitation. I have some of my medical documents ready but am still waiting for others from the hospital.\", \"timestamp\": \"2025-01-13T11:00:00Z\", \"claimantInfo\": {\"name\": \"Robert Johnson\", \"policyNumber\": \"POL-11111\", \"contactInfo\": \"robert.j@email.com, +1-555-0789\"}}, \"documents\": [{\"type\": \"hospital_discharge_summary\", \"name\": \"discharge_johnson.pdf\", \"status\": \"received\"}, {\"type\": \"claim_form\", \"name\": \"claim_form_johnson.pdf\", \"status\": \"received\"}, {\"type\": \"id_proof\", \"name\": \"id_johnson.pdf\", \"status\": \"received\"}, {\"type\": \"CT_scan_report\", \"name\": \"ct_scan_johnson.pdf\", \"status\": \"pending\"}, {\"type\": \"neurologist_assessment\", \"name\": \"neuro_assessment_johnson.pdf\", \"status\": \"pending\"}, {\"type\": \"rehabilitation_plan\", \"name\": \"rehab_plan_johnson.pdf\", \"status\": \"pending\"}], \"diagnosisDate\": \"2025-01-02T00:00:00Z\", \"claimantBankDetails\": {\"accountName\": \"Robert Johnson\", \"accountNumber\": \"5566778899\", \"bankName\": \"Premier Bank\"}}, \"output\": {\"isCriticalIllness\": true, \"category\": \"critical_illness\", \"confidence\": \"high\", \"identifiedCondition\": \"stroke\", \"reasoning\": \"The notification type is 'critical_illness_claim', which directly indicates a critical illness. The content explicitly mentions a 'stroke', which is a recognized critical illness. The claimant has been hospitalized and is undergoing rehabilitation, further supporting the severity of the condition.\"}, \"reasoning\": \"Delegated notification categorization to determine if the claim is for a critical illness.\"}, {\"sequence\": 5, \"timestamp\": \"2025-09-24T19:12:37.246028Z\", \"agent\": \"Workflow Orchestrator\", \"action\": \"DELEGATE\", \"target\": \"claim-registration\", \"input\": {\"notification\": {\"id\": \"NOTIF-003\", \"type\": \"critical_illness_claim\", \"content\": \"I am filing a claim for a recent stroke I suffered on January 2, 2025. I have been hospitalized and am currently in rehabilitation. I have some of my medical documents ready but am still waiting for others from the hospital.\", \"timestamp\": \"2025-01-13T11:00:00Z\", \"claimantInfo\": {\"name\": \"Robert Johnson\", \"policyNumber\": \"POL-11111\", \"contactInfo\": \"robert.j@email.com, +1-555-0789\"}}, \"documents\": [{\"type\": \"hospital_discharge_summary\", \"name\": \"discharge_johnson.pdf\", \"status\": \"received\"}, {\"type\": \"claim_form\", \"name\": \"claim_form_johnson.pdf\", \"status\": \"received\"}, {\"type\": \"id_proof\", \"name\": \"id_johnson.pdf\", \"status\": \"received\"}, {\"type\": \"CT_scan_report\", \"name\": \"ct_scan_johnson.pdf\", \"status\": \"pending\"}, {\"type\": \"neurologist_assessment\", \"name\": \"neuro_assessment_johnson.pdf\", \"status\": \"pending\"}, {\"type\": \"rehabilitation_plan\", \"name\": \"rehab_plan_johnson.pdf\", \"status\": \"pending\"}], \"diagnosisDate\": \"2025-01-02T00:00:00Z\", \"claimantBankDetails\": {\"accountName\": \"Robert Johnson\", \"accountNumber\": \"5566778899\", \"bankName\": \"Premier Bank\"}, \"categorization\": {\"isCriticalIllness\": true, \"category\": \"critical_illness\", \"confidence\": \"high\", \"identifiedCondition\": \"stroke\", \"reasoning\": \"The notification type is 'critical_illness_claim', which directly indicates a critical illness. The content explicitly mentions a 'stroke', which is a recognized critical illness. The claimant has been hospitalized and is undergoing rehabilitation, further supporting the severity of the condition.\"}}, \"output\": {\"claimId\": \"CI-20250113-01B2E\", \"registrationTimestamp\": \"2025-09-24T19:12:55.503941Z\", \"status\": \"registered\", \"claimantInfo\": {\"name\": \"Robert Johnson\", \"policyNumber\": \"POL-11111\", \"contactInfo\": \"robert.j@email.com, +1-555-0789\"}, \"claimDetails\": {\"condition\": \"stroke\", \"notificationId\": \"NOTIF-003\", \"initialSubmissionDate\": \"2025-01-13T11:00:00Z\"}, \"registrationSuccess\": true, \"message\": \"Claim registered successfully.\", \"reasoning\": \"The claim was registered with a unique ID and timestamp. The claimant's information and condition were validated and recorded.\", \"toolsUsed\": [\"claim_id_generator\", \"timestamp_generator\"]}, \"reasoning\": \"Delegated claim registration to record the claim with a unique ID and timestamp.\"}, {\"sequence\": 6, \"timestamp\": \"2025-09-24T19:12:37.246028Z\", \"agent\": \"Workflow Orchestrator\", \"action\": \"DELEGATE\", \"target\": \"documentation-verification\", \"input\": {\"claimId\": \"CI-20250113-01B2E\", \"condition\": \"stroke\", \"documents\": [{\"type\": \"hospital_discharge_summary\", \"name\": \"discharge_johnson.pdf\", \"status\": \"received\"}, {\"type\": \"claim_form\", \"name\": \"claim_form_johnson.pdf\", \"status\": \"received\"}, {\"type\": \"id_proof\", \"name\": \"id_johnson.pdf\", \"status\": \"received\"}, {\"type\": \"CT_scan_report\", \"name\": \"ct_scan_johnson.pdf\", \"status\": \"pending\"}, {\"type\": \"neurologist_assessment\", \"name\": \"neuro_assessment_johnson.pdf\", \"status\": \"pending\"}, {\"type\": \"rehabilitation_plan\", \"name\": \"rehab_plan_johnson.pdf\", \"status\": \"pending\"}]}, \"output\": {\"claimId\": \"CI-20250113-01B2E\", \"documentationComplete\": false, \"completenessPercentage\": 30, \"requiredDocuments\": [\"CT/MRI scan reports\", \"Neurologist assessment\", \"Hospital records\", \"Rehabilitation plan\", \"Completed claim form\", \"Valid ID proof\", \"Policy document copy\", \"Attending physician statement\", \"Medical bills/receipts\"], \"receivedDocuments\": [\"Completed claim form\", \"Valid ID proof\", \"Hospital discharge summary\"], \"missingDocuments\": [\"CT/MRI scan reports\", \"Neurologist assessment\", \"Rehabilitation plan\", \"Policy document copy\", \"Attending physician statement\", \"Medical bills/receipts\"], \"invalidDocuments\": [], \"verificationNotes\": \"Several critical documents are pending or missing, including CT/MRI scan reports and neurologist assessment.\", \"nextAction\": \"request_missing\", \"reasoning\": \"The claim is incomplete as several required documents are either missing or pending. The completeness percentage is 30%, indicating that only a few documents have been received. The claim cannot proceed until all necessary documents are submitted and verified.\"}, \"reasoning\": \"Delegated documentation verification to assess completeness of submitted documents.\"}, {\"sequence\": 7, \"timestamp\": \"2025-09-24T19:12:37.246028Z\", \"agent\": \"Workflow Orchestrator\", \"action\": \"DECISION\", \"decisionPoint\": \"documentation_complete\", \"input\": {\"documentationComplete\": false}, \"output\": {\"decision\": \"pending_docs\"}, \"reasoning\": \"The claim is incomplete as several required documents are either missing or pending. The completeness percentage is 30%, indicating that only a few documents have been received. The claim cannot proceed until all necessary documents are submitted and verified.\"}, {\"sequence\": 8, \"timestamp\": \"2025-09-24T19:12:37.246028Z\", \"agent\": \"Workflow Orchestrator\", \"action\": \"DELEGATE\", \"target\": \"communication\", \"input\": {\"communicationType\": \"Document Request\", \"claimId\": \"CI-20250113-01B2E\", \"recipientInfo\": {\"name\": \"Robert Johnson\", \"email\": \"robert.j@email.com\", \"phone\": \"+1-555-0789\"}, \"context\": {\"status\": \"pending_docs\", \"details\": {\"missingDocuments\": [\"CT/MRI scan reports\", \"Neurologist assessment\", \"Rehabilitation plan\", \"Policy document copy\", \"Attending physician statement\", \"Medical bills/receipts\"]}}, \"output\": {\"messageId\": \"msg-001\", \"claimId\": \"CI-20250113-01B2E\", \"communicationType\": \"Document Request\", \"recipient\": {\"name\": \"Robert Johnson\", \"contactMethod\": \"email\"}, \"subject\": \"Critical Illness Claim - Document Request\", \"messageBody\": \"Dear Robert Johnson,\\n\\nRe: Critical Illness Claim - CI-20250113-01B2E\\n\\nWe are processing your claim for a critical illness. To proceed, we require the following documents:\\n\\n- CT/MRI scan reports\\n- Neurologist assessment\\n- Rehabilitation plan\\n- Policy document copy\\n- Attending physician statement\\n- Medical bills/receipts\\n\\nPlease submit these documents by [Deadline] via:\\n- Email: claims@insurance.com\\n- Portal: www.insurance.com/upload\\n\\nIf you have questions, contact us at 1-800-CLAIMS.\\n\\nSincerely,\\nClaims Department\", \"attachments\": [], \"sentTimestamp\": \"2023-11-29T12:00:00Z\", \"deliveryStatus\": \"sent\", \"requiresResponse\": true, \"responseDeadline\": \"2023-12-06T12:00:00Z\", \"reasoning\": \"The claimant needs to provide missing documents to proceed with the claim assessment.\", \"toolsUsed\": [\"send_notification\"]}, \"reasoning\": \"Delegated communication to request missing documents from the claimant.\"}, {\"sequence\": 9, \"timestamp\": \"2025-09-24T19:12:37.246028Z\", \"agent\": \"Workflow Orchestrator\", \"action\": \"TOOL_USE\", \"tool\": \"write\", \"input\": {\"path\": \"examples/critical-illness-claim/results/CI-20250113-01B2E.json\", \"content\": \"{\\\"processId\\\": \\\"PROC-DE20A37E\\\", \\\"timestamp\\\": \\\"2025-09-24T19:12:37.246028Z\\\", \\\"workflowPath\\\": [\\\"notification_received\\\", \\\"categorization_performed\\\", \\\"claim_registered\\\", \\\"documentation_verified\\\", \\\"communication_sent\\\"], \\\"finalOutcome\\\": \\\"pending_docs\\\", \\\"details\\\": {\\\"claimId\\\": \\\"CI-20250113-01B2E\\\", \\\"claimantName\\\": \\\"Robert Johnson\\\", \\\"policyNumber\\\": \\\"POL-11111\\\", \\\"illness\\\": \\\"stroke\\\", \\\"decision\\\": \\\"pending\\\", \\\"notes\\\": \\\"Request for missing documents sent to claimant.\\\"}, \\\"auditTrail\\\": [{\\\"sequence\\\": 1, \\\"timestamp\\\": \\\"2025-09-24T19:12:37.246028Z\\\", \\\"agent\\\": \\\"Workflow Orchestrator\\\", \\\"action\\\": \\\"WORKFLOW_START\\\", \\\"input\\\": {\\\"notification\\\": {\\\"id\\\": \\\"NOTIF-003\\\", \\\"type\\\": \\\"critical_illness_claim\\\", \\\"content\\\": \\\"I am filing a claim for a recent stroke I suffered on January 2, 2025. I have been hospitalized and am currently in rehabilitation. I have some of my medical documents ready but am still waiting for others from the hospital.\\\", \\\"timestamp\\\": \\\"2025-01-13T11:00:00Z\\\", \\\"claimantInfo\\\": {\\\"name\\\": \\\"Robert Johnson\\\", \\\"policyNumber\\\": \\\"POL-11111\\\", \\\"contactInfo\\\": \\\"robert.j@email.com, +1-555-0789\\\"}}, \\\"documents\\\": [{\\\"type\\\": \\\"hospital_discharge_summary\\\", \\\"name\\\": \\\"discharge_johnson.pdf\\\", \\\"status\\\": \\\"received\\\"}, {\\\"type\\\": \\\"claim_form\\\", \\\"name\\\": \\\"claim_form_johnson.pdf\\\", \\\"status\\\": \\\"received\\\"}, {\\\"type\\\": \\\"id_proof\\\", \\\"name\\\": \\\"id_johnson.pdf\\\", \\\"status\\\": \\\"received\\\"}, {\\\"type\\\": \\\"CT_scan_report\\\", \\\"name\\\": \\\"ct_scan_johnson.pdf\\\", \\\"status\\\": \\\"pending\\\"}, {\\\"type\\\": \\\"neurologist_assessment\\\", \\\"name\\\": \\\"neuro_assessment_johnson.pdf\\\", \\\"status\\\": \\\"pending\\\"}, {\\\"type\\\": \\\"rehabilitation_plan\\\", \\\"name\\\": \\\"rehab_plan_johnson.pdf\\\", \\\"status\\\": \\\"pending\\\"}], \\\"diagnosisDate\\\": \\\"2025-01-02T00:00:00Z\\\", \\\"claimantBankDetails\\\": {\\\"accountName\\\": \\\"Robert Johnson\\\", \\\"accountNumber\\\": \\\"5566778899\\\", \\\"bankName\\\": \\\"Premier Bank\\\"}}}, {\\\"sequence\\\": 2, \\\"timestamp\\\": \\\"2025-09-24T19:12:37.246028Z\\\", \\\"agent\\\": \\\"Workflow Orchestrator\\\", \\\"action\\\": \\\"TOOL_USE\\\", \\\"tool\\\": \\\"timestamp_generator\\\", \\\"input\\\": {\\\"operation\\\": \\\"generate\\\"}, \\\"output\\\": {\\\"success\\\": true, \\\"timestamp\\\": \\\"2025-09-24T19:12:37.246028Z\\\", \\\"formatted\\\": \\\"2025-09-24T19:12:37.246028Z\\\"}, \\\"reasoning\\\": \\\"Generated a current timestamp for workflow tracking.\\\"}, {\\\"sequence\\\": 3, \\\"timestamp\\\": \\\"2025-09-24T19:12:37.246028Z\\\", \\\"agent\\\": \\\"Workflow Orchestrator\\\", \\\"action\\\": \\\"TOOL_USE\\\", \\\"tool\\\": \\\"claim_id_generator\\\", \\\"input\\\": {\\\"policy_number\\\": \\\"POL-11111\\\", \\\"timestamp\\\": \\\"2025-01-13T11:00:00Z\\\", \\\"claim_type\\\": \\\"CI\\\"}, \\\"output\\\": {\\\"success\\\": true, \\\"claim_id\\\": \\\"CI-20250113-01B2E\\\", \\\"policy_number\\\": \\\"POL-11111\\\", \\\"timestamp\\\": \\\"2025-01-13T11:00:00Z\\\", \\\"claim_type\\\": \\\"CI\\\"}, \\\"reasoning\\\": \\\"Generated a unique claim ID for the registration process.\\\"}, {\\\"sequence\\\": 4, \\\"timestamp\\\": \\\"2025-09-24T19:12:37.246028Z\\\", \\\"agent\\\": \\\"Workflow Orchestrator\\\", \\\"action\\\": \\\"DELEGATE\\\", \\\"target\\\": \\\"notification-categorization\\\", \\\"input\\\": {\\\"notification\\\": {\\\"id\\\": \\\"NOTIF-003\\\", \\\"type\\\": \\\"critical_illness_claim\\\", \\\"content\\\": \\\"I am filing a claim for a recent stroke I suffered on January 2, 2025. I have been hospitalized and am currently in rehabilitation. I have some of my medical documents ready but am still waiting for others from the hospital.\\\", \\\"timestamp\\\": \\\"2025-01-13T11:00:00Z\\\", \\\"claimantInfo\\\": {\\\"name\\\": \\\"Robert Johnson\\\", \\\"policyNumber\\\": \\\"POL-11111\\\", \\\"contactInfo\\\": \\\"robert.j@email.com, +1-555-0789\\\"}}, \\\"documents\\\": [{\\\"type\\\": \\\"hospital_discharge_summary\\\", \\\"name\\\": \\\"discharge_johnson.pdf\\\", \\\"status\\\": \\\"received\\\"}, {\\\"type\\\": \\\"claim_form\\\", \\\"name\\\": \\\"claim_form_johnson.pdf\\\", \\\"status\\\": \\\"received\\\"}, {\\\"type\\\": \\\"id_proof\\\", \\\"name\\\": \\\"id_johnson.pdf\\\", \\\"status\\\": \\\"received\\\"}, {\\\"type\\\": \\\"CT_scan_report\\\", \\\"name\\\": \\\"ct_scan_johnson.pdf\\\", \\\"status\\\": \\\"pending\\\"}, {\\\"type\\\": \\\"neurologist_assessment\\\", \\\"name\\\": \\\"neuro_assessment_johnson.pdf\\\", \\\"status\\\": \\\"pending\\\"}, {\\\"type\\\": \\\"rehabilitation_plan\\\", \\\"name\\\": \\\"rehab_plan_johnson.pdf\\\", \\\"status\\\": \\\"pending\\\"}], \\\"diagnosisDate\\\": \\\"2025-01-02T00:00:00Z\\\", \\\"claimantBankDetails\\\": {\\\"accountName\\\": \\\"Robert Johnson\\\", \\\"accountNumber\\\": \\\"5566778899\\\", \\\"bankName\\\": \\\"Premier Bank\\\"}}, \\\"output\\\": {\\\"isCriticalIllness\\\": true, \\\"category\\\": \\\"critical_illness\\\", \\\"confidence\\\": \\\"high\\\", \\\"identifiedCondition\\\": \\\"stroke\\\", \\\"reasoning\\\": \\\"The notification type is 'critical_illness_claim', which directly indicates a critical illness. The content explicitly mentions a 'stroke', which is a recognized critical illness. The claimant has been hospitalized and is undergoing rehabilitation, further supporting the severity of the condition.\\\"}, \\\"reasoning\\\": \\\"Delegated notification categorization to determine if the claim is for a critical illness.\\\"}, {\\\"sequence\\\": 5, \\\"timestamp\\\": \\\"2025-09-24T19:12:37.246028Z\\\", \\\"agent\\\": \\\"Workflow Orchestrator\\\", \\\"action\\\": \\\"DELEGATE\\\", \\\"target\\\": \\\"claim-registration\\\", \\\"input\\\": {\\\"notification\\\": {\\\"id\\\": \\\"NOTIF-003\\\", \\\"type\\\": \\\"critical_illness_claim\\\", \\\"content\\\": \\\"I am filing a claim for a recent stroke I suffered on January 2, 2025. I have been hospitalized and am currently in rehabilitation. I have some of my medical documents ready but am still waiting for others from the hospital.\\\", \\\"timestamp\\\": \\\"2025-01-13T11:00:00Z\\\", \\\"claimantInfo\\\": {\\\"name\\\": \\\"Robert Johnson\\\", \\\"policyNumber\\\": \\\"POL-11111\\\", \\\"contactInfo\\\": \\\"robert.j@email.com, +1-555-0789\\\"}}, \\\"documents\\\": [{\\\"type\\\": \\\"hospital_discharge_summary\\\", \\\"name\\\": \\\"discharge_johnson.pdf\\\", \\\"status\\\": \\\"received\\\"}, {\\\"type\\\": \\\"claim_form\\\", \\\"name\\\": \\\"claim_form_johnson.pdf\\\", \\\"status\\\": \\\"received\\\"}, {\\\"type\\\": \\\"id_proof\\\", \\\"name\\\": \\\"id_johnson.pdf\\\", \\\"status\\\": \\\"received\\\"}, {\\\"type\\\": \\\"CT_scan_report\\\", \\\"name\\\": \\\"ct_scan_johnson.pdf\\\", \\\"status\\\": \\\"pending\\\"}, {\\\"type\\\": \\\"neurologist_assessment\\\", \\\"name\\\": \\\"neuro_assessment_johnson.pdf\\\", \\\"status\\\": \\\"pending\\\"}, {\\\"type\\\": \\\"rehabilitation_plan\\\", \\\"name\\\": \\\"rehab_plan_johnson.pdf\\\", \\\"status\\\": \\\"pending\\\"}], \\\"diagnosisDate\\\": \\\"2025-01-02T00:00:00Z\\\", \\\"claimantBankDetails\\\": {\\\"accountName\\\": \\\"Robert Johnson\\\", \\\"accountNumber\\\": \\\"5566778899\\\", \\\"bankName\\\": \\\"Premier Bank\\\"}, \\\"categorization\\\": {\\\"isCriticalIllness\\\": true, \\\"category\\\": \\\"critical_illness\\\", \\\"confidence\\\": \\\"high\\\", \\\"identifiedCondition\\\": \\\"stroke\\\", \\\"reasoning\\\": \\\"The notification type is 'critical_illness_claim', which directly indicates a critical illness. The content explicitly mentions a 'stroke', which is a recognized critical illness. The claimant has been hospitalized and is undergoing rehabilitation, further supporting the severity of the condition.\\\"}}, \\\"output\\\": {\\\"claimId\\\": \\\"CI-20250113-01B2E\\\", \\\"registrationTimestamp\\\": \\\"2025-09-24T19:12:55.503941Z\\\", \\\"status\\\": \\\"registered\\\", \\\"claimantInfo\\\": {\\\"name\\\": \\\"Robert Johnson\\\", \\\"policyNumber\\\": \\\"POL-11111\\\", \\\"contactInfo\\\": \\\"robert.j@email.com, +1-555-0789\\\"}, \\\"claimDetails\\\": {\\\"condition\\\": \\\"stroke\\\", \\\"notificationId\\\": \\\"NOTIF-003\\\", \\\"initialSubmissionDate\\\": \\\"2025-01-13T11:00:00Z\\\"}, \\\"registrationSuccess\\\": true, \\\"message\\\": \\\"Claim registered successfully.\\\", \\\"reasoning\\\": \\\"The claim was registered with a unique ID and timestamp. The claimant's information and condition were validated and recorded.\\\", \\\"toolsUsed\\\": [\\\"claim_id_generator\\\", \\\"timestamp_generator\\\"]}, \\\"reasoning\\\": \\\"Delegated claim registration to record the claim with a unique ID and timestamp.\\\"}, {\\\"sequence\\\": 6, \\\"timestamp\\\": \\\"2025-09-24T19:12:37.246028Z\\\", \\\"agent\\\": \\\"Workflow Orchestrator\\\", \\\"action\\\": \\\"DELEGATE\\\", \\\"target\\\": \\\"documentation-verification\\\", \\\"input\\\": {\\\"claimId\\\": \\\"CI-20250113-01B2E\\\", \\\"condition\\\": \\\"stroke\\\", \\\"documents\\\": [{\\\"type\\\": \\\"hospital_discharge_summary\\\", \\\"name\\\": \\\"discharge_johnson.pdf\\\", \\\"status\\\": \\\"received\\\"}, {\\\"type\\\": \\\"claim_form\\\", \\\"name\\\": \\\"claim_form_johnson.pdf\\\", \\\"status\\\": \\\"received\\\"}, {\\\"type\\\": \\\"id_proof\\\", \\\"name\\\": \\\"id_johnson.pdf\\\", \\\"status\\\": \\\"received\\\"}, {\\\"type\\\": \\\"CT_scan_report\\\", \\\"name\\\": \\\"ct_scan_johnson.pdf\\\", \\\"status\\\": \\\"pending\\\"}, {\\\"type\\\": \\\"neurologist_assessment\\\", \\\"name\\\": \\\"neuro_assessment_johnson.pdf\\\", \\\"status\\\": \\\"pending\\\"}, {\\\"type\\\": \\\"rehabilitation_plan\\\", \\\"name\\\": \\\"rehab_plan_johnson.pdf\\\", \\\"status\\\": \\\"pending\\\"}]}, \\\"output\\\": {\\\"claimId\\\": \\\"CI-20250113-01B2E\\\", \\\"documentationComplete\\\": false, \\\"completenessPercentage\\\": 30, \\\"requiredDocuments\\\": [\\\"CT/MRI scan reports\\\", \\\"Neurologist assessment\\\", \\\"Hospital records\\\", \\\"Rehabilitation plan\\\", \\\"Completed claim form\\\", \\\"Valid ID proof\\\", \\\"Policy document copy\\\", \\\"Attending physician statement\\\", \\\"Medical bills/receipts\\\"], \\\"receivedDocuments\\\": [\\\"Completed claim form\\\", \\\"Valid ID proof\\\", \\\"Hospital discharge summary\\\"], \\\"missingDocuments\\\": [\\\"CT/MRI scan reports\\\", \\\"Neurologist assessment\\\", \\\"Rehabilitation plan\\\", \\\"Policy document copy\\\", \\\"Attending physician statement\\\", \\\"Medical bills/receipts\\\"], \\\"invalidDocuments\\\": [], \\\"verificationNotes\\\": \\\"Several critical documents are pending or missing, including CT/MRI scan reports and neurologist assessment.\\\", \\\"nextAction\\\": \\\"request_missing\\\", \\\"reasoning\\\": \\\"The claim is incomplete as several required documents are either missing or pending. The completeness percentage is 30%, indicating that only a few documents have been received. The claim cannot proceed until all necessary documents are submitted and verified.\\\"}, \\\"reasoning\\\": \\\"Delegated documentation verification to assess completeness of submitted documents.\\\"}, {\\\"sequence\\\": 7, \\\"timestamp\\\": \\\"2025-09-24T19:12:37.246028Z\\\", \\\"agent\\\": \\\"Workflow Orchestrator\\\", \\\"action\\\": \\\"DECISION\\\", \\\"decisionPoint\\\": \\\"documentation_complete\\\", \\\"input\\\": {\\\"documentationComplete\\\": false}, \\\"output\\\": {\\\"decision\\\": \\\"pending_docs\\\"}, \\\"reasoning\\\": \\\"The claim is incomplete as several required documents are either missing or pending. The completeness percentage is 30%, indicating that only a few documents have been received. The claim cannot proceed until all necessary documents are submitted and verified.\\\"}, {\\\"sequence\\\": 8, \\\"timestamp\\\": \\\"2025-09-24T19:12:37.246028Z\\\", \\\"agent\\\": \\\"Workflow Orchestrator\\\", \\\"action\\\": \\\"DELEGATE\\\", \\\"target\\\": \\\"communication\\\", \\\"input\\\": {\\\"communicationType\\\": \\\"Document Request\\\", \\\"claimId\\\": \\\"CI-20250113-01B2E\\\", \\\"recipientInfo\\\": {\\\"name\\\": \\\"Robert Johnson\\\", \\\"email\\\": \\\"robert.j@email.com\\\", \\\"phone\\\": \\\"+1-555-0789\\\"}, \\\"context\\\": {\\\"status\\\": \\\"pending_docs\\\", \\\"details\\\": {\\\"missingDocuments\\\": [\\\"CT/MRI scan reports\\\", \\\"Neurologist assessment\\\", \\\"Rehabilitation plan\\\", \\\"Policy document copy\\\", \\\"Attending physician statement\\\", \\\"Medical bills/receipts\\\"]}}, \\\"output\\\": {\\\"messageId\\\": \\\"msg-001\\\", \\\"claimId\\\": \\\"CI-20250113-01B2E\\\", \\\"communicationType\\\": \\\"Document Request\\\", \\\"recipient\\\": {\\\"name\\\": \\\"Robert Johnson\\\", \\\"contactMethod\\\": \\\"email\\\"}, \\\"subject\\\": \\\"Critical Illness Claim - Document Request\\\", \\\"messageBody\\\": \\\"Dear Robert Johnson,\\\\n\\\\nRe: Critical Illness Claim - CI-20250113-01B2E\\\\n\\\\nWe are processing your claim for a critical illness. To proceed, we require the following documents:\\\\n\\\\n- CT/MRI scan reports\\\\n- Neurologist assessment\\\\n- Rehabilitation plan\\\\n- Policy document copy\\\\n- Attending physician statement\\\\n- Medical bills/receipts\\\\n\\\\nPlease submit these documents by [Deadline] via:\\\\n- Email: claims@insurance.com\\\\n- Portal: www.insurance.com/upload\\\\n\\\\nIf you have questions, contact us at 1-800-CLAIMS.\\\\n\\\\nSincerely,\\\\nClaims Department\\\", \\\"attachments\\\": [], \\\"sentTimestamp\\\": \\\"2023-11-29T12:00:00Z\\\", \\\"deliveryStatus\\\": \\\"sent\\\", \\\"requiresResponse\\\": true, \\\"responseDeadline\\\": \\\"2023-12-06T12:00:00Z\\\", \\\"reasoning\\\": \\\"The claimant needs to provide missing documents to proceed with the claim assessment.\\\", \\\"toolsUsed\\\": [\\\"send_notification\\\"]}, \\\"reasoning\\\": \\\"Delegated communication to request missing documents from the claimant.\\\"}]}}"
+      },
+      "output": {},
+      "reasoning": "Saved the final workflow results to a file for record-keeping and further processing."
+    },
+    {
+      "sequence": 10,
+      "timestamp": "2025-09-24T19:12:37.246028Z",
+      "agent": "Workflow Orchestrator",
+      "action": "WORKFLOW_END",
+      "reasoning": "The workflow has reached its end with the current status of pending documents."
+    }
+  ]
+}
