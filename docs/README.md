@@ -19,12 +19,17 @@ systems using middleware pipeline architecture and pull-based information gather
 ### Configuration & Setup
 
 - **[Unified Configuration](./unified-configuration.md)** - System configuration using the builder pattern
+- **[LLM Provider Integration](./llm-provider-integration.md)** ⭐ - Multi-provider setup, behavior presets, cost tracking
 - **[Execution Flow Diagram](./execution-flow-diagram.md)** - Visual representation of system flow
 
 ### Web UI & Integration
 
 - **[Web UI Event Architecture](./web-ui-event-architecture.md)** ⭐ - Why events enable web interfaces
 - **[Web UI Integration Guide](./web-ui-integration.md)** ⭐ - Building on the event system (SSE, React, API)
+
+### Debugging & Monitoring
+
+- **[Logging and Debugging](./logging-and-debugging.md)** ⭐ - ConsoleLogger, SimpleTracer, debugging strategies
 
 ### Developer Resources
 
@@ -110,12 +115,12 @@ This documentation evolves with the codebase. When making changes:
 | Web UI Event Architecture | ✅ Complete | HIGH     | Why events enable web UI     |
 | Web UI Integration Guide  | ✅ Complete | HIGH     | SSE, React, API integration  |
 | MCP Integration           | ✅ Complete | HIGH     | External tool servers        |
+| LLM Provider Integration  | ✅ Complete | HIGH     | Multi-provider, costs, presets |
+| Logging & Debugging       | ✅ Complete | HIGH     | ConsoleLogger, SimpleTracer  |
 | Developer Guides          | ✅ Complete | HIGH     | Practical tutorials          |
 | Unified Configuration     | ✅ Complete | MEDIUM   | System setup                 |
 | Execution Flow            | ✅ Complete | MEDIUM   | Visual system flow           |
 | Safety Mechanisms         | 🔄 Planned | MEDIUM   | Resource management          |
-| Logging & Debugging       | 🔄 Planned | MEDIUM   | System observability         |
-| LLM Integration           | 🔄 Planned | LOW      | Provider details             |
 
 ## 🤝 Contributing
 
