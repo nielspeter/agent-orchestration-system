@@ -209,7 +209,7 @@ function extractMetadata(events?: AnySessionEvent[]): {
 
     // Sum up tokens and costs from metadata
     if (event.metadata) {
-      const meta = event.metadata as LLMMetadata;
+      const meta = event.metadata;
 
       if (meta.usage) {
         totalTokens += meta.usage.totalTokens || 0;
@@ -355,10 +355,11 @@ export function formatOutput(execution: ExecutionResult, format: OutputFormat = 
       return formatVerbose(execution);
     case 'json':
       return formatJson(execution);
-    default:
+    default: {
       // TypeScript exhaustiveness check
       const _exhaustive: never = format;
       throw new Error(`Unknown format: ${_exhaustive}`);
+    }
   }
 }
 
