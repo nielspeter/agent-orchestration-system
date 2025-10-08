@@ -49,7 +49,9 @@ async function main() {
         console.log(JSON.stringify({ agents }, null, 2));
       } else {
         console.log('Available agents:');
-        agents.forEach((agent: string) => console.log(`  - ${agent}`));
+        for (const agent of agents) {
+          console.log(`  - ${agent}`);
+        }
       }
       await cleanup();
       return;
@@ -62,7 +64,9 @@ async function main() {
         console.log(JSON.stringify({ tools }, null, 2));
       } else {
         console.log('Available tools:');
-        tools.forEach((tool: string) => console.log(`  - ${tool}`));
+        for (const tool of tools) {
+          console.log(`  - ${tool}`);
+        }
       }
       await cleanup();
       return;
