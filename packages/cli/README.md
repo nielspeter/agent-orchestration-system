@@ -1,155 +1,438 @@
 # @agent-system/cli
 
-Command-line interface utilities for the Agent Orchestration System.
+Command-line interface for the Agent Orchestration System.
+
+A production-ready CLI tool that provides Unix-friendly access to autonomous agents with stdin/stdout support, proper signal handling, and security features.
+
+## Installation
+
+```bash
+# Install globally
+npm install -g @agent-system/cli
+
+# Or use from workspace
+npm run cli
+```
+
+## Quick Start
+
+```bash
+# Basic usage with -p flag
+agent -p "Hello, world!"
+
+# Read from stdin (Unix-style)
+echo "Analyze this text" | agent
+
+# Pipe from files
+cat document.txt | agent -p "Summarize this"
+
+# Use specific agent
+agent -p "Review this code" -a code-reviewer
+
+# JSON output
+agent -p "List 3 colors" --json | jq '.result'
+
+# List available agents and tools
+agent --list-agents
+agent --list-tools
+```
 
 ## Features
 
-### Output Formatting
+### 🔄 Unix-Friendly
 
-The `output.ts` module provides flexible formatting utilities for displaying execution results in different modes:
+- **stdin Support**: Accepts input via pipe or redirect
+- **stdout/stderr Separation**: Clean output to stdout, errors to stderr
+- **EPIPE Handling**: Gracefully handles broken pipes
+- **Exit Codes**: Proper exit codes (0=success, 1=error, 130=SIGINT, 143=SIGTERM)
+- **Color Detection**: Auto-disables colors when piped
 
-- **Clean Mode**: Just the result text (ideal for piping to other commands)
-- **Verbose Mode**: Detailed output with agent info, metrics, tool calls, and timing
-- **JSON Mode**: Structured JSON output for programmatic consumption
+### 🔒 Security & Reliability
 
-#### Usage
+- **Input Size Limit**: 10MB maximum stdin input
+- **Timeout Protection**: 30-second timeout on stdin reads
+- **Signal Handling**: Graceful cleanup on Ctrl+C (SIGINT) and SIGTERM
+- **Resource Cleanup**: Always calls cleanup, even on errors or signals
+- **Format Validation**: Runtime validation of output formats
 
-```typescript
-import { formatOutput } from '@agent-system/cli/output';
+### 📊 Output Modes
 
-const result: ExecutionResult = {
-  result: 'Task completed',
-  agentName: 'orchestrator',
-  sessionId: 'session-123',
-  duration: 1500,
-  events: [...], // Optional session events
-};
+- **clean** (default): Just the result text - perfect for piping
+- **verbose**: Detailed output with metrics, tool calls, and timing
+- **json**: Structured JSON for programmatic consumption
 
-// Clean output (default)
-console.log(formatOutput(result, 'clean'));
-// Output: Task completed
+## Usage
 
-// Verbose output with metadata
-console.log(formatOutput(result, 'verbose'));
-// Output:
-// ═══════════════════════════════════════════
-// Agent Execution Result
-// ═══════════════════════════════════════════
-//
-// Agent: orchestrator
-// Session: session-123
-// Duration: 1.50s
-// ...
-
-// JSON output
-console.log(formatOutput(result, 'json'));
-// Output: {"result":"Task completed","agent":"orchestrator",...}
 ```
+agent [options]
 
-#### Error Formatting
-
-```typescript
-import { formatError } from '@agent-system/cli/output';
-
-try {
-  // ... some operation
-} catch (error) {
-  console.error(formatError(error, 'verbose'));
-}
+Options:
+  -V, --version          output the version number
+  -p, --prompt <text>    The prompt to send to the agent (or pipe via stdin)
+  -a, --agent <name>     Agent to use (default: "default")
+  -m, --model <model>    Model to use
+  --agents-dir <path>    Path to agents directory
+  -o, --output <format>  Output format: clean, verbose, json (default: "clean")
+  --list-agents          List available agents
+  --list-tools           List available tools
+  --json                 Output as JSON (shorthand for --output json)
+  -h, --help             display help for command
 ```
-
-#### Utility Messages
-
-```typescript
-import { formatSuccess, formatWarning, formatInfo } from '@agent-system/cli/output';
-
-console.log(formatSuccess('Build completed'));
-console.log(formatWarning('Deprecated feature used'));
-console.log(formatInfo('Loaded 5 agents'));
-```
-
-### Color Support
-
-The output utilities automatically detect terminal capabilities:
-
-- Colors are enabled by default in TTY environments
-- Set `NO_COLOR=1` environment variable to disable colors
-- Set `FORCE_COLOR=1` to force colors even in non-TTY environments
-- Respects `TERM=dumb` for compatibility
 
 ## Examples
 
-Run the example to see all formatting modes:
+### Basic Execution
 
 ```bash
-npx tsx packages/cli/src/output.example.ts
+# Direct prompt
+agent -p "What is 2+2?"
+
+# Output: 4
 ```
 
-## API Reference
+### stdin Input
 
-### Types
+```bash
+# From echo
+echo "Explain recursion" | agent
+
+# From file
+agent < input.txt
+
+# From command output
+git diff | agent -p "Review these changes"
+
+# Pipeline chains
+cat *.md | agent -p "Summarize" | agent -p "Create a tweet"
+```
+
+### Output Formats
+
+```bash
+# Clean output (default) - just the answer
+agent -p "Say hello"
+# Output: Hello!
+
+# Verbose output - with metrics
+agent -p "Say hello" --output verbose
+# Output:
+# ═══════════════════════════════════════════
+# Agent Execution Result
+# ═══════════════════════════════════════════
+#
+# Agent: default
+# Duration: 1.23s
+#
+# Execution Metrics
+#   Iterations: 1
+#   Tool Calls: 0
+#   Total Tokens: 156
+#   Total Cost: $0.0012
+#
+# Result
+#
+# Hello!
+# ═══════════════════════════════════════════
+
+# JSON output - for scripts
+agent -p "List 3 colors" --json
+# Output:
+# {
+#   "result": "Red\nGreen\nBlue",
+#   "agent": "default",
+#   "duration": 1230,
+#   "metrics": {
+#     "iterations": 1,
+#     "toolCalls": 0,
+#     "totalTokens": 156,
+#     "totalCost": 0.0012
+#   }
+# }
+```
+
+### Custom Agents
+
+```bash
+# Use specific agent
+agent -p "Review this code" -a code-reviewer
+
+# Load agents from custom directory
+agent -p "Hello" --agents-dir ./my-agents
+```
+
+### Model Selection
+
+```bash
+# Use specific model
+agent -p "Test" -m "anthropic/claude-3-5-haiku-latest"
+
+# Use different provider
+agent -p "Test" -m "openrouter/gpt-4-turbo"
+```
+
+### Listing
+
+```bash
+# List available agents
+agent --list-agents
+# Output:
+# Available agents:
+#   - default
+#   - code-reviewer
+#   - summarizer
+
+# List with JSON
+agent --list-agents --json
+# Output: {"agents":["default","code-reviewer","summarizer"]}
+
+# List available tools
+agent --list-tools
+# Output:
+# Available tools:
+#   - read
+#   - write
+#   - list
+#   - grep
+#   - delegate
+```
+
+### Unix Patterns
+
+```bash
+# Redirect output
+agent -p "Generate UUID" > output.txt
+
+# Redirect errors
+agent -p "Test" 2> errors.log
+
+# Both
+agent -p "Test" > output.txt 2> errors.log
+
+# Pipe to other commands
+agent -p "List files in src/" | grep ".ts$"
+
+# Use in conditions
+if agent -p "Is 5 > 3?" | grep -q "yes"; then
+  echo "Correct!"
+fi
+
+# Use in scripts
+result=$(agent -p "Calculate 10 * 5")
+echo "Result: $result"
+
+# Disable colors for logging
+NO_COLOR=1 agent -p "Test" >> log.txt
+```
+
+## Security Features
+
+### Input Validation
+
+- **Maximum stdin size**: 10MB (prevents memory exhaustion attacks)
+- **Read timeout**: 30 seconds (prevents infinite hangs)
+- **Format validation**: Invalid output formats fall back to 'clean'
+
+```bash
+# This will timeout after 30s
+cat /dev/random | agent
+
+# This will reject input > 10MB
+cat huge-file.bin | agent
+# Error: stdin input exceeds maximum size of 10MB
+```
+
+### Signal Handling
+
+The CLI handles termination signals gracefully:
+
+```bash
+# Press Ctrl+C during execution
+agent -p "Long running task"
+^C
+# Output: Received SIGINT, cleaning up...
+# Exit code: 130
+```
+
+Signals:
+- **SIGINT (Ctrl+C)**: Calls cleanup(), exits with code 130
+- **SIGTERM**: Calls cleanup(), exits with code 143
+- **Second signal**: Force exits immediately
+
+### Resource Cleanup
+
+Resources are always cleaned up:
+- ✅ On successful completion
+- ✅ On errors/exceptions
+- ✅ On signals (SIGINT, SIGTERM)
+- ✅ On broken pipes (EPIPE)
+
+## Environment Variables
+
+```bash
+# API Keys (at least one required)
+ANTHROPIC_API_KEY=your-key-here
+OPENROUTER_API_KEY=your-key-here
+
+# Optional configuration
+NO_COLOR=1                    # Disable colors
+FORCE_COLOR=1                 # Force colors even when piped
+TERM=dumb                     # Disable colors
+DISABLE_PROMPT_CACHING=true   # Disable Anthropic caching
+```
+
+## Exit Codes
+
+The CLI uses standard Unix exit codes:
+
+| Code | Meaning | Example |
+|------|---------|---------|
+| 0 | Success | Command completed successfully |
+| 1 | Error | Invalid arguments, execution failure |
+| 130 | SIGINT | User pressed Ctrl+C |
+| 143 | SIGTERM | Process terminated (e.g., `kill`) |
+
+## Error Handling
+
+Errors are formatted according to the output mode:
+
+```bash
+# Clean mode (default)
+agent -p "test" -m "invalid-model"
+# Error: Unknown model: invalid-model
+
+# Verbose mode
+agent -p "test" -m "invalid-model" --output verbose
+# ═══════════════════════════════════════════
+# ERROR
+# ═══════════════════════════════════════════
+#
+# Unknown model: invalid-model
+#
+# Stack trace:
+# ...
+
+# JSON mode
+agent -p "test" -m "invalid-model" --json
+# {"error":"Unknown model: invalid-model","stack":"..."}
+```
+
+## Programmatic Usage
+
+### Output Formatting API
+
+The CLI also exports output formatting utilities for use in other TypeScript projects:
 
 ```typescript
-type OutputFormat = 'clean' | 'verbose' | 'json';
+import { formatOutput, formatError, type OutputFormat } from '@agent-system/cli';
 
-interface ExecutionResult {
-  result: string;
-  agentName: string;
-  sessionId?: string;
-  duration?: number;
-  events?: AnySessionEvent[];
-  metadata?: {
-    totalTokens?: number;
-    totalCost?: number;
-    iterations?: number;
-    toolCalls?: number;
-  };
+const result: ExecutionResult = {
+  result: 'Task completed',
+  agentName: 'default',
+  duration: 1500,
+};
+
+// Format output
+console.log(formatOutput(result, 'verbose'));
+
+// Format errors
+try {
+  // ... operation
+} catch (error) {
+  console.error(formatError(error, 'json'));
 }
 ```
 
-### Functions
-
-#### `formatOutput(execution: ExecutionResult, format?: OutputFormat): string`
-
-Formats an execution result in the specified mode.
-
-- **execution**: The execution result to format
-- **format**: Output format ('clean', 'verbose', or 'json'). Defaults to 'clean'.
-- **Returns**: Formatted string
-
-#### `formatError(error: Error | string, format?: OutputFormat): string`
-
-Formats an error for display.
-
-- **error**: Error object or string
-- **format**: Output format. Defaults to 'clean'.
-- **Returns**: Formatted error message
-
-#### `formatSuccess(message: string): string`
-
-Formats a success message with a checkmark icon.
-
-#### `formatWarning(message: string): string`
-
-Formats a warning message with a warning icon.
-
-#### `formatInfo(message: string): string`
-
-Formats an info message with an info icon.
+See [output.ts](./src/output.ts) for full API documentation.
 
 ## Development
-
-### Testing
-
-```bash
-npm test -w @agent-system/cli
-```
 
 ### Building
 
 ```bash
+# Build CLI package
 npm run build -w @agent-system/cli
+
+# Build from root
+npm run build:cli
 ```
+
+### Testing
+
+```bash
+# Run tests
+npm test -w @agent-system/cli
+
+# With coverage
+npm run test:coverage -w @agent-system/cli
+```
+
+### Linting
+
+```bash
+# Lint CLI code
+npx eslint packages/cli/src/*.ts
+
+# Auto-fix issues
+npx eslint --fix packages/cli/src/*.ts
+```
+
+## Troubleshooting
+
+### Command not found
+
+```bash
+# Ensure it's built
+npm run build:cli
+
+# Use via npx
+npx tsx packages/cli/src/index.ts -p "test"
+
+# Or use npm script
+npm run cli -- -p "test"
+```
+
+### EPIPE errors
+
+If you see EPIPE errors, it means the receiving process closed its stdin. This is normal Unix behavior:
+
+```bash
+# head closes stdin after 1 line
+agent -p "List 10 items" | head -1
+# No error - gracefully handles EPIPE
+```
+
+### Timeout errors
+
+If stdin reading times out:
+
+```bash
+# This will timeout after 30s
+cat /dev/zero | agent
+# Error: stdin read timeout after 30s
+```
+
+Solution: Provide a finite input stream or use `-p` flag instead.
+
+### Memory errors
+
+If input exceeds 10MB:
+
+```bash
+# This will be rejected
+cat huge-file.bin | agent
+# Error: stdin input exceeds maximum size of 10MB
+```
+
+Solution: Process the file in chunks or use the file path with the `read` tool.
+
+## Contributing
+
+This is an MVP/POC project. Contributions welcome!
+
+1. Follow existing code style
+2. Add tests for new features
+3. Update documentation
+4. Ensure all tests and linting pass
 
 ## License
 
