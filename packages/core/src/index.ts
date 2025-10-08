@@ -5,17 +5,17 @@
  */
 
 // Main builder API - primary entry point
-export { AgentSystemBuilder } from './config/system-builder.js';
-export type { BuildResult } from './config/system-builder.js';
+export { AgentSystemBuilder } from './config/system-builder';
+export type { BuildResult } from './config/system-builder';
 
 // Event logging - used by web UI for SSE
-export { EventLogger } from './logging/event.logger.js';
-export { ConsoleLogger } from './logging/console.logger.js';
-export { CompositeLogger } from './logging/composite.logger.js';
-export { NoOpLogger } from './logging/noop.logger.js';
-export type { AgentLogger } from './logging/types.js';
+export { EventLogger } from './logging/event.logger';
+export { ConsoleLogger } from './logging/console.logger';
+export { CompositeLogger } from './logging/composite.logger';
+export { NoOpLogger } from './logging/noop.logger';
+export type { AgentLogger } from './logging/types';
 
 // LLM Providers
-export { AnthropicProvider } from './providers/anthropic-provider.js';
-export { OpenAICompatibleProvider } from './providers/openai-compatible-provider.js';
-export type { ILLMProvider } from './providers/llm-provider.interface.js';
+export { AnthropicProvider } from './providers/anthropic-provider';
+export { OpenAICompatibleProvider } from './providers/openai-compatible-provider';
+export type { ILLMProvider } from './providers/llm-provider.interface';

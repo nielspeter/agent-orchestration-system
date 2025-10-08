@@ -1,6 +1,11 @@
+import dotenv from 'dotenv';
+import { resolve } from 'path';
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import { AgentSystemBuilder, EventLogger } from '@agent-system/core';
+
+// Load .env from workspace root (2 levels up from packages/web)
+dotenv.config({ path: resolve(process.cwd(), '../../.env') });
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -82,10 +87,14 @@ app.post('/api/executions', async (req: Request, res: Response) => {
     activeSessions.set(actualSessionId, system.eventLogger);
 
     // Start execution in background
+    // Extract agent name from path (e.g., "agents/orchestrator.md" -> "orchestrator")
+    const agentName = agentPath.replace(/^.*\//, '').replace(/\.md$/, '');
+
     system.executor
-      .run(prompt)
+      .execute(agentName, prompt)
       .then((result: string) => {
         console.log(`Execution completed for session ${actualSessionId}`);
+        console.log(`Result: ${result}`);
       })
       .catch((error: Error) => {
         console.error(`Execution failed for session ${actualSessionId}:`, error);
