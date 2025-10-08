@@ -71,7 +71,8 @@ cd packages/cli
   "dependencies": {
     "@agent-system/core": "*",
     "commander": "^12.0.0",
-    "chalk": "^5.3.0"
+    "chalk": "^5.3.0",
+    "dotenv": "^16.4.5"
   },
   "devDependencies": {
     "@types/node": "^20.11.30",
@@ -102,10 +103,14 @@ cd packages/cli
 **packages/cli/src/index.ts:**
 ```typescript
 #!/usr/bin/env node
+import * as dotenv from 'dotenv';
 import { Command } from 'commander';
 import { AgentSystemBuilder } from '@agent-system/core';
-import { discoverAgents, discoverTools } from './discovery.js';
+import { discoverAgents } from './discovery.js';
 import { formatOutput } from './output.js';
+
+// Load environment variables (like examples do)
+dotenv.config();
 
 const program = new Command();
 
@@ -120,13 +125,73 @@ program
   .option('-m, --model <model>', 'Model to use')
   .option('-v, --verbose', 'Show detailed execution logs')
   .option('--list-agents', 'List available agents')
-  .option('--list-tools', 'List available tools');
+  .option('--list-tools', 'List available tools')
+  .option('--json', 'Output as JSON');
 
 program.parse();
 
 const options = program.opts();
 
-// Implementation here
+async function main() {
+  try {
+    // Discover agents directory
+    const agentsDir = await discoverAgents();
+
+    // Build system (similar to examples)
+    const builder = new AgentSystemBuilder();
+
+    if (options.model) {
+      builder.withModel(options.model);
+    }
+
+    builder
+      .withAgentsFrom(agentsDir)
+      .withDefaultTools();
+
+    const { executor, toolRegistry, cleanup } = await builder.build();
+
+    // Handle --list-agents
+    if (options.listAgents) {
+      // Implementation
+      return;
+    }
+
+    // Handle --list-tools
+    if (options.listTools) {
+      const tools = toolRegistry.getAllTools().map(t => t.name);
+      console.log(tools.join('\n'));
+      await cleanup();
+      return;
+    }
+
+    // Execute agent
+    if (!options.prompt) {
+      console.error('Error: --prompt is required');
+      process.exit(1);
+    }
+
+    const result = await executor.execute(options.agent, options.prompt);
+
+    // Format output
+    if (options.json) {
+      console.log(JSON.stringify({ success: true, result }, null, 2));
+    } else {
+      console.log(result);
+    }
+
+    // Cleanup (like examples do)
+    await cleanup();
+  } catch (error) {
+    if (options.json) {
+      console.log(JSON.stringify({ success: false, error: (error as Error).message }, null, 2));
+    } else {
+      console.error('Error:', (error as Error).message);
+    }
+    process.exit(1);
+  }
+}
+
+main().catch(console.error);
 ```
 
 ### 3. Auto-Discovery Logic
