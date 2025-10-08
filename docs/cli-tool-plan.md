@@ -69,7 +69,7 @@ cd packages/cli
     "test": "vitest run"
   },
   "dependencies": {
-    "@agent-system/core": "workspace:*",
+    "@agent-system/core": "*",
     "commander": "^12.0.0",
     "chalk": "^5.3.0"
   },
