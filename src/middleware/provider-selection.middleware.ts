@@ -64,10 +64,10 @@ export function createProviderSelectionMiddleware(
       ctx.modelConfig = modelConfig;
       ctx.modelName = provider.getModelName();
 
-      // Log if agent requested a different model
-      if (ctx.agent?.model && ctx.agent.model !== defaultModelName) {
-        ctx.logger.logSystemMessage(`Agent requested model: ${ctx.agent.model}`);
-      }
+      // Log model selection
+      const selectedProviderName = provider.getProviderName();
+      const selectedModelName = provider.getModelName();
+      ctx.logger.logModelSelection(ctx.agentName, selectedModelName, selectedProviderName);
 
       // Log behavior settings if different from default
       const defaultBehavior = ProviderFactory.getDefaultBehavior(

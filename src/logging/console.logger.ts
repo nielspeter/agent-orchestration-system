@@ -287,6 +287,38 @@ export class ConsoleLogger implements AgentLogger {
     console.log(`${timestamp}${this.color(todoMessage, 'dim')}`);
   }
 
+  logSafetyLimit(reason: string, agent: string, details?: string): void {
+    const timestamp = this.formatTimestamp();
+    const message = details ? `${reason}: ${details}` : reason;
+    console.log(`${timestamp}${this.color(`🛑 Safety limit (${agent}): ${message}`, 'red')}`);
+  }
+
+  logSessionRecovery(sessionId: string, messageCount: number, todoCount?: number): void {
+    if (this.verbosity === 'minimal') return;
+
+    const timestamp = this.formatTimestamp();
+    const todoInfo = todoCount ? `, ${todoCount} todos` : '';
+    console.log(
+      `${timestamp}${this.color(`# Recovered session ${sessionId}: ${messageCount} messages${todoInfo}`, 'dim')}`
+    );
+  }
+
+  logModelSelection(agent: string, model: string, provider: string): void {
+    if (this.verbosity !== 'verbose') return;
+
+    const timestamp = this.formatTimestamp();
+    console.log(`${timestamp}${this.color(`# ${agent} using ${model} (${provider})`, 'dim')}`);
+  }
+
+  logMCPServerConnected(serverName: string, toolCount: number): void {
+    if (this.verbosity === 'minimal') return;
+
+    const timestamp = this.formatTimestamp();
+    console.log(
+      `${timestamp}${this.color(`# MCP server ${serverName} connected: ${toolCount} tools`, 'dim')}`
+    );
+  }
+
   async getSessionEvents(): Promise<import('@/session/types').AnySessionEvent[]> {
     return []; // Console logger doesn't store events, only displays them
   }

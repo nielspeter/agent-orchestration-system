@@ -390,7 +390,10 @@ describe('EventLogger', () => {
       await new Promise((resolve) => setTimeout(resolve, 10));
 
       expect(failingStorage.appendEvent).toHaveBeenCalled();
-      expect(console.error).toHaveBeenCalledWith('Failed to log user message:', expect.any(Error));
+      expect(console.error).toHaveBeenCalledWith(
+        'Failed to persist event user:',
+        expect.any(Error)
+      );
     });
 
     it('should handle all event types with storage errors', async () => {

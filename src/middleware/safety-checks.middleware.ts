@@ -11,7 +11,11 @@ export function createSafetyChecksMiddleware(safetyLimits: SafetyConfig): Middle
     const effectiveMaxDepth = Math.min(ctx.executionContext.maxDepth, safetyLimits.maxDepth);
     if (ctx.executionContext.depth >= effectiveMaxDepth) {
       const msg = `Max delegation depth (${effectiveMaxDepth}) reached. Consider breaking task into smaller parts.`;
-      ctx.logger.logSystemMessage(`🛑 ${msg}`);
+      ctx.logger.logSafetyLimit(
+        'max_depth',
+        ctx.agentName,
+        `depth: ${ctx.executionContext.depth}/${effectiveMaxDepth}`
+      );
       ctx.result = msg;
       ctx.shouldContinue = false;
       return; // Don't call next
@@ -20,7 +24,11 @@ export function createSafetyChecksMiddleware(safetyLimits: SafetyConfig): Middle
     // Check iteration count
     if (ctx.iteration >= safetyLimits.maxIterations) {
       const msg = `Stopped at ${safetyLimits.maxIterations} iterations (safety limit). Task may be too complex.`;
-      ctx.logger.logSystemMessage(`🛑 ${msg}`);
+      ctx.logger.logSafetyLimit(
+        'max_iterations',
+        ctx.agentName,
+        `iteration: ${ctx.iteration}/${safetyLimits.maxIterations}`
+      );
       ctx.result = msg;
       ctx.shouldContinue = false;
       return; // Don't call next
@@ -42,7 +50,11 @@ export function createSafetyChecksMiddleware(safetyLimits: SafetyConfig): Middle
     if (estimatedTokens > maxTokens) {
       const msg = `Token limit estimate exceeded: ~${Math.round(estimatedTokens)} tokens (limit: ${maxTokens})`;
       console.warn(`⚠️ ${msg}`);
-      ctx.logger.logSystemMessage(`🛑 Stopping: ${msg}`);
+      ctx.logger.logSafetyLimit(
+        'max_tokens',
+        ctx.agentName,
+        `~${Math.round(estimatedTokens)}/${maxTokens} tokens`
+      );
       ctx.result = `Task stopped: ${msg} (safety limit)`;
       ctx.shouldContinue = false;
       return; // Don't call next

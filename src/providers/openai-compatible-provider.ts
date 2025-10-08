@@ -72,6 +72,7 @@ export class OpenAICompatibleProvider implements ILLMProvider {
   private readonly providerName: string;
   private readonly logger?: AgentLogger;
   private lastUsage: UsageMetrics | null = null;
+  private lastStopReason: string | null = null;
   private readonly config: OpenAICompatibleConfig;
   private readonly temperature: number;
   private readonly topP: number;
@@ -230,6 +231,9 @@ export class OpenAICompatibleProvider implements ILLMProvider {
       const choice = response.choices[0];
       const usage = response.usage;
 
+      // Store stop reason
+      this.lastStopReason = choice.finish_reason || null;
+
       // Store usage metrics
       if (usage) {
         const extendedUsage = usage as ExtendedUsage;
@@ -322,6 +326,10 @@ export class OpenAICompatibleProvider implements ILLMProvider {
 
   getLastUsageMetrics(): UsageMetrics | null {
     return this.lastUsage;
+  }
+
+  getLastStopReason(): string | null {
+    return this.lastStopReason;
   }
 
   private isOpenRouter(): boolean {

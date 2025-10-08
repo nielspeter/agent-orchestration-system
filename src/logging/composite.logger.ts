@@ -125,6 +125,34 @@ export class CompositeLogger implements AgentLogger {
     }, 'logTodoUpdate');
   }
 
+  logSafetyLimit(reason: string, agent: string, details?: string): void {
+    this.executeWithErrorIsolation(
+      (logger) => logger.logSafetyLimit(reason, agent, details),
+      'logSafetyLimit'
+    );
+  }
+
+  logSessionRecovery(sessionId: string, messageCount: number, todoCount?: number): void {
+    this.executeWithErrorIsolation(
+      (logger) => logger.logSessionRecovery(sessionId, messageCount, todoCount),
+      'logSessionRecovery'
+    );
+  }
+
+  logModelSelection(agent: string, model: string, provider: string): void {
+    this.executeWithErrorIsolation(
+      (logger) => logger.logModelSelection(agent, model, provider),
+      'logModelSelection'
+    );
+  }
+
+  logMCPServerConnected(serverName: string, toolCount: number): void {
+    this.executeWithErrorIsolation(
+      (logger) => logger.logMCPServerConnected(serverName, toolCount),
+      'logMCPServerConnected'
+    );
+  }
+
   async getSessionEvents(): Promise<import('@/session/types').AnySessionEvent[]> {
     // Return events from the first logger that has them (typically EventLogger)
     for (const logger of this.loggers) {

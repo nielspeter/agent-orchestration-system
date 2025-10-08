@@ -1,3 +1,4 @@
+import { EventEmitter } from 'events';
 import { AgentLogger } from './types.js';
 import {
   AnySessionEvent,
@@ -10,21 +11,64 @@ import {
 } from '@/session/types';
 
 /**
- * Event-based logger that writes to storage abstraction
+ * Event-based logger that writes to storage abstraction and emits events for subscribers
  *
  * Replaces the JsonlLogger with a storage-agnostic implementation.
  * Events are written through the SessionStorage interface, allowing
  * for different backends (NoOp, Memory, Filesystem).
+ *
+ * Also emits events via EventEmitter for real-time subscribers (console, web UI, metrics, etc.)
  */
 export class EventLogger implements AgentLogger {
   private readonly toolCallMap = new Map<string, { tool: string; agent: string }>();
   private traceId?: string;
   private parentCallId?: string;
+  private readonly emitter = new EventEmitter();
 
   constructor(
     private readonly storage: SessionStorage,
     private readonly sessionId: string
-  ) {}
+  ) {
+    // Set max listeners to avoid warnings when multiple subscribers exist
+    this.emitter.setMaxListeners(20);
+
+    // Storage subscribes to all events for persistence
+    // Works with InMemoryStorage, FilesystemStorage, or NoOpStorage
+    this.on('*', (event) => {
+      this.storage.appendEvent(this.sessionId, event as AnySessionEvent).catch((error) => {
+        console.error(`Failed to persist event ${(event as any)?.type}:`, error);
+      });
+    });
+  }
+
+  /**
+   * Subscribe to specific event types or '*' for all events
+   */
+  on(event: string, handler: (event: AnySessionEvent | unknown) => void): void {
+    this.emitter.on(event, handler);
+  }
+
+  /**
+   * Unsubscribe from events
+   */
+  off(event: string, handler: (event: AnySessionEvent | unknown) => void): void {
+    this.emitter.off(event, handler);
+  }
+
+  /**
+   * Subscribe to a single event occurrence
+   */
+  once(event: string, handler: (event: AnySessionEvent | unknown) => void): void {
+    this.emitter.once(event, handler);
+  }
+
+  /**
+   * Emit event to subscribers (both specific event name and wildcard)
+   */
+  private emitEvent(eventName: string, event: AnySessionEvent | unknown): void {
+    this.emitter.emit(eventName, event);
+    this.emitter.emit('*', event); // Wildcard for catch-all subscribers
+  }
 
   setTraceContext(traceId?: string, parentCallId?: string): void {
     this.traceId = traceId;
@@ -41,10 +85,8 @@ export class EventLogger implements AgentLogger {
       },
     };
 
-    // Fire and forget - don't await
-    this.storage.appendEvent(this.sessionId, event).catch((error) => {
-      console.error('Failed to log user message:', error);
-    });
+    // Emit event (storage subscribes automatically in constructor)
+    this.emitEvent('message:user', event);
   }
 
   logAssistantMessage(agent: string, content: string, metadata?: LLMMetadata): void {
@@ -59,10 +101,8 @@ export class EventLogger implements AgentLogger {
       metadata,
     };
 
-    // Fire and forget - don't await
-    this.storage.appendEvent(this.sessionId, event).catch((error) => {
-      console.error('Failed to log assistant message:', error);
-    });
+    // Emit event (storage subscribes automatically in constructor)
+    this.emitEvent('message:assistant', event);
   }
 
   logSystemMessage(message: string): void {
@@ -95,10 +135,8 @@ export class EventLogger implements AgentLogger {
       metadata,
     };
 
-    // Fire and forget - don't await
-    this.storage.appendEvent(this.sessionId, event).catch((error) => {
-      console.error('Failed to log tool call:', error);
-    });
+    // Emit event (storage subscribes automatically in constructor)
+    this.emitEvent('tool:call', event);
   }
 
   logToolExecution(agent: string, tool: string, toolId: string): void {
@@ -135,10 +173,8 @@ export class EventLogger implements AgentLogger {
       },
     };
 
-    // Fire and forget - don't await
-    this.storage.appendEvent(this.sessionId, event).catch((error) => {
-      console.error('Failed to log tool result:', error);
-    });
+    // Emit event (storage subscribes automatically in constructor)
+    this.emitEvent('tool:result', event);
   }
 
   logToolError(agent: string, tool: string, toolId: string, error: Error): void {
@@ -163,10 +199,8 @@ export class EventLogger implements AgentLogger {
       },
     };
 
-    // Fire and forget - don't await
-    this.storage.appendEvent(this.sessionId, event).catch((error) => {
-      console.error('Failed to log delegation:', error);
-    });
+    // Emit event (storage subscribes automatically in constructor)
+    this.emitEvent('delegation:start', event);
   }
 
   logDelegationComplete(parent: string, child: string, result: string): void {
@@ -181,10 +215,8 @@ export class EventLogger implements AgentLogger {
       },
     };
 
-    // Fire and forget - don't await
-    this.storage.appendEvent(this.sessionId, event).catch((error) => {
-      console.error('Failed to log delegation complete:', error);
-    });
+    // Emit event (storage subscribes automatically in constructor)
+    this.emitEvent('delegation:complete', event);
   }
 
   logAgentStart(agent: string, depth: number, task?: string): void {
@@ -198,10 +230,8 @@ export class EventLogger implements AgentLogger {
       },
     };
 
-    // Fire and forget - don't await
-    this.storage.appendEvent(this.sessionId, event).catch((error) => {
-      console.error('Failed to log agent start:', error);
-    });
+    // Emit event (storage subscribes automatically in constructor)
+    this.emitEvent('agent:start', event);
   }
 
   logAgentIteration(agent: string, iteration: number): void {
@@ -214,10 +244,8 @@ export class EventLogger implements AgentLogger {
       },
     };
 
-    // Fire and forget - don't await
-    this.storage.appendEvent(this.sessionId, event).catch((error) => {
-      console.error('Failed to log agent iteration:', error);
-    });
+    // Emit event (storage subscribes automatically in constructor)
+    this.emitEvent('agent:iteration', event);
   }
 
   logAgentComplete(agent: string, duration: number): void {
@@ -230,10 +258,8 @@ export class EventLogger implements AgentLogger {
       },
     };
 
-    // Fire and forget - don't await
-    this.storage.appendEvent(this.sessionId, event).catch((error) => {
-      console.error('Failed to log agent complete:', error);
-    });
+    // Emit event (storage subscribes automatically in constructor)
+    this.emitEvent('agent:complete', event);
   }
 
   logAgentError(agent: string, error: Error): void {
@@ -249,10 +275,8 @@ export class EventLogger implements AgentLogger {
       },
     };
 
-    // Fire and forget - don't await
-    this.storage.appendEvent(this.sessionId, event).catch((error) => {
-      console.error('Failed to log agent error:', error);
-    });
+    // Emit event (storage subscribes automatically in constructor)
+    this.emitEvent('agent:error', event);
   }
 
   logTodoUpdate(todos: Array<{ content: string; status: string; activeForm?: string }>): void {
@@ -264,10 +288,67 @@ export class EventLogger implements AgentLogger {
       },
     };
 
-    // Fire and forget - don't await
-    this.storage.appendEvent(this.sessionId, event).catch((error) => {
-      console.error('Failed to log todo update:', error);
-    });
+    // Emit event (storage subscribes automatically in constructor)
+    this.emitEvent('todo:update', event);
+  }
+
+  logSafetyLimit(reason: string, agent: string, details?: string): void {
+    const event = {
+      type: 'safety_limit',
+      timestamp: Date.now(),
+      data: {
+        reason,
+        agent,
+        details,
+      },
+    };
+
+    // Emit event (storage subscribes automatically in constructor)
+    this.emitEvent('agent:safety_limit', event);
+  }
+
+  logSessionRecovery(sessionId: string, messageCount: number, todoCount?: number): void {
+    const event = {
+      type: 'session_recovery',
+      timestamp: Date.now(),
+      data: {
+        sessionId,
+        messageCount,
+        todoCount,
+      },
+    };
+
+    // Emit event (storage subscribes automatically in constructor)
+    this.emitEvent('session:recovered', event);
+  }
+
+  logModelSelection(agent: string, model: string, provider: string): void {
+    const event = {
+      type: 'model_selection',
+      timestamp: Date.now(),
+      data: {
+        agent,
+        model,
+        provider,
+      },
+    };
+
+    // Emit event (storage subscribes automatically in constructor)
+    this.emitEvent('agent:model_selected', event);
+  }
+
+  logMCPServerConnected(serverName: string, toolCount: number): void {
+    const event = {
+      type: 'mcp_server_connected',
+      timestamp: Date.now(),
+      data: {
+        serverName,
+        toolCount,
+      },
+    };
+
+    // Emit event (storage subscribes automatically in constructor)
+    this.emitEvent('mcp:server_connected', event);
   }
 
   async getSessionEvents(): Promise<AnySessionEvent[]> {
