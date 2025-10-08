@@ -25,6 +25,10 @@ export class NoOpLogger implements AgentLogger {
   logAgentComplete(_agent: string, _duration: number): void {}
   logAgentError(_agent: string, _error: Error): void {}
   logTodoUpdate(_todos: Array<{ content: string; status: string; activeForm?: string }>): void {}
+  logSafetyLimit(_reason: string, _agent: string, _details?: string): void {}
+  logSessionRecovery(_sessionId: string, _messageCount: number, _todoCount?: number): void {}
+  logModelSelection(_agent: string, _model: string, _provider: string): void {}
+  logMCPServerConnected(_serverName: string, _toolCount: number): void {}
   async getSessionEvents(): Promise<import('@/session/types').AnySessionEvent[]> {
     return []; // NoOp logger doesn't store events
   }

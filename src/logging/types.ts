@@ -24,6 +24,11 @@ export interface AgentLogger {
   logAgentComplete(agent: string, duration: number): void;
   logAgentError(agent: string, error: Error): void;
 
+  logSafetyLimit(reason: string, agent: string, details?: string): void;
+  logSessionRecovery(sessionId: string, messageCount: number, todoCount?: number): void;
+  logModelSelection(agent: string, model: string, provider: string): void;
+  logMCPServerConnected(serverName: string, toolCount: number): void;
+
   logTodoUpdate?(todos: Array<{ content: string; status: string; activeForm?: string }>): void;
 
   /**

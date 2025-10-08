@@ -193,4 +193,8 @@ export class MockLLMProvider implements ILLMProvider {
   getLastUsageMetrics(): UsageMetrics | null {
     return this.lastUsageMetrics;
   }
+
+  getLastStopReason(): string | null {
+    return 'stop'; // Mock stop reason
+  }
 }

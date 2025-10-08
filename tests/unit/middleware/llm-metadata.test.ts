@@ -26,6 +26,7 @@ describe('LLM Metadata Propagation', () => {
         promptCacheHitTokens: 80,
         promptCacheMissTokens: 20,
       }),
+      getLastStopReason: vi.fn().mockReturnValue('end_turn'),
     };
 
     mockLogger = {

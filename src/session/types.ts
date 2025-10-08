@@ -39,6 +39,7 @@ export type SessionEventType = 'user' | 'assistant' | 'tool_call' | 'tool_result
 export interface LLMMetadata {
   model?: string;
   provider?: string;
+  stopReason?: string; // Why the LLM stopped: "end_turn" | "max_tokens" | "stop_sequence" | "tool_use"
   usage?: {
     promptTokens: number;
     completionTokens: number;

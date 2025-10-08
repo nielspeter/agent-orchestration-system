@@ -101,6 +101,7 @@ export interface BuildResult {
   sessionManager: SimpleSessionManager;
   storage: SessionStorage;
   logger: AgentLogger;
+  eventLogger: EventLogger; // Direct access for event subscriptions (web UI, etc.)
   cleanup: () => Promise<void>;
 }
 
@@ -459,6 +460,7 @@ export class AgentSystemBuilder {
     config: ResolvedSystemConfig
   ): {
     logger: AgentLogger;
+    eventLogger: EventLogger;
     sessionManager: SimpleSessionManager;
   } {
     // sessionId is guaranteed to exist after validateAndResolve()
@@ -468,13 +470,10 @@ export class AgentSystemBuilder {
     const sessionId = config.session.sessionId;
     const loggers: AgentLogger[] = [];
 
-    // EventLogger is only created for actual storage (memory or filesystem)
-    // Not created for 'none' type to avoid unnecessary overhead
-    if (config.storage.type === 'memory' || config.storage.type === 'filesystem') {
-      const eventLogger = new EventLogger(storage, sessionId);
-      loggers.push(eventLogger);
-    }
-    // No EventLogger for 'none' - events are not persisted
+    // Always create EventLogger for event emission
+    // Storage subscribes internally (NoOpStorage does nothing, others persist)
+    const eventLogger = new EventLogger(storage, sessionId);
+    loggers.push(eventLogger);
 
     // Always create session manager with the storage
     const sessionManager = new SimpleSessionManager(storage);
@@ -512,7 +511,7 @@ export class AgentSystemBuilder {
       logger = new CompositeLogger(loggers);
     }
 
-    return { logger, sessionManager };
+    return { logger, eventLogger, sessionManager };
   }
 
   /**
@@ -744,7 +743,7 @@ export class AgentSystemBuilder {
           serverName,
         });
 
-        logger.logSystemMessage(`✓ MCP server ${serverName} connected with ${tools.length} tools`);
+        logger.logMCPServerConnected(serverName, tools.length);
       } catch (error) {
         logger.logSystemMessage(`ERROR: Failed to initialize MCP server ${serverName}: ${error}`);
       }
@@ -768,8 +767,24 @@ export class AgentSystemBuilder {
     }
 
     if (await storage.sessionExists(config.session.sessionId)) {
-      logger.logSystemMessage(`Recovering session: ${config.session.sessionId}`);
       recoveredMessages = await sessionManager.recoverSession(config.session.sessionId);
+
+      // Recover todos if TodoWrite tool is enabled
+      let todoCount = 0;
+      if (todoManager) {
+        const recoveredTodos = await sessionManager.recoverTodos(config.session.sessionId);
+        if (recoveredTodos.length > 0) {
+          todoManager.setTodos(recoveredTodos);
+          todoCount = recoveredTodos.length;
+        }
+      }
+
+      // Log session recovery with counts
+      logger.logSessionRecovery(
+        config.session.sessionId,
+        recoveredMessages.length,
+        todoCount || undefined
+      );
 
       // Check if we have an incomplete tool call
       if (sessionManager.hasIncompleteToolCall(recoveredMessages as Message[])) {
@@ -777,15 +792,6 @@ export class AgentSystemBuilder {
         if (toolCall) {
           logger.logSystemMessage(`Executing incomplete tool call: ${toolCall.name}`);
           // The executor will handle this when it receives the messages
-        }
-      }
-
-      // Recover todos if TodoWrite tool is enabled
-      if (todoManager) {
-        const recoveredTodos = await sessionManager.recoverTodos(config.session.sessionId);
-        if (recoveredTodos.length > 0) {
-          todoManager.setTodos(recoveredTodos);
-          logger.logSystemMessage(`Recovered ${recoveredTodos.length} todos from session`);
         }
       }
     }
@@ -820,7 +826,10 @@ export class AgentSystemBuilder {
 
     // Create core components
     const storage = this.createStorage(resolvedConfig);
-    const { logger, sessionManager } = this.createLoggerAndSessionManager(storage, resolvedConfig);
+    const { logger, eventLogger, sessionManager } = this.createLoggerAndSessionManager(
+      storage,
+      resolvedConfig
+    );
 
     // Initialize agent loader
     const allAgentDirs = [
@@ -892,6 +901,7 @@ export class AgentSystemBuilder {
       sessionManager,
       storage,
       logger,
+      eventLogger,
       cleanup: this.createCleanupFunction(),
     };
   }

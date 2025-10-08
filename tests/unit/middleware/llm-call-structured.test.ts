@@ -19,6 +19,7 @@ describe('LLM Call Middleware - Structured Output', () => {
       getProviderName: vi.fn().mockReturnValue('test'),
       supportsStreaming: vi.fn().mockReturnValue(false),
       getLastUsageMetrics: vi.fn().mockReturnValue(null),
+      getLastStopReason: vi.fn().mockReturnValue('stop'),
     };
 
     mockLogger = {

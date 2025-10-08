@@ -34,4 +34,5 @@ export interface ILLMProvider {
   getProviderName(): string;
   supportsStreaming(): boolean;
   getLastUsageMetrics(): UsageMetrics | null;
+  getLastStopReason(): string | null;
 }

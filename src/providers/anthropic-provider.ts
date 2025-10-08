@@ -22,6 +22,7 @@ export class AnthropicProvider implements ILLMProvider {
   private readonly temperature: number;
   private readonly topP: number;
   private lastUsageMetrics: UsageMetrics | null = null;
+  private lastStopReason: string | null = null;
 
   constructor(
     modelName: string,
@@ -300,6 +301,9 @@ export class AnthropicProvider implements ILLMProvider {
         };
       });
 
+    // Store stop_reason for metadata
+    this.lastStopReason = response.stop_reason;
+
     if (toolCalls.length > 0) {
       return {
         role: 'assistant',
@@ -356,6 +360,10 @@ export class AnthropicProvider implements ILLMProvider {
 
   supportsStreaming(): boolean {
     return false; // POC: Keep it simple
+  }
+
+  getLastStopReason(): string | null {
+    return this.lastStopReason;
   }
 
   getLastUsageMetrics(): UsageMetrics | null {

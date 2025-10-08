@@ -40,10 +40,12 @@ export function createLLMCallMiddleware(): Middleware {
       // Get provider name directly from the provider instance if available
       const providerName = ctx.provider.getProviderName?.() || 'unknown';
       const modelName = ctx.provider.getModelName?.() || ctx.agent?.model || 'unknown';
+      const stopReason = ctx.provider.getLastStopReason?.() || undefined;
 
       metadata = {
         model: modelName,
         provider: providerName,
+        ...(stopReason && { stopReason }),
         usage: {
           promptTokens: usageMetrics.promptTokens,
           completionTokens: usageMetrics.completionTokens,
