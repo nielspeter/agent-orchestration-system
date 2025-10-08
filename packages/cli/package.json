@@ -1,0 +1,27 @@
+{
+  "name": "@agent-system/cli",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "CLI tool for agent orchestration system",
+  "bin": {
+    "agent": "./dist/index.js"
+  },
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@agent-system/core": "*",
+    "commander": "^12.0.0",
+    "chalk": "^5.3.0",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.30",
+    "tsx": "^4.7.1",
+    "typescript": "^5.9.2",
+    "vitest": "^2.1.8"
+  }
+}

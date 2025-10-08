@@ -97,6 +97,7 @@ export interface BuildResult {
   config: ResolvedSystemConfig;
   executor: AgentExecutor;
   toolRegistry: ToolRegistry;
+  agentLoader: AgentLoader;
   mcpClients: MCPClientWrapper[];
   sessionManager: SimpleSessionManager;
   storage: SessionStorage;
@@ -897,6 +898,7 @@ export class AgentSystemBuilder {
       config: resolvedConfig,
       executor,
       toolRegistry,
+      agentLoader,
       mcpClients: this.mcpClients,
       sessionManager,
       storage,
