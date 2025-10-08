@@ -47,5 +47,3 @@ examples/udbud/output/
 # Test artifacts
 *.zip
 test-sessions/
-vite.config.ts
-vitest.config.ts
