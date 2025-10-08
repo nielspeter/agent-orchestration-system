@@ -16,6 +16,16 @@ function App() {
   const [isRunning, setIsRunning] = useState(false);
   const eventSourceRef = useRef<EventSource | null>(null);
 
+  // Start new session
+  const handleNewSession = () => {
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close();
+    }
+    setSessionId('');
+    setEvents([]);
+    setIsConnected(false);
+  };
+
   // Start execution
   const handleStart = async () => {
     if (!prompt.trim()) {
@@ -25,7 +35,10 @@ function App() {
 
     try {
       setIsRunning(true);
-      setEvents([]);
+      // Only clear events if starting a new session
+      if (!sessionId) {
+        setEvents([]);
+      }
 
       const response = await fetch('/api/executions', {
         method: 'POST',
@@ -45,6 +58,11 @@ function App() {
 
       setSessionId(data.sessionId);
 
+      // Close existing SSE connection if any
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+      }
+
       // Connect to SSE stream
       const eventSource = new EventSource(`/events/${data.sessionId}`);
       eventSourceRef.current = eventSource;
@@ -60,7 +78,7 @@ function App() {
           setEvents((prev) => [...prev, event]);
 
           // Stop running if agent completes
-          if (event.type === 'agent:complete' || event.type === 'agent:error') {
+          if (event.type === 'agent_complete' || event.type === 'agent_error') {
             setIsRunning(false);
           }
         } catch (error) {
@@ -130,9 +148,16 @@ function App() {
             />
           </div>
 
-          <button onClick={handleStart} disabled={isRunning} className="start-button">
-            {isRunning ? '⏳ Running...' : '▶️ Start'}
-          </button>
+          <div className="button-group">
+            <button onClick={handleStart} disabled={isRunning} className="start-button">
+              {isRunning ? '⏳ Running...' : '▶️ Start'}
+            </button>
+            {sessionId && (
+              <button onClick={handleNewSession} disabled={isRunning} className="new-session-button">
+                🔄 New Session
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="event-timeline">

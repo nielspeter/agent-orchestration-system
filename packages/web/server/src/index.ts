@@ -30,7 +30,7 @@ app.get('/events/:sessionId', (req: Request, res: Response) => {
   res.setHeader('X-Accel-Buffering', 'no'); // Disable nginx buffering
 
   // Send initial connection event
-  res.write(`data: ${JSON.stringify({ type: 'connected', sessionId })}\n\n`);
+  res.write(`data: ${JSON.stringify({ type: 'connected', sessionId, timestamp: Date.now() })}\n\n`);
 
   // Get or create event logger for this session
   const eventLogger = activeSessions.get(sessionId);
