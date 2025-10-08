@@ -20,6 +20,7 @@ systems using middleware pipeline architecture and pull-based information gather
 
 - **[Unified Configuration](./unified-configuration.md)** - System configuration using the builder pattern
 - **[LLM Provider Integration](./llm-provider-integration.md)** ⭐ - Multi-provider setup, behavior presets, cost tracking
+- **[Safety and Resource Management](./safety-and-resource-management.md)** ⭐ - Execution limits, security validation, resource controls
 - **[Execution Flow Diagram](./execution-flow-diagram.md)** - Visual representation of system flow
 
 ### Web UI & Integration
@@ -108,19 +109,19 @@ This documentation evolves with the codebase. When making changes:
 
 | Document                  | Status     | Priority | Description                  |
 |---------------------------|------------|----------|------------------------------|
-| Middleware Architecture   | ✅ Complete | HIGH     | Core system design           |
-| Tool System               | ✅ Complete | HIGH     | Agent capabilities           |
-| Agent System              | ✅ Complete | HIGH     | Agent lifecycle and patterns |
-| Event System              | ✅ Complete | HIGH     | Real-time event emission     |
-| Web UI Event Architecture | ✅ Complete | HIGH     | Why events enable web UI     |
-| Web UI Integration Guide  | ✅ Complete | HIGH     | SSE, React, API integration  |
-| MCP Integration           | ✅ Complete | HIGH     | External tool servers        |
-| LLM Provider Integration  | ✅ Complete | HIGH     | Multi-provider, costs, presets |
-| Logging & Debugging       | ✅ Complete | HIGH     | ConsoleLogger, SimpleTracer  |
-| Developer Guides          | ✅ Complete | HIGH     | Practical tutorials          |
-| Unified Configuration     | ✅ Complete | MEDIUM   | System setup                 |
-| Execution Flow            | ✅ Complete | MEDIUM   | Visual system flow           |
-| Safety Mechanisms         | 🔄 Planned | MEDIUM   | Resource management          |
+| Middleware Architecture          | ✅ Complete | HIGH   | Core system design           |
+| Tool System                      | ✅ Complete | HIGH   | Agent capabilities           |
+| Agent System                     | ✅ Complete | HIGH   | Agent lifecycle and patterns |
+| Event System                     | ✅ Complete | HIGH   | Real-time event emission     |
+| Web UI Event Architecture        | ✅ Complete | HIGH   | Why events enable web UI     |
+| Web UI Integration Guide         | ✅ Complete | HIGH   | SSE, React, API integration  |
+| MCP Integration                  | ✅ Complete | HIGH   | External tool servers        |
+| LLM Provider Integration         | ✅ Complete | HIGH   | Multi-provider, costs, presets |
+| Logging & Debugging              | ✅ Complete | HIGH   | ConsoleLogger, SimpleTracer  |
+| Safety & Resource Management     | ✅ Complete | HIGH   | Limits, security, resources  |
+| Developer Guides                 | ✅ Complete | HIGH   | Practical tutorials          |
+| Unified Configuration            | ✅ Complete | MEDIUM | System setup                 |
+| Execution Flow                   | ✅ Complete | MEDIUM | Visual system flow           |
 
 ## 🤝 Contributing
 
