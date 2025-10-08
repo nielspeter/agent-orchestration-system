@@ -1,0 +1,58 @@
+{
+  "name": "@agent-system/core",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Core agent orchestration system - autonomous agents with LLM providers",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./events": {
+      "types": "./dist/logging/event.logger.d.ts",
+      "import": "./dist/logging/event.logger.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
+    "test": "vitest run --config vitest.config.unit.ts",
+    "test:coverage": "vitest run --config vitest.config.unit.ts --coverage",
+    "test:watch": "vitest watch --config vitest.config.unit.ts",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "agent",
+    "orchestration",
+    "llm",
+    "anthropic",
+    "claude",
+    "openai",
+    "autonomous"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.60.0",
+    "@modelcontextprotocol/sdk": "^1.17.4",
+    "@types/uuid": "^10.0.0",
+    "ai": "^5.0.28",
+    "dotenv": "^16.4.5",
+    "gray-matter": "^4.0.3",
+    "openai": "^4.29.2",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.30",
+    "typescript": "^5.9.2"
+  }
+}

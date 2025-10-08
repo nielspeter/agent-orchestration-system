@@ -16,25 +16,36 @@ Without events, a web UI is **impossible**. With events, it becomes **elegant**.
 
 ### 1. Real-Time Execution Visualization
 ```typescript
-// Backend emits events
-eventSystem.on('*', (event) => {
-  websocket.send(JSON.stringify({
-    sessionId: context.sessionId,
-    event: event
-  }));
+// Backend SSE endpoint
+app.get('/events/:sessionId', (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+
+  const handler = (event) => {
+    res.write(`data: ${JSON.stringify(event)}\n\n`);
+  };
+
+  eventSystem.on('*', handler);
+  req.on('close', () => eventSystem.off('*', handler));
 });
 ```
 
 ```javascript
 // Frontend React component
-function ExecutionView() {
+function ExecutionView({ sessionId }) {
   const [events, setEvents] = useState([]);
 
   useEffect(() => {
-    socket.on('event', (data) => {
-      setEvents(prev => [...prev, data.event]);
-    });
-  }, []);
+    const eventSource = new EventSource(`/events/${sessionId}`);
+
+    eventSource.onmessage = (e) => {
+      const event = JSON.parse(e.data);
+      setEvents(prev => [...prev, event]);
+    };
+
+    return () => eventSource.close();
+  }, [sessionId]);
 
   return (
     <Timeline>
@@ -80,13 +91,10 @@ eventSystem.on('agent:complete', (e) => {
 
 ### 3. Live Streaming Output
 ```typescript
-// Stream assistant messages as they arrive
+// Stream assistant messages as they arrive via SSE
 eventSystem.on('message:assistant', (event) => {
-  websocket.send({
-    type: 'stream',
-    content: event.data.content,
-    agent: event.data.agent
-  });
+  // SSE handler automatically sends this via the established connection
+  // No manual send needed - events flow through the SSE endpoint
 });
 ```
 
@@ -155,20 +163,20 @@ eventSystem.on('delegation:start', (event) => {
 graph TB
     subgraph Browser
         UI[React/Vue UI]
-        WS[WebSocket Client]
-        UI --> WS
+        ES[EventSource Client]
+        UI --> ES
     end
 
     subgraph Backend
         API[REST API]
-        WSS[WebSocket Server]
+        SSE[SSE Endpoint]
         EXE[Agent Executor]
         EVT[Event System]
 
         API --> EXE
         EXE --> EVT
-        EVT --> WSS
-        WSS --> WS
+        EVT --> SSE
+        SSE --> ES
     end
 
     subgraph Storage
@@ -227,17 +235,19 @@ function ExecutionControl({ sessionId }) {
   const [isPaused, setIsPaused] = useState(false);
 
   const handlePause = () => {
-    socket.emit('control', {
-      sessionId,
-      action: 'pause'
+    fetch(`/api/executions/${sessionId}/control`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'pause' })
     });
     setIsPaused(true);
   };
 
   const handleStop = () => {
-    socket.emit('control', {
-      sessionId,
-      action: 'stop'
+    fetch(`/api/executions/${sessionId}/control`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'stop' })
     });
   };
 
@@ -256,32 +266,45 @@ function ExecutionControl({ sessionId }) {
 
 ### 4. **Cost Monitoring & Limits**
 ```javascript
-// Frontend shows real-time costs
-socket.on('event', (data) => {
-  if (data.event.type === 'llm:response') {
-    const cost = data.event.metadata.cost;
+// Frontend shows real-time costs via SSE
+const eventSource = new EventSource(`/events/${sessionId}`);
+
+eventSource.onmessage = (e) => {
+  const event = JSON.parse(e.data);
+
+  if (event.type === 'llm:response') {
+    const cost = event.metadata.cost;
     setCumulativeCost(prev => prev + cost);
 
     if (cumulativeCost > userLimit) {
-      socket.emit('control', {
-        action: 'stop',
-        reason: 'Cost limit exceeded'
+      fetch(`/api/executions/${sessionId}/control`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'stop',
+          reason: 'Cost limit exceeded'
+        })
       });
     }
   }
-});
+};
 ```
 
 ### 5. **Collaborative Viewing**
 ```typescript
-// Multiple users can watch same execution
-eventSystem.on('*', (event) => {
-  // Broadcast to all connected clients watching this session
-  broadcastToSession(sessionId, {
-    type: 'event',
-    event: event,
-    user: currentUser
-  });
+// Multiple users can watch same execution via SSE
+app.get('/events/:sessionId', (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+
+  const handler = (event) => {
+    // All connected clients to this session receive events
+    res.write(`data: ${JSON.stringify(event)}\n\n`);
+  };
+
+  eventSystem.on('*', handler);
+  req.on('close', () => eventSystem.off('*', handler));
 });
 ```
 
@@ -297,37 +320,42 @@ DELETE /api/agents/:id          // Delete agent
 
 POST   /api/executions          // Start execution
 GET    /api/executions/:id      // Get execution status
+POST   /api/executions/:id/control  // Control execution (pause/stop/resume)
 DELETE /api/executions/:id      // Stop execution
 
 GET    /api/sessions/:id/events // Get historical events
 
-// WebSocket events
-ws.on('execute', { agent, prompt })
-ws.on('control', { action: 'pause'|'stop'|'resume' })
-ws.emit('event', { sessionId, event })
-ws.emit('status', { sessionId, status })
+// SSE Endpoint
+GET    /events/:sessionId       // Real-time event stream
 ```
 
 ## Implementation Example
 
-### Backend WebSocket Handler
+### Backend SSE Handler
 ```typescript
 class WebUIHandler {
-  constructor(private eventSystem: EventSystem) {
-    this.setupEventForwarding();
+  constructor(
+    private eventSystem: EventSystem,
+    private app: Express
+  ) {
+    this.setupSSEEndpoint();
   }
 
-  private setupEventForwarding() {
-    // Forward all events to connected clients
-    this.eventSystem.on('*', (event) => {
-      this.broadcast({
-        type: 'event',
-        sessionId: this.sessionId,
-        event: {
-          ...event,
-          formatted: this.formatForUI(event)
-        }
-      });
+  private setupSSEEndpoint() {
+    this.app.get('/events/:sessionId', (req, res) => {
+      const sessionId = req.params.sessionId;
+
+      res.setHeader('Content-Type', 'text/event-stream');
+      res.setHeader('Cache-Control', 'no-cache');
+      res.setHeader('Connection', 'keep-alive');
+
+      const handler = (event: SessionEvent) => {
+        const formatted = this.formatForUI(event);
+        res.write(`data: ${JSON.stringify(formatted)}\n\n`);
+      };
+
+      this.eventSystem.on('*', handler);
+      req.on('close', () => this.eventSystem.off('*', handler));
     });
   }
 
@@ -335,16 +363,22 @@ class WebUIHandler {
     switch(event.type) {
       case 'tool:call':
         return {
-          icon: '🔧',
-          title: `Calling ${event.data.tool}`,
-          description: this.summarizeParams(event.data.params)
+          ...event,
+          ui: {
+            icon: '🔧',
+            title: `Calling ${event.data.tool}`,
+            description: this.summarizeParams(event.data.params)
+          }
         };
 
       case 'message:assistant':
         return {
-          icon: '🤖',
-          title: event.data.agent,
-          description: event.data.content.substring(0, 100)
+          ...event,
+          ui: {
+            icon: '🤖',
+            title: event.data.agent,
+            description: event.data.content.substring(0, 100)
+          }
         };
 
       // ... format each event type for UI
@@ -429,13 +463,13 @@ With event-driven Web UI, you can:
 {
   "backend": {
     "framework": "Express/Fastify",
-    "websocket": "Socket.io or ws",
+    "realtime": "SSE (built into HTTP)",
     "storage": "SQLite for metadata, FS for events"
   },
   "frontend": {
     "framework": "React/Vue/Svelte",
     "ui": "Tailwind + Shadcn/ui",
-    "websocket": "Socket.io-client"
+    "realtime": "EventSource (built into browser)"
   }
 }
 ```
@@ -451,8 +485,8 @@ This completely justifies adding EventEmitter to the system. It's not over-engin
 
 ## Next Steps
 
-1. Add EventEmitter to EventLogger (enables everything)
-2. Build simple WebSocket server that forwards events
+1. ✅ Add EventEmitter to EventLogger (DONE - enables everything)
+2. Build simple SSE endpoint that forwards events (15 lines of code)
 3. Create basic React UI that visualizes events
 4. Iterate based on user feedback
 

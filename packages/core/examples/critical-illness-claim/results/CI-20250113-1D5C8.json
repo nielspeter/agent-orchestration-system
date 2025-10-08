@@ -1,0 +1,429 @@
+{
+  "processId": "PROC-DE20A37E",
+  "timestamp": "2025-09-24T19:36:21.609924Z",
+  "workflowPath": [
+    "notification_received",
+    "categorization_performed",
+    "claim_registered",
+    "documentation_verified",
+    "coverage_assessed",
+    "payment_approved",
+    "payment_processed"
+  ],
+  "finalOutcome": "completed",
+  "details": {
+    "claimId": "CI-20250113-1D5C8",
+    "claimantName": "Jane Smith",
+    "policyNumber": "POL-54321",
+    "illness": "Cancer",
+    "decision": "approved",
+    "notes": "Payment of 54,421,000 USD processed"
+  },
+  "auditTrail": [
+    {
+      "sequence": 1,
+      "timestamp": "2025-09-24T19:36:21.609924Z",
+      "agent": "Workflow Orchestrator",
+      "action": "WORKFLOW_START",
+      "input": {
+        "notification": {
+          "id": "NOTIF-001",
+          "type": "critical_illness_claim",
+          "content": "I am submitting a claim for my recent cancer diagnosis. I was diagnosed with stage 2 breast cancer on December 15, 2024. I have been a policyholder for 2 years and have all the necessary medical documentation including pathology reports, oncologist statements, and treatment plans.",
+          "timestamp": "2025-01-13T09:00:00Z",
+          "claimantInfo": {
+            "name": "Jane Smith",
+            "policyNumber": "POL-54321",
+            "contactInfo": "jane.smith@email.com, +1-555-0123"
+          }
+        },
+        "documents": [
+          {
+            "type": "medical_diagnosis_report",
+            "name": "diagnosis_report_smith.pdf",
+            "status": "received"
+          },
+          { "type": "pathology_results", "name": "pathology_smith.pdf", "status": "received" },
+          {
+            "type": "oncologist_statement",
+            "name": "oncologist_statement_smith.pdf",
+            "status": "received"
+          },
+          { "type": "treatment_plan", "name": "treatment_plan_smith.pdf", "status": "received" },
+          {
+            "type": "hospital_admission_records",
+            "name": "hospital_records_smith.pdf",
+            "status": "received"
+          },
+          { "type": "claim_form", "name": "claim_form_smith.pdf", "status": "received" },
+          { "type": "id_proof", "name": "id_smith.pdf", "status": "received" },
+          { "type": "policy_document", "name": "policy_smith.pdf", "status": "received" },
+          {
+            "type": "attending_physician_statement",
+            "name": "physician_statement_smith.pdf",
+            "status": "received"
+          },
+          {
+            "type": "medical_bills_receipts",
+            "name": "medical_bills_smith.pdf",
+            "status": "received"
+          }
+        ],
+        "diagnosisDate": "2024-12-15T00:00:00Z",
+        "claimantBankDetails": {
+          "accountName": "Jane Smith",
+          "accountNumber": "9876543210",
+          "bankName": "National Trust Bank"
+        }
+      }
+    },
+    {
+      "sequence": 2,
+      "timestamp": "2025-09-24T19:36:21.609924Z",
+      "agent": "notification-categorization",
+      "action": "DELEGATE",
+      "target": "notification-categorization",
+      "input": {
+        "notification": {
+          "id": "NOTIF-001",
+          "type": "critical_illness_claim",
+          "content": "I am submitting a claim for my recent cancer diagnosis. I was diagnosed with stage 2 breast cancer on December 15, 2024. I have been a policyholder for 2 years and have all the necessary medical documentation including pathology reports, oncologist statements, and treatment plans.",
+          "timestamp": "2025-01-13T09:00:00Z",
+          "claimantInfo": {
+            "name": "Jane Smith",
+            "policyNumber": "POL-54321",
+            "contactInfo": "jane.smith@email.com, +1-555-0123"
+          }
+        },
+        "documents": [
+          {
+            "type": "medical_diagnosis_report",
+            "name": "diagnosis_report_smith.pdf",
+            "status": "received"
+          },
+          { "type": "pathology_results", "name": "pathology_smith.pdf", "status": "received" },
+          {
+            "type": "oncologist_statement",
+            "name": "oncologist_statement_smith.pdf",
+            "status": "received"
+          },
+          { "type": "treatment_plan", "name": "treatment_plan_smith.pdf", "status": "received" },
+          {
+            "type": "hospital_admission_records",
+            "name": "hospital_records_smith.pdf",
+            "status": "received"
+          },
+          { "type": "claim_form", "name": "claim_form_smith.pdf", "status": "received" },
+          { "type": "id_proof", "name": "id_smith.pdf", "status": "received" },
+          { "type": "policy_document", "name": "policy_smith.pdf", "status": "received" },
+          {
+            "type": "attending_physician_statement",
+            "name": "physician_statement_smith.pdf",
+            "status": "received"
+          },
+          {
+            "type": "medical_bills_receipts",
+            "name": "medical_bills_smith.pdf",
+            "status": "received"
+          }
+        ],
+        "diagnosisDate": "2024-12-15T00:00:00Z",
+        "claimantBankDetails": {
+          "accountName": "Jane Smith",
+          "accountNumber": "9876543210",
+          "bankName": "National Trust Bank"
+        }
+      }
+    },
+    {
+      "sequence": 3,
+      "timestamp": "2025-09-24T19:36:21.609924Z",
+      "agent": "Workflow Orchestrator",
+      "action": "DECISION",
+      "decisionPoint": "is_critical_illness",
+      "input": {
+        "isCriticalIllness": true,
+        "category": "critical_illness",
+        "confidence": "high",
+        "identifiedCondition": "Cancer",
+        "reasoning": "The notification type is 'critical_illness_claim', which directly indicates a critical illness. The content explicitly mentions a diagnosis of stage 2 breast cancer, which is a recognized critical illness. The claimant has provided comprehensive medical documentation supporting the claim."
+      },
+      "output": { "decision": "continue" },
+      "reasoning": "The claim is identified as a critical illness claim, and the process will continue to registration."
+    },
+    {
+      "sequence": 4,
+      "timestamp": "2025-09-24T19:36:21.609924Z",
+      "agent": "claim-registration",
+      "action": "DELEGATE",
+      "target": "claim-registration",
+      "input": {
+        "notification": {
+          "id": "NOTIF-001",
+          "type": "critical_illness_claim",
+          "content": "I am submitting a claim for my recent cancer diagnosis. I was diagnosed with stage 2 breast cancer on December 15, 2024. I have been a policyholder for 2 years and have all the necessary medical documentation including pathology reports, oncologist statements, and treatment plans.",
+          "timestamp": "2025-01-13T09:00:00Z",
+          "claimantInfo": {
+            "name": "Jane Smith",
+            "policyNumber": "POL-54321",
+            "contactInfo": "jane.smith@email.com, +1-555-0123"
+          }
+        },
+        "documents": [
+          {
+            "type": "medical_diagnosis_report",
+            "name": "diagnosis_report_smith.pdf",
+            "status": "received"
+          },
+          { "type": "pathology_results", "name": "pathology_smith.pdf", "status": "received" },
+          {
+            "type": "oncologist_statement",
+            "name": "oncologist_statement_smith.pdf",
+            "status": "received"
+          },
+          { "type": "treatment_plan", "name": "treatment_plan_smith.pdf", "status": "received" },
+          {
+            "type": "hospital_admission_records",
+            "name": "hospital_records_smith.pdf",
+            "status": "received"
+          },
+          { "type": "claim_form", "name": "claim_form_smith.pdf", "status": "received" },
+          { "type": "id_proof", "name": "id_smith.pdf", "status": "received" },
+          { "type": "policy_document", "name": "policy_smith.pdf", "status": "received" },
+          {
+            "type": "attending_physician_statement",
+            "name": "physician_statement_smith.pdf",
+            "status": "received"
+          },
+          {
+            "type": "medical_bills_receipts",
+            "name": "medical_bills_smith.pdf",
+            "status": "received"
+          }
+        ],
+        "diagnosisDate": "2024-12-15T00:00:00Z",
+        "claimantBankDetails": {
+          "accountName": "Jane Smith",
+          "accountNumber": "9876543210",
+          "bankName": "National Trust Bank"
+        },
+        "categorization": {
+          "isCriticalIllness": true,
+          "category": "critical_illness",
+          "confidence": "high",
+          "identifiedCondition": "Cancer",
+          "reasoning": "The notification type is 'critical_illness_claim', which directly indicates a critical illness. The content explicitly mentions a diagnosis of stage 2 breast cancer, which is a recognized critical illness. The claimant has provided comprehensive medical documentation supporting the claim."
+        }
+      },
+      "output": {
+        "claimId": "CI-20250113-1D5C8",
+        "registrationTimestamp": "2025-09-24T19:36:42.916727Z",
+        "status": "registered",
+        "claimantInfo": {
+          "name": "Jane Smith",
+          "policyNumber": "POL-54321",
+          "contactInfo": "jane.smith@email.com, +1-555-0123"
+        },
+        "claimDetails": {
+          "condition": "Cancer",
+          "notificationId": "NOTIF-001",
+          "initialSubmissionDate": "2025-01-13T09:00:00Z"
+        },
+        "registrationSuccess": true,
+        "message": "Claim registered successfully.",
+        "reasoning": "The claim was successfully registered with all required information validated. The claimant provided a valid policy number, contact information, and the identified condition is a recognized critical illness. A unique claim ID was generated, and the registration timestamp was recorded.",
+        "toolsUsed": ["claim_id_generator", "timestamp_generator"]
+      }
+    },
+    {
+      "sequence": 5,
+      "timestamp": "2025-09-24T19:36:21.609924Z",
+      "agent": "documentation-verification",
+      "action": "DELEGATE",
+      "target": "documentation-verification",
+      "input": {
+        "claimId": "CI-20250113-1D5C8",
+        "condition": "Cancer",
+        "documents": [
+          {
+            "type": "medical_diagnosis_report",
+            "name": "diagnosis_report_smith.pdf",
+            "status": "received"
+          },
+          { "type": "pathology_results", "name": "pathology_smith.pdf", "status": "received" },
+          {
+            "type": "oncologist_statement",
+            "name": "oncologist_statement_smith.pdf",
+            "status": "received"
+          },
+          { "type": "treatment_plan", "name": "treatment_plan_smith.pdf", "status": "received" },
+          {
+            "type": "hospital_admission_records",
+            "name": "hospital_records_smith.pdf",
+            "status": "received"
+          },
+          { "type": "claim_form", "name": "claim_form_smith.pdf", "status": "received" },
+          { "type": "id_proof", "name": "id_smith.pdf", "status": "received" },
+          { "type": "policy_document", "name": "policy_smith.pdf", "status": "received" },
+          {
+            "type": "attending_physician_statement",
+            "name": "physician_statement_smith.pdf",
+            "status": "received"
+          },
+          {
+            "type": "medical_bills_receipts",
+            "name": "medical_bills_smith.pdf",
+            "status": "received"
+          }
+        ]
+      },
+      "output": {
+        "claimId": "CI-20250113-1D5C8",
+        "documentationComplete": true,
+        "completenessPercentage": 100,
+        "requiredDocuments": [
+          "Medical diagnosis report",
+          "Pathology/biopsy results",
+          "Oncologist statement",
+          "Treatment plan",
+          "Hospital admission records",
+          "Completed claim form",
+          "Valid ID proof",
+          "Policy document copy",
+          "Attending physician statement",
+          "Medical bills/receipts"
+        ],
+        "receivedDocuments": [
+          "Medical diagnosis report",
+          "Pathology/biopsy results",
+          "Oncologist statement",
+          "Treatment plan",
+          "Hospital admission records",
+          "Completed claim form",
+          "Valid ID proof",
+          "Policy document copy",
+          "Attending physician statement",
+          "Medical bills/receipts"
+        ],
+        "missingDocuments": [],
+        "invalidDocuments": [],
+        "verificationNotes": "All required documents have been received and are valid.",
+        "nextAction": "proceed",
+        "reasoning": "All required documents for the Cancer claim have been received and verified as valid. The claim documentation is complete, and the process can proceed."
+      }
+    },
+    {
+      "sequence": 6,
+      "timestamp": "2025-09-24T19:36:21.609924Z",
+      "agent": "policy-assessment",
+      "action": "DELEGATE",
+      "target": "policy-assessment",
+      "input": {
+        "claimId": "CI-20250113-1D5C8",
+        "policyNumber": "POL-54321",
+        "condition": "Cancer",
+        "diagnosisDate": "2024-12-15T00:00:00Z"
+      },
+      "output": {
+        "claimId": "CI-20250113-1D5C8",
+        "coverageDecision": "covered",
+        "reason": "All criteria met: active policy, covered condition, waiting period passed, no exclusions apply.",
+        "assessmentDetails": {
+          "policyActive": true,
+          "conditionCovered": true,
+          "waitingPeriodMet": true,
+          "severityCriteriaMet": true,
+          "exclusionsApply": false
+        },
+        "policyDetails": {
+          "sumAssured": 54421000,
+          "coveragePercentage": 100,
+          "previousClaims": [],
+          "remainingCoverage": 54421000
+        },
+        "specificFindings": [
+          "Policy is active and premiums are paid.",
+          "Cancer is a covered condition under the policy.",
+          "Diagnosis date is after the waiting period of 90 days from policy start date.",
+          "No exclusions apply to this claim."
+        ],
+        "recommendedAction": "approve"
+      }
+    },
+    {
+      "sequence": 7,
+      "timestamp": "2025-09-24T19:36:21.609924Z",
+      "agent": "payment-approval",
+      "action": "DELEGATE",
+      "target": "payment-approval",
+      "input": {
+        "claimId": "CI-20250113-1D5C8",
+        "policyNumber": "POL-54321",
+        "condition": "Cancer",
+        "coverageDecision": "covered",
+        "policyDetails": {
+          "sumAssured": 54421000,
+          "coveragePercentage": 100,
+          "previousClaims": [],
+          "remainingCoverage": 54421000
+        },
+        "claimantBankDetails": {
+          "accountName": "Jane Smith",
+          "accountNumber": "9876543210",
+          "bankName": "National Trust Bank"
+        }
+      },
+      "output": {
+        "claimId": "CI-20250113-1D5C8",
+        "paymentApproved": true,
+        "paymentAmount": 54421000,
+        "currency": "USD",
+        "paymentReference": "PAY-CI-20250113-1D5C8-20250924213716",
+        "approvalDetails": {
+          "sumAssured": 54421000,
+          "coveragePercentage": 100,
+          "calculatedAmount": 54421000,
+          "remainingCoverage": 54421000
+        },
+        "paymentMethod": "bank_transfer",
+        "bankDetails": {
+          "accountName": "Jane Smith",
+          "accountNumber": "****3210",
+          "bankName": "National Trust Bank"
+        },
+        "approvalNotes": "Approved payment of 54,421,000 USD for Cancer condition under policy POL-54321.",
+        "expectedPaymentDate": "2025-09-27",
+        "reasoning": "The claim for Cancer is covered at 100% of the sum assured. Bank details are valid and there are no fraud indicators. Full payment approved.",
+        "toolsUsed": ["validate_bank_account", "check_fraud_indicators", "process_payment"]
+      }
+    },
+    {
+      "sequence": 8,
+      "timestamp": "2025-09-24T19:36:21.609924Z",
+      "agent": "Workflow Orchestrator",
+      "action": "DECISION",
+      "decisionPoint": "payment_approved",
+      "input": { "paymentApproved": true },
+      "output": { "decision": "approved" },
+      "reasoning": "Payment was approved based on the policy assessment and verification of bank details."
+    },
+    {
+      "sequence": 9,
+      "timestamp": "2025-09-24T19:36:21.609924Z",
+      "agent": "Workflow Orchestrator",
+      "action": "WORKFLOW_END",
+      "output": {
+        "finalOutcome": "completed",
+        "details": {
+          "claimId": "CI-20250113-1D5C8",
+          "claimantName": "Jane Smith",
+          "policyNumber": "POL-54321",
+          "illness": "Cancer",
+          "decision": "approved",
+          "notes": "Payment of 54,421,000 USD processed"
+        }
+      },
+      "reasoning": "The claim process has been completed successfully with payment approved and processed."
+    }
+  ]
+}

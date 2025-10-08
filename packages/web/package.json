@@ -1,0 +1,36 @@
+{
+  "name": "@agent-system/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Web UI for agent orchestration system",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:server": "tsx watch server/src/index.ts",
+    "dev:client": "vite",
+    "build": "npm run build:client && npm run build:server",
+    "build:client": "vite build",
+    "build:server": "tsc -p server/tsconfig.json",
+    "preview": "vite preview",
+    "start": "node server/dist/index.js"
+  },
+  "dependencies": {
+    "@agent-system/core": "*",
+    "express": "^4.19.2",
+    "cors": "^2.8.5",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/cors": "^2.8.17",
+    "@types/node": "^20.11.30",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "concurrently": "^8.2.2",
+    "typescript": "^5.9.2",
+    "vite": "^5.4.2",
+    "tsx": "^4.7.1"
+  }
+}
