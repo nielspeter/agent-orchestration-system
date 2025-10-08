@@ -11,7 +11,7 @@ import {
   formatInfo,
   type ExecutionResult,
   type AnySessionEvent,
-} from './output';
+} from '../src/output';
 
 describe('Output Formatting', () => {
   let originalEnv: NodeJS.ProcessEnv;

@@ -1,11 +1,11 @@
 /**
  * Example usage of output formatting utilities
  *
- * Run with: npx tsx packages/cli/src/output.example.ts
+ * Run with: npx tsx packages/cli/examples/output.example.ts
  */
 
-import { formatOutput, formatError, formatSuccess, formatWarning, formatInfo } from './output';
-import type { ExecutionResult, AnySessionEvent } from './output';
+import { formatOutput, formatError, formatSuccess, formatWarning, formatInfo } from '../src/output';
+import type { ExecutionResult, AnySessionEvent } from '../src/output';
 
 // Sample execution result with events
 const sampleEvents: AnySessionEvent[] = [
