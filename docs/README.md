@@ -13,6 +13,9 @@ systems using middleware pipeline architecture and pull-based information gather
   everything
 - **[Tool System](./tool-system.md)** ⭐ - How agents interact with the environment through tools
 - **[Agent System](./agent-system.md)** ⭐ - Understanding agents from markdown to execution
+- **[Agent Communication](./agent-communication.md)** ⭐ - Pull architecture: what flows between agents
+- **[Agentic Loop Pattern](./agentic-loop-pattern.md)** ⭐ - ReAct pattern: iteration vs delegation
+- **[Session Persistence](./session-persistence.md)** ⭐ - Storage backends, session recovery, event logging
 - **[Event System](./event-system.md)** ⭐ - Real-time event emission for monitoring and integration
 - **[MCP Integration](./mcp-integration.md)** ⭐ - Model Context Protocol server integration for external tools
 
@@ -31,10 +34,19 @@ systems using middleware pipeline architecture and pull-based information gather
 ### Debugging & Monitoring
 
 - **[Logging and Debugging](./logging-and-debugging.md)** ⭐ - ConsoleLogger, SimpleTracer, debugging strategies
+- **[Distributed Tracing](./distributed-tracing.md)** ⭐ - Built-in execution tracing via unified sessions
 
 ### Developer Resources
 
 - **[Developer Guides](./developer-guides.md)** ⭐ - Practical guides for creating agents, tools, and middleware
+
+### Advanced Features
+
+- **[Self-Improvement Design](./self-improvement-design.md)** 📋 - Agent-initiated learning and prompt optimization (planned feature)
+
+### Reference
+
+- **[Framework Comparison](./framework-comparison.md)** - Comparison with LangChain, AutoGPT, CrewAI, AutoGen, OpenAI Assistants
 
 ## 🚀 Quick Navigation
 
@@ -112,16 +124,22 @@ This documentation evolves with the codebase. When making changes:
 | Middleware Architecture          | ✅ Complete | HIGH   | Core system design           |
 | Tool System                      | ✅ Complete | HIGH   | Agent capabilities           |
 | Agent System                     | ✅ Complete | HIGH   | Agent lifecycle and patterns |
+| Agent Communication              | ✅ Complete | HIGH   | Pull architecture explained  |
+| Agentic Loop Pattern             | ✅ Complete | HIGH   | ReAct: iteration vs delegation |
+| Session Persistence              | ✅ Complete | HIGH   | Storage, recovery, events    |
 | Event System                     | ✅ Complete | HIGH   | Real-time event emission     |
 | Web UI Event Architecture        | ✅ Complete | HIGH   | Why events enable web UI     |
 | Web UI Integration Guide         | ✅ Complete | HIGH   | SSE, React, API integration  |
 | MCP Integration                  | ✅ Complete | HIGH   | External tool servers        |
 | LLM Provider Integration         | ✅ Complete | HIGH   | Multi-provider, costs, presets |
 | Logging & Debugging              | ✅ Complete | HIGH   | ConsoleLogger, SimpleTracer  |
+| Distributed Tracing              | ✅ Complete | HIGH   | Built-in execution tracing   |
 | Safety & Resource Management     | ✅ Complete | HIGH   | Limits, security, resources  |
 | Developer Guides                 | ✅ Complete | HIGH   | Practical tutorials          |
 | Unified Configuration            | ✅ Complete | MEDIUM | System setup                 |
 | Execution Flow                   | ✅ Complete | MEDIUM | Visual system flow           |
+| Framework Comparison             | ✅ Complete | MEDIUM | Positioning vs other frameworks |
+| Self-Improvement Design          | 📋 Planned  | MEDIUM | Agent learning & optimization |
 
 ## 🤝 Contributing
 
