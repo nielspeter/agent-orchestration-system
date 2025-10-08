@@ -17,7 +17,9 @@
   },
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "providers-config.json",
+    "providers-config.schema.json"
   ],
   "scripts": {
     "build": "tsc && tsc-alias",
@@ -28,7 +30,8 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run clean && npm run build && npm test"
   },
   "keywords": [
     "agent",
@@ -37,10 +40,22 @@
     "anthropic",
     "claude",
     "openai",
-    "autonomous"
+    "autonomous",
+    "ai",
+    "agents",
+    "mcp"
   ],
-  "author": "",
+  "author": "Niels Peter Strandberg",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/NielsPeter/agent-orchestration-system.git",
+    "directory": "packages/core"
+  },
+  "bugs": {
+    "url": "https://github.com/NielsPeter/agent-orchestration-system/issues"
+  },
+  "homepage": "https://github.com/NielsPeter/agent-orchestration-system#readme",
   "dependencies": {
     "@anthropic-ai/sdk": "^0.60.0",
     "@modelcontextprotocol/sdk": "^1.17.4",
