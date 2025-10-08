@@ -2,17 +2,14 @@
 import * as dotenv from 'dotenv';
 import { Command } from 'commander';
 import { AgentSystemBuilder } from '@agent-system/core';
-import { formatOutput, formatError, formatSuccess, type OutputFormat } from './output.js';
+import { formatOutput, formatError, type OutputFormat } from './output.js';
 
 // Load environment variables (like examples do)
 dotenv.config();
 
 const program = new Command();
 
-program
-  .name('agent')
-  .description('CLI tool for running agents')
-  .version('1.0.0');
+program.name('agent').description('CLI tool for running agents').version('1.0.0');
 
 program
   .option('-p, --prompt <text>', 'The prompt to send to the agent')
