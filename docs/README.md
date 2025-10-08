@@ -13,12 +13,18 @@ systems using middleware pipeline architecture and pull-based information gather
   everything
 - **[Tool System](./tool-system.md)** ⭐ - How agents interact with the environment through tools
 - **[Agent System](./agent-system.md)** ⭐ - Understanding agents from markdown to execution
+- **[Event System](./event-system.md)** ⭐ - Real-time event emission for monitoring and integration
 - **[MCP Integration](./mcp-integration.md)** ⭐ - Model Context Protocol server integration for external tools
 
 ### Configuration & Setup
 
 - **[Unified Configuration](./unified-configuration.md)** - System configuration using the builder pattern
 - **[Execution Flow Diagram](./execution-flow-diagram.md)** - Visual representation of system flow
+
+### Web UI & Integration
+
+- **[Web UI Event Architecture](./web-ui-event-architecture.md)** ⭐ - Why events enable web interfaces
+- **[Web UI Integration Guide](./web-ui-integration.md)** ⭐ - Building on the event system (SSE, React, API)
 
 ### Developer Resources
 
@@ -95,18 +101,21 @@ This documentation evolves with the codebase. When making changes:
 
 ## 📝 Document Status
 
-| Document                | Status     | Priority | Description                  |
-|-------------------------|------------|----------|------------------------------|
-| Middleware Architecture | ✅ Complete | HIGH     | Core system design           |
-| Tool System             | ✅ Complete | HIGH     | Agent capabilities           |
-| Agent System            | ✅ Complete | HIGH     | Agent lifecycle and patterns |
-| MCP Integration         | ✅ Complete | HIGH     | External tool servers        |
-| Developer Guides        | ✅ Complete | HIGH     | Practical tutorials          |
-| Unified Configuration   | ✅ Complete | MEDIUM   | System setup                 |
-| Execution Flow          | ✅ Complete | MEDIUM   | Visual system flow           |
-| Safety Mechanisms       | 🔄 Planned | MEDIUM   | Resource management          |
-| Logging & Debugging     | 🔄 Planned | MEDIUM   | System observability         |
-| LLM Integration         | 🔄 Planned | LOW      | Provider details             |
+| Document                  | Status     | Priority | Description                  |
+|---------------------------|------------|----------|------------------------------|
+| Middleware Architecture   | ✅ Complete | HIGH     | Core system design           |
+| Tool System               | ✅ Complete | HIGH     | Agent capabilities           |
+| Agent System              | ✅ Complete | HIGH     | Agent lifecycle and patterns |
+| Event System              | ✅ Complete | HIGH     | Real-time event emission     |
+| Web UI Event Architecture | ✅ Complete | HIGH     | Why events enable web UI     |
+| Web UI Integration Guide  | ✅ Complete | HIGH     | SSE, React, API integration  |
+| MCP Integration           | ✅ Complete | HIGH     | External tool servers        |
+| Developer Guides          | ✅ Complete | HIGH     | Practical tutorials          |
+| Unified Configuration     | ✅ Complete | MEDIUM   | System setup                 |
+| Execution Flow            | ✅ Complete | MEDIUM   | Visual system flow           |
+| Safety Mechanisms         | 🔄 Planned | MEDIUM   | Resource management          |
+| Logging & Debugging       | 🔄 Planned | MEDIUM   | System observability         |
+| LLM Integration           | 🔄 Planned | LOW      | Provider details             |
 
 ## 🤝 Contributing
 
