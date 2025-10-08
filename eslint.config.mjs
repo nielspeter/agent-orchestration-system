@@ -17,7 +17,9 @@ export default [
         ecmaVersion: 'latest',
         sourceType: 'module',
         project: [
-          './packages/*/tsconfig.json',
+          './packages/core/tsconfig.json',
+          './packages/cli/tsconfig.lint.json',
+          './packages/web/tsconfig.json',
         ],
       },
     },
