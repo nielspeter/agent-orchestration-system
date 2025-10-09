@@ -5,9 +5,10 @@ A TypeScript implementation of an advanced agent orchestration system using **pu
 > **Production Readiness**: This system includes built-in security features, retry logic, and monitoring. See [Security Documentation](docs/security.md) and [Production Readiness Assessment](docs/production-readiness.md) for details.
 
 ## 🆕 Recent Updates
+- **CLI Package**: Production-ready command-line interface with stdin/stdout support, signal handling, and security features
 - **Session Persistence**: Event-sourced session storage with recovery capabilities
 - **Security Hardening**: Path validation, command filtering, size limits
-- **Retry Logic**: Smart retry with backoff for transient failures  
+- **Retry Logic**: Smart retry with backoff for transient failures
 - **Metrics Collection**: Token usage, cache hit rates, cost tracking
 - **OpenRouter Speed Optimization**: Provider pinning with `:nitro` suffix
 - **Behavior Presets**: Semantic temperature/top_p control
@@ -84,6 +85,10 @@ npm test              # Run all tests
 npm run test:unit     # Unit tests only (no API)
 npm run test:integration # Integration tests (requires API key)
 
+# Use CLI
+npm run cli -- -p "Hello, world!"       # CLI tool
+echo "Analyze this" | npm run cli       # stdin support
+
 # Run examples
 npx tsx examples/quickstart.ts          # Simple quickstart
 npx tsx examples/orchestration.ts       # Agent orchestration
@@ -137,6 +142,50 @@ cd examples/coding-team/sample-project && npm install && cd -
 npx tsx examples/coding-team/coding-team.ts
 ```
 
+## 💻 Command-Line Interface
+
+The `@agent-system/cli` package provides a production-ready CLI tool for interacting with agents:
+
+### Installation
+```bash
+# Install globally
+npm install -g @agent-system/cli
+
+# Or use from workspace
+npm run cli
+```
+
+### Features
+- **Unix-friendly**: stdin/stdout support, proper exit codes, EPIPE handling
+- **Security**: 10MB input limit, 30s timeout, signal handling (SIGINT/SIGTERM)
+- **Output modes**: clean (default), verbose, json
+- **Flexible**: Use -p flag or pipe from stdin
+
+### Usage Examples
+```bash
+# Basic usage
+agent -p "Hello, world!"
+
+# Read from stdin (Unix-style)
+echo "Analyze this code" | agent
+cat file.txt | agent
+
+# JSON output for scripting
+agent -p "List 3 colors" --json | jq '.result'
+
+# Custom agent
+agent -p "Review code" -a code-reviewer
+
+# List available
+agent --list-agents
+agent --list-tools
+
+# Verbose output with metrics
+agent -p "Test" --output verbose
+```
+
+For complete CLI documentation, see [packages/cli/README.md](packages/cli/README.md).
+
 ## 🎨 Agent Behavior Configuration
 
 Agents can specify behavioral characteristics through presets that control temperature and top_p:
@@ -160,51 +209,30 @@ Available presets (catalog in `providers-config.json`, defaults in `agent-config
 
 ```
 agent-orchestration-system/
-├── src/
-│   ├── config/               # Configuration system
-│   │   ├── system-builder.ts # Fluent API for configuration
-│   │   └── types.ts          # Configuration types
-│   ├── middleware/           # Middleware pipeline components
-│   │   ├── *.middleware.ts   # Individual middleware
-│   │   ├── middleware-types.ts # Middleware types
-│   │   └── pipeline.ts       # Pipeline executor
-│   ├── agents/               # Agent domain
-│   │   ├── executor.ts       # Main executor with pipeline
-│   │   ├── loader.ts         # Loads agents from markdown
-│   │   └── types.ts          # Agent-specific types
-│   ├── tools/                # Tool domain
-│   │   ├── registry/         # Tool infrastructure
-│   │   │   ├── executor.ts   # Tool execution logic
-│   │   │   ├── loader.ts     # Tool loading
-│   │   │   └── registry.ts   # Tool management
-│   │   ├── task.tool.ts      # Delegation tool
-│   │   ├── file.tool.ts      # File operations
-│   │   ├── grep.tool.ts      # Pattern searching
-│   │   └── todowrite.tool.ts # Todo management
-│   ├── providers/            # LLM providers (renamed from llm/)
-│   │   ├── anthropic-provider.ts  # Anthropic with caching
-│   │   └── openai-compatible-provider.ts # OpenRouter support
-│   ├── logging/              # Logging (flattened from core/logging/)
-│   │   ├── console.logger.ts # Console output
-│   │   └── jsonl.logger.ts   # JSONL format
-│   └── lib/                  # Utilities (renamed from utils/)
-├── tests/                    # Comprehensive test suite
-│   ├── unit/                 # Unit tests (no API)
-│   ├── integration/          # Integration tests (with API)
-│   └── README.md             # Testing documentation
-└── examples/                 # Example demonstrations
-    ├── quickstart.ts         # Simple getting started
-    ├── orchestration.ts      # Agent delegation
-    ├── configuration.ts      # Config file usage
-    ├── logging.ts            # Logging features
-    ├── mcp-integration.ts    # MCP server support
-    └── werewolf-game/        # Autonomous multi-agent game
-        ├── werewolf-game.ts       # Main game runner
-        └── agents/                 # Game agent definitions
-            ├── game-master.md      # Autonomous game orchestrator
-            ├── werewolf.md         # Werewolf role agent
-            ├── seer.md             # Seer role agent
-            └── villager.md         # Villager role agent
+├── packages/                 # Workspace packages
+│   ├── core/                # Core agent system (@agent-system/core)
+│   │   ├── src/             # Source code
+│   │   │   ├── config/      # Configuration system
+│   │   │   ├── middleware/  # Middleware pipeline
+│   │   │   ├── agents/      # Agent domain
+│   │   │   ├── tools/       # Tool domain
+│   │   │   ├── providers/   # LLM providers
+│   │   │   ├── logging/     # Logging
+│   │   │   └── lib/         # Utilities
+│   │   ├── tests/           # Test suite
+│   │   └── examples/        # Usage examples
+│   ├── cli/                 # CLI tool (@agent-system/cli)
+│   │   ├── src/
+│   │   │   ├── index.ts     # CLI entry point with stdin support
+│   │   │   └── output.ts    # Output formatting utilities
+│   │   ├── tests/           # CLI tests
+│   │   └── README.md        # CLI documentation
+│   └── web/                 # Web UI (@agent-system/web)
+│       ├── src/             # React frontend
+│       └── server/          # Express backend
+├── agents/                   # Shared agent definitions
+├── docs/                     # Documentation
+└── examples/                 # Legacy examples (moving to packages/core/examples)
 ```
 
 ## 🏗️ Middleware Architecture Benefits
