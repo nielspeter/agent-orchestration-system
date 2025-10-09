@@ -56,6 +56,9 @@
     "url": "https://github.com/nielspeter/agent-orchestration-system/issues"
   },
   "homepage": "https://github.com/nielspeter/agent-orchestration-system#readme",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.60.0",
     "@modelcontextprotocol/sdk": "^1.17.4",
