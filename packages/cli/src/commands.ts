@@ -92,7 +92,9 @@ export async function executeAgent(ctx: CommandContext, prompt: string): Promise
 
   safeConsoleLog(formatted);
 
-  await ctx.cleanup();
+  if (ctx.cleanup) {
+    await ctx.cleanup();
+  }
 }
 
 /**
@@ -117,7 +119,9 @@ export async function listAgents(ctx: CommandContext): Promise<void> {
     }
   }
 
-  await ctx.cleanup();
+  if (ctx.cleanup) {
+    await ctx.cleanup();
+  }
 }
 
 /**
@@ -142,5 +146,7 @@ export async function listTools(ctx: CommandContext): Promise<void> {
     }
   }
 
-  await ctx.cleanup();
+  if (ctx.cleanup) {
+    await ctx.cleanup();
+  }
 }
