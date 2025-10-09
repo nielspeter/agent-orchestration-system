@@ -6,10 +6,15 @@ This file provides guidance for AI assistants when working with code in this rep
 
 ### Development
 ```bash
-npm run build         # TypeScript compilation
+npm run build         # TypeScript compilation (all packages)
 npm run dev          # Run src/index.ts with tsx
 npm run lint         # Run ESLint
 npm run format       # Apply Prettier formatting
+
+# CLI-specific commands
+npm run build:cli    # Build CLI package
+npm run cli          # Run CLI tool
+npm run cli -- -p "test"  # Run CLI with arguments
 ```
 
 **IMPORTANT**: After implementing any feature or making code changes, ALWAYS run:
@@ -32,12 +37,18 @@ npx vitest run tests/unit/specific.test.ts
 
 ### Examples
 ```bash
+# Core examples
 npx tsx examples/quickstart.ts       # Basic agent execution
 npx tsx examples/orchestration.ts    # Agent delegation demo
 npx tsx examples/configuration.ts    # Config file usage
 npx tsx examples/logging.ts          # Logging features
 npx tsx examples/mcp-integration.ts  # MCP tool server (time utilities)
 npx tsx examples/werewolf-game.ts    # Autonomous multi-agent game
+
+# CLI usage
+npm run cli -- -p "Hello, world!"    # Basic CLI usage
+echo "test" | npm run cli            # stdin support
+npm run cli -- --list-agents         # List available agents
 ```
 
 ## Security & Reliability
@@ -51,6 +62,7 @@ npx tsx examples/werewolf-game.ts    # Autonomous multi-agent game
 - **Timeouts**: Configurable timeouts on all tool executions
 - **Size Limits**: Prevents memory exhaustion (50MB read, 10MB write)
 - **Metrics**: Token usage, cache hit rates, cost tracking
+- **CLI Security**: stdin size limit (10MB), timeout protection (30s), signal handling, EPIPE handling
 
 For production readiness assessment, see [Production Readiness](docs/production-readiness.md).
 
