@@ -1,0 +1,146 @@
+/**
+ * CLI command handlers
+ *
+ * Handles:
+ * - Agent execution
+ * - Listing agents
+ * - Listing tools
+ */
+
+import { AgentSystemBuilder } from '@agent-system/core';
+import { formatOutput, type OutputFormat } from './output.js';
+import { safeConsoleLog } from './error-handler.js';
+
+/**
+ * Command options (from commander)
+ */
+export interface CommandOptions {
+  prompt?: string;
+  agent?: string;
+  model?: string;
+  agentsDir?: string;
+  output?: string;
+  listAgents?: boolean;
+  listTools?: boolean;
+  json?: boolean;
+}
+
+/**
+ * Command context with cleanup handler
+ */
+export interface CommandContext {
+  options: CommandOptions;
+  cleanup?: () => Promise<void>;
+}
+
+/**
+ * Configure builder with command-line options
+ */
+function configureBuilder(
+  builder: ReturnType<typeof AgentSystemBuilder.default>,
+  options: CommandOptions
+): ReturnType<typeof AgentSystemBuilder.default> {
+  if (options.model) {
+    builder = builder.withModel(options.model);
+  }
+
+  if (options.agentsDir) {
+    builder = builder.withAgentsFrom(options.agentsDir);
+  }
+
+  return builder;
+}
+
+/**
+ * Validate and normalize output format
+ */
+function getOutputFormat(requestedFormat: string): OutputFormat {
+  if (requestedFormat === 'clean' || requestedFormat === 'verbose' || requestedFormat === 'json') {
+    return requestedFormat;
+  }
+  return 'clean'; // Fallback to safe default
+}
+
+/**
+ * Execute agent with given prompt
+ */
+export async function executeAgent(ctx: CommandContext, prompt: string): Promise<void> {
+  const { options } = ctx;
+
+  // Build system and execute
+  const builder = configureBuilder(AgentSystemBuilder.default(), options);
+  const buildResult = await builder.build();
+  ctx.cleanup = buildResult.cleanup;
+  const { executor } = buildResult;
+
+  const startTime = Date.now();
+  const result = await executor.execute(options.agent || 'default', prompt);
+  const duration = Date.now() - startTime;
+
+  // Validate and determine output format
+  const requestedFormat = options.json ? 'json' : options.output || 'clean';
+  const outputFormat = getOutputFormat(requestedFormat);
+
+  const formatted = formatOutput(
+    {
+      result,
+      agentName: options.agent || 'default',
+      duration,
+    },
+    outputFormat
+  );
+
+  safeConsoleLog(formatted);
+
+  await ctx.cleanup();
+}
+
+/**
+ * List available agents
+ */
+export async function listAgents(ctx: CommandContext): Promise<void> {
+  const { options } = ctx;
+
+  const builder = configureBuilder(AgentSystemBuilder.default(), options);
+  const buildResult = await builder.build();
+  ctx.cleanup = buildResult.cleanup;
+  const { agentLoader } = buildResult;
+
+  const agents = await agentLoader.listAgents();
+
+  if (options.json) {
+    safeConsoleLog(JSON.stringify({ agents }, null, 2));
+  } else {
+    safeConsoleLog('Available agents:');
+    for (const agent of agents) {
+      safeConsoleLog(`  - ${agent}`);
+    }
+  }
+
+  await ctx.cleanup();
+}
+
+/**
+ * List available tools
+ */
+export async function listTools(ctx: CommandContext): Promise<void> {
+  const { options } = ctx;
+
+  const builder = configureBuilder(AgentSystemBuilder.default(), options);
+  const buildResult = await builder.build();
+  ctx.cleanup = buildResult.cleanup;
+  const { toolRegistry } = buildResult;
+
+  const tools = toolRegistry.getAllTools().map((t: { name: string }) => t.name);
+
+  if (options.json) {
+    safeConsoleLog(JSON.stringify({ tools }, null, 2));
+  } else {
+    safeConsoleLog('Available tools:');
+    for (const tool of tools) {
+      safeConsoleLog(`  - ${tool}`);
+    }
+  }
+
+  await ctx.cleanup();
+}
