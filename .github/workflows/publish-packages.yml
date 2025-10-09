@@ -27,13 +27,21 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build packages
-        run: npm run build --workspaces
+      - name: Build core package
+        run: npm run build --workspace=packages/core
 
-      - name: Run tests
-        run: npm test --workspaces
+      - name: Build CLI package
+        run: npm run build --workspace=packages/cli
+
+      - name: Run core tests
+        run: npm test --workspace=packages/core
         env:
           # Skip integration tests in CI (they require API keys)
+          CI: true
+
+      - name: Run CLI tests
+        run: npm test --workspace=packages/cli
+        env:
           CI: true
 
       - name: Publish @agent-system/core
