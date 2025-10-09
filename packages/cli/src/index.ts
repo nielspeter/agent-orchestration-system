@@ -83,8 +83,10 @@ async function main(): Promise<void> {
   }
 }
 
-// Run main and catch any unhandled errors
-main().catch((error) => {
+// Run main and handle any unhandled errors
+try {
+  await main();
+} catch (error) {
   console.error('Fatal error:', error);
   process.exit(1);
-});
+}
