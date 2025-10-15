@@ -303,3 +303,39 @@ Default limits in `src/config/types.ts`:
   maxTokensEstimate: 100000  // Pre-flight check limit
 }
 ```
+
+## Git Commit Guidelines
+
+When creating git commits:
+
+**DO NOT include these lines in commit messages:**
+- `🤖 Generated with Claude Code`
+- `Co-Authored-By: Claude <noreply@anthropic.com>`
+
+**DO include:**
+- Clear, concise subject line (50 chars or less)
+- Detailed body explaining what and why (not how)
+- Reference issue numbers if applicable
+- Breaking changes noted explicitly
+
+**Good commit message example:**
+```
+fix(thinking): preserve thinking blocks in multi-turn conversations
+
+Fixed API rejection errors where thinking blocks were lost during
+format conversion. Added raw_content field to Message type to
+preserve original API response structure.
+
+- Fixes multi-turn conversation failures
+- Adds 38 new unit tests
+- Updates documentation
+```
+
+**Bad commit message example:**
+```
+fix some stuff
+
+🤖 Generated with Claude Code
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+```
