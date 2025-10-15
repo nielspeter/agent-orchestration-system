@@ -5,9 +5,11 @@ export { createErrorHandlerMiddleware } from './error-handler.middleware';
 export { createLLMCallMiddleware } from './llm-call.middleware';
 export { createProviderSelectionMiddleware } from './provider-selection.middleware';
 export { createSafetyChecksMiddleware } from './safety-checks.middleware';
+export { createSmartRetryMiddleware } from './smart-retry.middleware';
 export { createThinkingMiddleware } from './thinking.middleware';
 export { createToolExecutionMiddleware } from './tool-execution.middleware';
 export { MiddlewarePipeline } from './pipeline';
 
 // Export types
 export type { MiddlewareContext, Middleware } from './middleware-types';
+export type { SmartRetryConfig } from './smart-retry.middleware';

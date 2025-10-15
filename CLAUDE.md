@@ -58,7 +58,7 @@ npm run cli -- --list-agents         # List available agents
 ### Built-in Protections
 - **File Security**: Blocks access to sensitive files (.ssh, .aws, .env, etc.)
 - **Shell Security**: Prevents catastrophic commands (rm -rf /, fork bombs)
-- **Retry Logic**: Smart retry with linear backoff for transient failures
+- **Rate Limit Retry**: Stateless exponential backoff with jitter for 429 errors (works across all providers)
 - **Timeouts**: Configurable timeouts on all tool executions
 - **Size Limits**: Prevents memory exhaustion (50MB read, 10MB write)
 - **Metrics**: Token usage, cache hit rates, cost tracking
@@ -72,11 +72,13 @@ For production readiness assessment, see [Production Readiness](docs/production-
 The system uses a **Chain of Responsibility pattern** where each middleware handles one concern:
 1. **ErrorHandlerMiddleware** - Catches all errors, provides fallback responses
 2. **AgentLoaderMiddleware** - Loads agent from markdown, filters available tools
-3. **ContextSetupMiddleware** - Initializes conversation with system prompt
-4. **ProviderSelectionMiddleware** - Selects LLM provider based on model (Anthropic, OpenRouter, etc.)
-5. **SafetyChecksMiddleware** - Enforces limits (maxIterations, maxDepth, token estimates)
-6. **LLMCallMiddleware** - Calls selected LLM provider with caching support
-7. **ToolExecutionMiddleware** - Executes tools and handles agent delegation
+3. **ThinkingMiddleware** - Validates and normalizes thinking configuration
+4. **ContextSetupMiddleware** - Initializes conversation with system prompt
+5. **ProviderSelectionMiddleware** - Selects LLM provider based on model (Anthropic, OpenRouter, etc.)
+6. **SafetyChecksMiddleware** - Enforces limits (maxIterations, maxDepth, token estimates)
+7. **SmartRetryMiddleware** - Retries on rate limit errors (429) with exponential backoff
+8. **LLMCallMiddleware** - Calls selected LLM provider with caching support
+9. **ToolExecutionMiddleware** - Executes tools and handles agent delegation
 
 ### Pull Architecture
 When agent A delegates to agent B:
@@ -218,10 +220,10 @@ const result = response as ToolResult; // Avoid this!
 
 1. ~~**Tight Coupling**: AgentExecutor directly instantiates AnthropicProvider~~ ✅ FIXED - Now uses ProviderFactory
 2. **Console.log Usage**: 27 instances in ConsoleLogger (intentional for console output)
-3. ~~**No Retry Logic**: API failures aren't retried~~ ✅ FIXED - Smart retry with backoff implemented
+3. ~~**No Retry Logic**: API failures aren't retried~~ ✅ FIXED - Smart retry with exponential backoff implemented
 4. ~~**File Access**: No path restrictions on Read/Write/Grep tools~~ ✅ FIXED - Security validation implemented
 5. **Large Files**: SystemBuilder is 845 lines (needs refactoring)
-6. **No API Rate Limiting**: Could exhaust quotas (retry exists but no proactive limiting)
+6. ~~**No API Rate Limiting**: Could exhaust quotas~~ ✅ FIXED - Smart retry with exponential backoff handles 429 errors
 7. **No Authentication**: System has no user management
 
 ### Environment Setup
@@ -303,6 +305,44 @@ Default limits in `src/config/types.ts`:
   maxTokensEstimate: 100000  // Pre-flight check limit
 }
 ```
+
+### Smart Retry Configuration
+
+The system includes automatic retry logic for rate limit errors (HTTP 429) from all providers (Anthropic, OpenAI, OpenRouter).
+
+**Design Philosophy**:
+- **Stateless**: No coordination between processes needed
+- **Reactive**: Responds to actual rate limit errors, doesn't predict
+- **Universal**: Works with all LLM providers
+- **Self-Organizing**: Exponential backoff + jitter naturally spaces out requests across processes
+
+**Default Configuration**:
+```typescript
+{
+  maxRetries: 5,           // Maximum number of retry attempts
+  baseBackoffMs: 1000,     // Base backoff duration (1 second)
+  maxBackoffMs: 60000,     // Maximum backoff duration (60 seconds)
+  jitterFactor: 0.3,       // Jitter for randomization (±30%)
+  respectRetryAfter: true  // Respect provider's retry-after headers
+}
+```
+
+**How It Works**:
+1. When an LLM call returns a 429 error, the middleware automatically retries
+2. Backoff grows exponentially: 1s → 2s → 4s → 8s → 16s
+3. Jitter (±30%) prevents thundering herd (all processes retrying at once)
+4. If provider includes a `retry-after` header, the longer of calculated backoff or provider suggestion is used
+5. After max retries, the error is re-thrown to the error handler
+
+**Retry Progression Example**:
+- Attempt 1: Immediate (no wait)
+- Attempt 2: Wait 1s (with ±30% jitter = 0.7-1.3s)
+- Attempt 3: Wait 2s (with ±30% jitter = 1.4-2.6s)
+- Attempt 4: Wait 4s (with ±30% jitter = 2.8-5.2s)
+- Attempt 5: Wait 8s (with ±30% jitter = 5.6-10.4s)
+- Attempt 6: Wait 16s (with ±30% jitter = 11.2-20.8s)
+
+The middleware is integrated automatically in the pipeline and requires no configuration. For custom retry behavior, the smart retry middleware can be configured when building the system (though this is rarely needed).
 
 ## Git Commit Guidelines
 
