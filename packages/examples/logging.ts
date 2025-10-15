@@ -1,8 +1,8 @@
 import * as dotenv from 'dotenv';
-import { AgentSystemBuilder } from '@/config';
+import { AgentSystemBuilder } from '@agent-system/core';
 
 // Load environment variables
-dotenv.config();
+dotenv.config({ path: '../../.env' });
 
 /**
  * Test with beautiful logging to see the orchestration flow
@@ -11,7 +11,7 @@ async function testWithLogging() {
   // Minimal config with verbose logging enabled and example-specific agents
   const { executor, cleanup } = await new AgentSystemBuilder()
     .withModel(process.env.MODEL || 'anthropic/claude-3-5-haiku-latest')
-    .withAgentsFrom('examples/logging/agents')
+    .withAgentsFrom('logging/agents')
     .withDefaultTools() // read, write, list, task for delegation demos
     .withTodoTool() // Include todo for Test 3
     .withConsole({ verbosity: 'verbose' }) // Enable verbose console output

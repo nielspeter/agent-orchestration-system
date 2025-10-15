@@ -1,9 +1,9 @@
 #!/usr/bin/env tsx
 import * as dotenv from 'dotenv';
-import { AgentSystemBuilder } from '@/config';
+import { AgentSystemBuilder } from '@agent-system/core';
 
 // Load environment variables
-dotenv.config();
+dotenv.config({ path: '../../.env' });
 
 async function test() {
   console.log('Testing simple builder pattern setup...\n');
@@ -11,7 +11,7 @@ async function test() {
   // Clean, self-contained setup with example-specific agents
   const { executor, cleanup } = await new AgentSystemBuilder()
     .withModel('openrouter/openai/gpt-oss-20b')
-    .withAgentsFrom('examples/quickstart/agents')
+    .withAgentsFrom('quickstart/agents')
     .withDefaultTools() // read, write, list
     .withSessionId('simple-test')
     .build();

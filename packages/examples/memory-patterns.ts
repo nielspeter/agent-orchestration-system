@@ -7,10 +7,10 @@
  */
 
 import * as dotenv from 'dotenv';
-import { AgentSystemBuilder } from '@/config';
-import type { Agent } from '@/config/types';
+import { AgentSystemBuilder } from '@agent-system/core';
+import type { Agent } from '@agent-system/core';
 
-dotenv.config();
+dotenv.config({ path: '../../.env' });
 
 console.log('🧠 Agent Memory Patterns Comparison');
 console.log('='.repeat(60));

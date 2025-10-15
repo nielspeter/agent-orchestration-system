@@ -7,10 +7,10 @@
  */
 
 import * as dotenv from 'dotenv';
-import { AgentSystemBuilder } from '@/config';
-import type { Agent } from '@/config/types';
+import { AgentSystemBuilder } from '@agent-system/core';
+import type { Agent } from '@agent-system/core';
 
-dotenv.config();
+dotenv.config({ path: '../../.env' });
 
 async function main() {
   console.log('🤖 Inline Agent Example');

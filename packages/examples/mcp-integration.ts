@@ -6,7 +6,11 @@
  * without relying on configuration files.
  */
 
-import { AgentSystemBuilder } from '../src';
+import * as dotenv from 'dotenv';
+import { AgentSystemBuilder } from '@agent-system/core';
+
+// Load environment variables
+dotenv.config({ path: '../../.env' });
 
 async function main() {
   console.log('🕐 MCP Time Server Demo\n');

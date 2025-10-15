@@ -8,11 +8,11 @@
  * Includes verification step to ensure game rules were followed correctly.
  */
 
-import { AgentSystemBuilder } from '@/config/system-builder';
+import { AgentSystemBuilder } from '@agent-system/core';
 import * as dotenv from 'dotenv';
 
 // Load environment variables from .env file
-dotenv.config();
+dotenv.config({ path: '../../.env' });
 
 async function main() {
   console.log('🌙 Welcome to Werewolf Village Game!');
@@ -21,8 +21,8 @@ async function main() {
   // Build the agent system with custom agents directory
   // Session ID will be auto-generated as UUID
   const builder = AgentSystemBuilder.default()
-    .withAgentsFrom('examples/werewolf-game/agents')
-    .withToolsFrom('examples/werewolf-game/tools')
+    .withAgentsFrom('werewolf-game/agents')
+    .withToolsFrom('werewolf-game/tools')
     .withSafetyLimits({
       maxIterations: 50, // Allow many iterations for complex game
       maxDepth: 10, // Allow deeper delegation chains

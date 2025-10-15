@@ -1,9 +1,13 @@
 #!/usr/bin/env tsx
+import * as dotenv from 'dotenv';
+import { AgentSystemBuilder } from '@agent-system/core';
+
+// Load environment variables
+dotenv.config({ path: '../../.env' });
+
 /**
  * Demonstration of configuration-based setup with AgentSystemBuilder
  */
-
-import { AgentSystemBuilder } from '../src';
 
 async function fullConfigExample() {
   console.log('📋 Full Configuration Example');
@@ -32,7 +36,7 @@ async function minimalSetupExample() {
 
   // Minimal setup with no tools but with example-specific agents
   const { executor, cleanup } = await AgentSystemBuilder.minimal()
-    .withAgentsFrom('examples/configuration/agents')
+    .withAgentsFrom('configuration/agents')
     .build();
 
   const result = await executor.execute(
@@ -51,7 +55,7 @@ async function defaultSetupExample() {
 
   // Default setup with file tools and example-specific agents
   const { executor, cleanup } = await AgentSystemBuilder.default()
-    .withAgentsFrom('examples/configuration/agents')
+    .withAgentsFrom('configuration/agents')
     .withSessionId(`config-default-${Date.now()}`) // Unique session for each run
     .build();
 
@@ -68,7 +72,7 @@ async function fullSetupExample() {
 
   // Full setup with all tools including TodoWrite and example-specific agents
   const { executor, cleanup } = await AgentSystemBuilder.default()
-    .withAgentsFrom('examples/configuration/agents')
+    .withAgentsFrom('configuration/agents')
     .withSessionId(`config-full-${Date.now()}`) // Unique session for each run
     .build();
 
@@ -89,7 +93,7 @@ async function customConfigExample() {
   // Custom configuration with specific settings and example-specific agents
   const { executor, cleanup } = await AgentSystemBuilder.default()
     .withModel('anthropic/claude-3-5-haiku-latest')
-    .withAgentsFrom('examples/configuration/agents')
+    .withAgentsFrom('configuration/agents')
     .withSafetyLimits({ maxIterations: 50 })
     .withConsole({ verbosity: 'verbose' })
     .withStorage('filesystem')

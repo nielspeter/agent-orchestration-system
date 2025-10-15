@@ -11,13 +11,13 @@
  * - Shell tool: Running tests and builds
  */
 
-import { AgentSystemBuilder } from '@/config';
+import { AgentSystemBuilder } from '@agent-system/core';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import * as dotenv from 'dotenv';
 
 // Load environment variables from .env file
-dotenv.config();
+dotenv.config({ path: '../../.env' });
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -44,7 +44,7 @@ async function runCodingTeam() {
   // Feature specification - minimal, let driver figure out the details
   const projectPath = path.join(__dirname, 'sample-project');
   const featureSpec = `
-Implement a factorial function in the TypeScript project located at: ${projectPath}
+Implement a factorial function in the TypeScript project located at: ${projectPath}. If dir is not existent, create it.
 
 Requirements:
 - Function name: factorial(n)
