@@ -1,9 +1,9 @@
 import type {
+  DelegateToolParams,
   EventMessage,
   ParsedDelegation,
   ParsedExecution,
   ToolCallMessage,
-  DelegateToolParams,
 } from '../types/event-types';
 
 /**

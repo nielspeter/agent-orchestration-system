@@ -2,7 +2,7 @@ import { AnySessionEvent, SessionStorage, ToolCallEvent } from './types';
 import { TodoItem } from '@/tools/todowrite.tool';
 import { isSessionEvent } from '@/utils/type-guards';
 import { Message, ToolCall } from '@/base-types';
-import { sanitizeRecoveredMessages, formatSanitizationIssues } from './message-sanitizer';
+import { formatSanitizationIssues, sanitizeRecoveredMessages } from './message-sanitizer';
 
 // Using Message type from base-types for consistency
 // This ensures compatibility with the rest of the system

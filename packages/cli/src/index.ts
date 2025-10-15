@@ -3,7 +3,7 @@ import * as dotenv from 'dotenv';
 import { Command } from 'commander';
 import { SignalHandler } from './signal-handler.js';
 import { readStdin } from './stdin.js';
-import { executeAgent, listAgents, listTools, type CommandContext } from './commands.js';
+import { type CommandContext, executeAgent, listAgents, listTools } from './commands.js';
 import { formatAndDisplayError, safeConsoleError } from './error-handler.js';
 
 // Load environment variables

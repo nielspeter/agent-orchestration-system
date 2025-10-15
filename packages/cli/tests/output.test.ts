@@ -2,15 +2,15 @@
  * Tests for output formatting utilities
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
-  formatOutput,
+  type AnySessionEvent,
+  type ExecutionResult,
   formatError,
+  formatInfo,
+  formatOutput,
   formatSuccess,
   formatWarning,
-  formatInfo,
-  type ExecutionResult,
-  type AnySessionEvent,
 } from '../src/output';
 
 describe('Output Formatting', () => {

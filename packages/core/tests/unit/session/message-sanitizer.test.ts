@@ -1,9 +1,9 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
-  sanitizeRecoveredMessages,
-  validateMessageStructure,
   formatSanitizationIssues,
   SanitizationResult,
+  sanitizeRecoveredMessages,
+  validateMessageStructure,
 } from '@/session/message-sanitizer';
 import { Message } from '@/base-types';
 

@@ -1,7 +1,6 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { ThinkingConfig, NormalizedThinkingConfig, ModelConfig } from '@/config/types';
-import { Agent } from '@/config/types';
+import { Agent, ModelConfig, NormalizedThinkingConfig, ThinkingConfig } from '@/config/types';
 import { Middleware, MiddlewareContext } from './middleware-types';
 import { Message } from '@/base-types';
 

@@ -1,4 +1,4 @@
-import { describe, expect, test, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { createLLMCallMiddleware } from '@/middleware/llm-call.middleware';
 import { MiddlewareContext } from '@/middleware/middleware-types';
 import { Message } from '@/base-types';

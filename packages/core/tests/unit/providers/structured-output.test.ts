@@ -1,13 +1,12 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { Message } from '@/base-types';
 import { StructuredOutputConfig } from '@/providers/llm-provider.interface';
-
-// Mock OpenAI at the top level for hoisting
-vi.mock('openai');
-
 // Import after mock declaration
 import { OpenAICompatibleProvider } from '@/providers/openai-compatible-provider';
 import OpenAI from 'openai';
+
+// Mock OpenAI at the top level for hoisting
+vi.mock('openai');
 
 // Create the mock implementation
 const mockCreate = vi.fn();

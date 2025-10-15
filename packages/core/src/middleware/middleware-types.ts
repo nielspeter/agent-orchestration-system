@@ -1,5 +1,5 @@
 import { BaseTool, ExecutionContext, Message } from '@/base-types';
-import { Agent, NormalizedThinkingConfig, ModelConfig } from '@/config/types';
+import { Agent, ModelConfig, NormalizedThinkingConfig } from '@/config/types';
 import { AgentLogger } from '@/logging';
 import { ILLMProvider } from '@/providers/llm-provider.interface';
 import { ProviderWithConfig } from '@/providers/provider-factory';

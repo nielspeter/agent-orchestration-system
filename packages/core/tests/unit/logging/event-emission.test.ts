@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { EventLogger } from '@/logging/event.logger';
 import { InMemoryStorage } from '@/session/memory.storage';
 import { AnySessionEvent } from '@/session/types';
