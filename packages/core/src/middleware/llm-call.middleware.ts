@@ -91,7 +91,9 @@ export function createLLMCallMiddleware(): Middleware {
       ctx.thinkingMetrics.totalTokensUsed += usageMetrics.thinkingTokens;
 
       // Calculate thinking cost if pricing is available
-      // Thinking tokens are typically priced the same as input tokens
+      // Note: OpenAI o1/o3 reasoning tokens have different pricing (4x input cost)
+      // For now, we use input token pricing as approximation
+      // TODO: Add separate reasoningPricing field to ModelConfig for accurate cost
       if (ctx.providerModelConfig?.pricing) {
         const thinkingCost =
           (usageMetrics.thinkingTokens / 1000) * ctx.providerModelConfig.pricing.input;
@@ -103,6 +105,11 @@ export function createLLMCallMiddleware(): Middleware {
         const totalTokens = usageMetrics.totalTokens + usageMetrics.thinkingTokens;
         ctx.thinkingMetrics.contextUsagePercent =
           (totalTokens / ctx.providerModelConfig.contextLength) * 100;
+      }
+
+      // CRITICAL: Update ExecutionContext so metrics flow to child agents via delegation
+      if (ctx.executionContext) {
+        ctx.executionContext.thinkingMetrics = ctx.thinkingMetrics;
       }
     }
 
