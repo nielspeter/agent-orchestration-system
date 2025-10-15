@@ -14,6 +14,74 @@ import type { ConsoleConfig } from '@/logging';
 import { DEFAULTS } from './defaults';
 
 /**
+ * Thinking configuration - simplified user interface
+ */
+export interface ThinkingConfig {
+  /** Simple boolean or detailed config */
+  enabled?: boolean;
+  /** Optional: Override the default budget */
+  budget_tokens?: number;
+}
+
+/**
+ * Internal normalized thinking configuration
+ */
+export interface NormalizedThinkingConfig {
+  enabled: boolean;
+  budgetTokens: number;
+  maxCostUSD?: number;
+  contextWindowPercentage?: number;
+}
+
+/**
+ * Model capabilities from providers-config.json
+ */
+export interface ModelCapabilities {
+  thinking: boolean | 'automatic' | 'discovery';
+  thinkingMinBudget?: number;
+  thinkingMaxBudget?: number;
+  thinkingDefaultBudget?: number;
+  thinkingNotes?: string;
+}
+
+/**
+ * Extended model config from providers-config.json
+ */
+export interface ModelConfig {
+  id: string;
+  contextLength: number;
+  maxOutputTokens?: number;
+  pricing?: {
+    input: number;
+    output: number;
+  };
+  capabilities?: ModelCapabilities;
+}
+
+/**
+ * Provider config from providers-config.json
+ */
+export interface ProviderConfig {
+  type: 'native' | 'openai-compatible';
+  className?: string;
+  baseURL?: string;
+  apiKeyEnv: string;
+  models: ModelConfig[];
+  dynamicModels?: boolean;
+}
+
+/**
+ * Response normalization for thinking
+ */
+export interface NormalizedThinkingResponse {
+  content: string;
+  tokens: number;
+  visibility: 'full' | 'summary' | 'hidden';
+  cost: number;
+  provider: string;
+}
+
+/**
  * Agent definition
  */
 export interface Agent {
@@ -41,6 +109,8 @@ export interface Agent {
   response_format?: 'text' | 'json' | 'json_schema';
   /** Optional JSON schema for validation when using json_schema format */
   json_schema?: object;
+  /** Optional thinking configuration - simplified to just boolean or detailed config */
+  thinking?: boolean | ThinkingConfig;
 }
 
 /**

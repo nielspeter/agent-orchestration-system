@@ -56,7 +56,7 @@ export class AnthropicProvider implements ILLMProvider {
   async complete(
     messages: Message[],
     tools?: BaseTool[],
-    _config?: StructuredOutputConfig
+    config?: StructuredOutputConfig
   ): Promise<Message> {
     const startTime = Date.now();
 
@@ -88,10 +88,26 @@ export class AnthropicProvider implements ILLMProvider {
         tools: formattedTools,
       };
 
-      // Add headers separately to enable caching
+      // Add thinking configuration if enabled
+      if (config?.thinking?.enabled) {
+        Object.assign(params, {
+          thinking: {
+            type: 'enabled',
+            budget_tokens: config.thinking.budgetTokens,
+          },
+        });
+      }
+
+      // Build beta headers
+      const betaHeaders = ['prompt-caching-2024-07-31'];
+      if (config?.thinking?.enabled) {
+        betaHeaders.push('extended-thinking-2024-12-12');
+      }
+
+      // Add headers separately to enable caching and thinking
       const response = await this.client.messages.create(params, {
         headers: {
-          'anthropic-beta': 'prompt-caching-2024-07-31',
+          'anthropic-beta': betaHeaders.join(','),
         },
       });
 
@@ -101,17 +117,20 @@ export class AnthropicProvider implements ILLMProvider {
         this.recordDetailedMetrics(response.usage, totalCachedBlocks, responseTime);
 
         // Store for interface compliance
+        const usageWithThinking = response.usage as Anthropic.Usage & { thinking_tokens?: number };
         this.lastUsageMetrics = {
           promptTokens: response.usage.input_tokens,
           completionTokens: response.usage.output_tokens,
           totalTokens: response.usage.input_tokens + response.usage.output_tokens,
           promptCacheHitTokens: response.usage.cache_read_input_tokens || undefined,
           promptCacheMissTokens: response.usage.cache_creation_input_tokens || undefined,
+          thinkingTokens: usageWithThinking.thinking_tokens || undefined,
         };
 
-        // Also log traditional metrics for backward compatibility
+        // Log traditional metrics and thinking metrics
         if (this.logger) {
           this.logCacheMetrics(response.usage);
+          this.logThinkingMetrics(response.usage, response.content);
         }
       }
 
@@ -279,7 +298,7 @@ export class AnthropicProvider implements ILLMProvider {
   }
 
   private formatResponse(response: Anthropic.Message): Message {
-    // Extract text content
+    // Extract text content (excluding thinking)
     const textContent = response.content
       .filter((c) => c.type === 'text')
       .map((c) => c.text)
@@ -347,6 +366,44 @@ export class AnthropicProvider implements ILLMProvider {
       if (this.logger) {
         this.logger.logSystemMessage(cacheMetricsContent);
       }
+    }
+  }
+
+  private logThinkingMetrics(usage: Anthropic.Message['usage'], content: Anthropic.ContentBlock[]) {
+    const usageWithThinking = usage as Anthropic.Usage & { thinking_tokens?: number };
+    const thinkingTokens = usageWithThinking.thinking_tokens;
+    if (!thinkingTokens) return;
+
+    // Extract thinking content
+    const thinkingBlocks = content.filter(
+      (c) => c.type === 'thinking' || c.type === 'redacted_thinking'
+    );
+
+    if (thinkingBlocks.length === 0) return;
+
+    let thinkingText = '';
+    let hasRedacted = false;
+
+    for (const block of thinkingBlocks) {
+      if (block.type === 'thinking' && 'thinking' in block) {
+        thinkingText += (block as { type: 'thinking'; thinking: string }).thinking + '\n\n';
+      } else if (block.type === 'redacted_thinking') {
+        hasRedacted = true;
+        thinkingText += '[REDACTED - Content encrypted for safety]\n\n';
+      }
+    }
+
+    const icon = hasRedacted ? '🔒' : '🧠';
+    const label = hasRedacted ? 'Hidden Reasoning' : 'Agent Thinking';
+
+    if (thinkingText && !hasRedacted && this.logger) {
+      this.logger.logSystemMessage(`${icon} ${label}:\n${thinkingText.trim()}`);
+    }
+
+    if (this.logger) {
+      this.logger.logSystemMessage(
+        `📊 Thinking Metrics: ${thinkingTokens} tokens used for reasoning`
+      );
     }
   }
 
