@@ -1,7 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AgentSystemBuilder } from '@/config/system-builder';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { StdioClientTransport as _StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 
 vi.mock('@modelcontextprotocol/sdk/client/stdio.js', () => ({
   StdioClientTransport: vi.fn().mockImplementation(() => ({

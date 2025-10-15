@@ -1,4 +1,4 @@
-import { describe, expect, test, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, test } from 'vitest';
 import { EventLogger } from '@/logging';
 import { InMemoryStorage } from '@/session/memory.storage';
 import { LLMMetadata } from '@/session/types';

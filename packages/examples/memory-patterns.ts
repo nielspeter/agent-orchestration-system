@@ -7,8 +7,8 @@
  */
 
 import * as dotenv from 'dotenv';
-import { AgentSystemBuilder } from '@agent-system/core';
 import type { Agent } from '@agent-system/core';
+import { AgentSystemBuilder } from '@agent-system/core';
 
 dotenv.config({ path: '../../.env' });
 

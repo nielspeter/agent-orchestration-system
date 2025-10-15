@@ -6,8 +6,8 @@ parameters:
   players: array - List of player names
 """
 import json
-import sys
 import random
+import sys
 
 # Read input from stdin
 data = json.load(sys.stdin)

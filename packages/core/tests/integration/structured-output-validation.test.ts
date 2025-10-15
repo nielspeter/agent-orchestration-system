@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { AgentSystemBuilder } from '@/config/system-builder';
 import * as fs from 'fs/promises';
 import * as path from 'path';

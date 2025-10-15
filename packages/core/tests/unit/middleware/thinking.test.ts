@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { ThinkingMiddleware } from '@/middleware/thinking.middleware';
 import { MiddlewareContext } from '@/middleware/middleware-types';
 import { Agent } from '@/config/types';
