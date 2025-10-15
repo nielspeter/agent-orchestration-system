@@ -65,8 +65,9 @@ describe('SimpleSessionManager - Session Recovery', () => {
       });
     });
 
-    it('should recover tool calls as assistant messages', async () => {
-      const event: ToolCallEvent = {
+    it('should recover tool calls as assistant messages (complete pair)', async () => {
+      // Tool call
+      const toolCallEvent: ToolCallEvent = {
         type: 'tool_call',
         timestamp: Date.now(),
         data: {
@@ -77,10 +78,21 @@ describe('SimpleSessionManager - Session Recovery', () => {
         },
       };
 
-      await storage.appendEvent(sessionId, event);
+      // Tool result (sanitizer requires matching pairs)
+      const toolResultEvent: ToolResultEvent = {
+        type: 'tool_result',
+        timestamp: Date.now() + 1,
+        data: {
+          toolCallId: 'call-123',
+          result: { content: 'File contents here' },
+        },
+      };
+
+      await storage.appendEvent(sessionId, toolCallEvent);
+      await storage.appendEvent(sessionId, toolResultEvent);
       const messages = await sessionManager.recoverSession(sessionId);
 
-      expect(messages).toHaveLength(1);
+      expect(messages).toHaveLength(2);
       expect(messages[0]).toEqual({
         role: 'assistant',
         tool_calls: [
@@ -94,9 +106,15 @@ describe('SimpleSessionManager - Session Recovery', () => {
           },
         ],
       });
+      expect(messages[1]).toEqual({
+        role: 'tool',
+        content: JSON.stringify({ content: 'File contents here' }),
+        tool_call_id: 'call-123',
+      });
     });
 
-    it('should recover tool results as tool messages', async () => {
+    it('should remove orphaned tool results (sanitizer behavior)', async () => {
+      // Tool result without matching tool_call - sanitizer will remove it
       const event: ToolResultEvent = {
         type: 'tool_result',
         timestamp: Date.now(),
@@ -109,12 +127,8 @@ describe('SimpleSessionManager - Session Recovery', () => {
       await storage.appendEvent(sessionId, event);
       const messages = await sessionManager.recoverSession(sessionId);
 
-      expect(messages).toHaveLength(1);
-      expect(messages[0]).toEqual({
-        role: 'tool',
-        content: JSON.stringify({ content: 'File contents here' }),
-        tool_call_id: 'call-123',
-      });
+      // Sanitizer removes orphaned tool results for API compatibility
+      expect(messages).toHaveLength(0);
     });
 
     it('should recover complete conversation in order', async () => {
@@ -344,7 +358,7 @@ describe('SimpleSessionManager - Session Recovery', () => {
   });
 
   describe('Integration - Recovery Flow', () => {
-    it('should handle interrupted session with incomplete tool call', async () => {
+    it('should handle interrupted session with incomplete tool call (sanitizer removes it)', async () => {
       // Simulate a session that was interrupted mid-tool-execution
       await storage.appendEvent(sessionId, {
         type: 'user',
@@ -365,18 +379,15 @@ describe('SimpleSessionManager - Session Recovery', () => {
       // No tool_result - session was interrupted!
 
       const messages = await sessionManager.recoverSession(sessionId);
-      expect(messages).toHaveLength(2);
 
-      // Check if we detect the incomplete call
-      expect(sessionManager.hasIncompleteToolCall(messages)).toBe(true);
+      // Sanitizer removes incomplete tool call for API compatibility
+      expect(messages).toHaveLength(1);
+      expect(messages[0].role).toBe('user');
+      expect(messages[0].content).toBe('Analyze this file');
 
-      // Get the incomplete call details
-      const incompleteCall = sessionManager.getLastToolCall(messages);
-      expect(incompleteCall).toEqual({
-        id: 'interrupted-call',
-        name: 'read',
-        input: { path: 'important.txt' },
-      });
+      // After sanitization, no incomplete tool call remains
+      expect(sessionManager.hasIncompleteToolCall(messages)).toBe(false);
+      expect(sessionManager.getLastToolCall(messages)).toBeNull();
     });
 
     it('should handle completed session correctly', async () => {
