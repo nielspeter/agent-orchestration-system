@@ -303,11 +303,6 @@ system.eventLogger.on('message:assistant', (event) => {
         "id": "gpt-4-turbo",
         "contextLength": 128000,
         "maxOutputTokens": 4096
-      },
-      {
-        "id": "o1-preview",
-        "contextLength": 128000,
-        "maxOutputTokens": 32768
       }
     ]
   }

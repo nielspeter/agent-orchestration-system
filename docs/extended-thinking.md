@@ -205,7 +205,7 @@ model: "openrouter/meta-llama/llama-3.1-70b"
 
 - **API Parameter**: None (automatic in o1/o3 models)
 - **Response Field**: Hidden (reasoning not exposed)
-- **Models Supported**: o1-preview, o1, o3 series
+- **Models Supported**: o1, o3 series
 - **Reasoning Visibility**: Hidden (not accessible)
 - **Billing**: Separate reasoning tokens (pricing varies)
 - **Token Budget**: Automatic (not controllable)
@@ -214,11 +214,10 @@ model: "openrouter/meta-llama/llama-3.1-70b"
 
 **Example Model Strings**:
 ```yaml
-model: "openai/o1-preview"
 model: "openai/o3"
 ```
 
-> **Note**: When you enable thinking with OpenAI, the system may automatically upgrade your model (e.g., gpt-4 → o1-preview) to use a reasoning-capable model.
+> **Note**: When you enable thinking with OpenAI, the system may automatically upgrade your model (e.g., gpt-4 → o1) to use a reasoning-capable model.
 
 ## Important Constraints
 
@@ -237,7 +236,7 @@ Extended thinking requires compatible models:
 - Check OpenRouter docs for specific model compatibility
 
 **OpenAI:**
-- ✅ o1-preview, o1, o3 series only
+- ✅ o1, o3 series only
 - ❌ GPT-4, GPT-3.5, and other non-reasoning models
 
 ### ⚠️ Incompatible Features
@@ -422,7 +421,7 @@ Then provide structured feedback.
 
 **OpenAI (Direct):**
 - Reasoning tokens billed separately
-- o1-preview: ~$15 per 1M reasoning tokens
+- o1: ~$15 per 1M reasoning tokens
 - o3: Pricing varies by tier
 
 ### Budget Management
@@ -435,7 +434,7 @@ Then provide structured feedback.
 | Anthropic | Opus 4 | $0.15 per run |
 | OpenRouter | Claude 3.7 | $0.05 per run |
 | OpenRouter | OpenAI o1 | $0.20 per run |
-| OpenAI | o1-preview | $0.15 per run |
+| OpenAI | o1 | $0.15 per run |
 
 **Trade-off**: Small cost increase for significantly better results
 
