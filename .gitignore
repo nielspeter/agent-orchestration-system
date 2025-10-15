@@ -9,6 +9,9 @@ npm-debug.log*
 .env.test
 .env.test.local
 
+# User-specific runtime configuration (use agent-config.json.example as template)
+agent-config.json
+
 # Build output
 dist/
 build/
