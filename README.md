@@ -1,19 +1,17 @@
-# Agent Orchestration System - Pull Architecture with Middleware Pipeline
+# Agent Orchestration System
 
-A TypeScript implementation of an advanced agent orchestration system using **pull architecture** where child agents autonomously gather information via tools rather than inheriting parent context. Built with a **middleware pipeline architecture** (Chain of Responsibility pattern) and leverages Anthropic's ephemeral caching for efficiency.
+**Production-ready TypeScript framework for building autonomous, collaborative AI agents**
+
+Key capabilities:
+
+- **Autonomous Agents**: Agents gather information via tools, making independent decisions without massive context dumps
+- **Deep Reasoning**: Multi-provider thinking support (Claude, OpenAI o1/o3, OpenRouter) for complex planning and problem-solving
+- **Agent Collaboration**: Agents delegate to specialized sub-agents, forming dynamic teams for complex tasks
+- **Multi-Provider Support**: Switch between Anthropic, OpenAI, OpenRouter, or custom providers with simple configuration
+- **Production-Ready**: Built-in security, retry logic, session persistence, and comprehensive monitoring
+- **Cost Efficient**: Smart caching delivers up to 90% cost savings on multi-agent workflows
 
 > **Production Readiness**: This system includes built-in security features, retry logic, and monitoring. See [Security Documentation](docs/security.md) and [Production Readiness Assessment](docs/production-readiness.md) for details.
-
-## 🆕 Recent Updates
-- **CLI Package**: Production-ready command-line interface with stdin/stdout support, signal handling, and security features
-- **Session Persistence**: Event-sourced session storage with recovery capabilities
-- **Security Hardening**: Path validation, command filtering, size limits
-- **Retry Logic**: Smart retry with backoff for transient failures
-- **Metrics Collection**: Token usage, cache hit rates, cost tracking
-- **OpenRouter Speed Optimization**: Provider pinning with `:nitro` suffix
-- **Behavior Presets**: Semantic temperature/top_p control
-- **Multi-Provider Support**: Dynamic provider selection (Anthropic, OpenRouter)
-- **Grep Tool**: Fast file searching using ripgrep
 
 ## 🎯 Architecture Highlights
 
@@ -204,6 +202,73 @@ Available presets (catalog in `providers-config.json`, defaults in `agent-config
 - **balanced** (0.5/0.85): Default - orchestration, tool use, reasoning
 - **creative** (0.7/0.95): Storytelling, game mastering, creative content
 - **exploratory** (0.9/0.98): Research, brainstorming, alternatives
+
+## 🧠 Extended Thinking & Reasoning
+
+Agents can use extended thinking to reason deeply before responding - significantly improving performance on complex tasks like planning, code design, and problem-solving.
+
+### Quick Start
+
+```yaml
+# In agent markdown frontmatter
+---
+name: orchestrator
+tools: ["delegate", "todowrite"]
+thinking:
+  type: enabled
+  budget_tokens: 16000
+---
+
+You are a project orchestrator. Before delegating tasks, think through:
+- What is the end goal?
+- What order makes sense?
+- What could go wrong?
+```
+
+### How It Works
+
+When thinking is enabled, agents:
+1. **Think internally** before responding (you see this process with 🧠 emoji)
+2. **Plan their approach** step-by-step
+3. **Consider alternatives** and edge cases
+4. **Generate better responses** based on reasoning
+
+### Multi-Provider Support
+
+The same configuration works across all providers:
+
+- **Anthropic**: Extended thinking (Claude 3.7) & Interleaved thinking (Claude 4+)
+- **OpenRouter**: Reasoning tokens (available on 200+ models)
+- **OpenAI**: Automatic reasoning (o1, o3 series)
+
+### Token Budget Guide
+
+| Task Complexity | Budget | Use Case |
+|----------------|--------|----------|
+| Simple | 2,000-5,000 | Basic analysis, routing |
+| Moderate | 5,000-10,000 | Code implementation, planning |
+| Complex | 10,000-16,000 | Multi-agent orchestration, code review |
+| Very Complex | 16,000-24,000 | Deep analysis, complex problem solving |
+
+### Example: Thinking in Action
+
+```
+🧠 Agent Thinking:
+Let me analyze this request step by step:
+
+1. The user wants to implement a factorial function
+2. I need to consider edge cases: 0!, negative numbers
+3. I should delegate to the implementer agent
+4. The implementer will need the project path and requirements
+5. After implementation, tests should verify correctness
+
+Plan: First explore project structure, then delegate with clear
+      requirements including edge case handling.
+
+[Agent then executes the planned approach]
+```
+
+For complete documentation, see [Extended Thinking Guide](docs/extended-thinking.md).
 
 ## 📁 Project Structure
 
