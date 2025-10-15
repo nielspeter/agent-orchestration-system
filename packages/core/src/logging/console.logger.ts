@@ -145,8 +145,8 @@ export class ConsoleLogger implements AgentLogger {
 
   private formatToolPreview(params: Record<string, unknown>): string {
     const lines: string[] = [];
-    const maxLineLength = 80;
-    const maxLines = 3;
+    const maxLineLength = 150;
+    const maxLines = 8;
 
     // Priority keys to show first
     const priorityKeys = ['file_path', 'pattern', 'path', 'command', 'agent', 'task', 'content'];
