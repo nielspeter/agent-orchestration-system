@@ -251,7 +251,7 @@ describe('ShellTool', () => {
 });
 
 describe('Tool error handling', () => {
-  const testDir = 'test-tools-temp';
+  const testDir = 'test-tools-error-temp';
 
   beforeEach(async () => {
     // Create test directory
