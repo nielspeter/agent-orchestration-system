@@ -105,9 +105,7 @@ describe('logThinkingMetrics', () => {
 
   describe('Redacted thinking blocks', () => {
     test('should show redacted indicator for redacted_thinking blocks', () => {
-      const thinkingBlocks: ThinkingContentBlock[] = [
-        { type: 'redacted_thinking' },
-      ];
+      const thinkingBlocks: ThinkingContentBlock[] = [{ type: 'redacted_thinking' }];
 
       logThinkingMetrics(mockLogger, 0, thinkingBlocks);
 
@@ -154,9 +152,7 @@ describe('logThinkingMetrics', () => {
     });
 
     test('should handle empty thinking content gracefully', () => {
-      const thinkingBlocks: ThinkingContentBlock[] = [
-        { type: 'thinking', content: '' },
-      ];
+      const thinkingBlocks: ThinkingContentBlock[] = [{ type: 'thinking', content: '' }];
 
       logThinkingMetrics(mockLogger, 0, thinkingBlocks);
 

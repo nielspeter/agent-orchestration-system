@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { ThinkingMiddleware } from '@/middleware/thinking.middleware';
 import { MiddlewareContext } from '@/middleware/middleware-types';
-import { Agent, ModelConfig } from '@/config/types';
+import { Agent } from '@/config/types';
 import { Message } from '@/base-types';
 import { AgentLogger } from '@/logging';
 
@@ -48,19 +48,19 @@ const mockProvidersConfig = {
         {
           id: 'o1-preview',
           contextLength: 128000,
-          pricing: { input: 0.015, output: 0.060 },
+          pricing: { input: 0.015, output: 0.06 },
           capabilities: {
             thinking: 'automatic' as const,
-            thinkingPricing: { input: 0.060 },
+            thinkingPricing: { input: 0.06 },
           },
         },
         {
           id: 'o3',
           contextLength: 128000,
-          pricing: { input: 0.015, output: 0.060 },
+          pricing: { input: 0.015, output: 0.06 },
           capabilities: {
             thinking: 'automatic' as const,
-            thinkingPricing: { input: 0.060 },
+            thinkingPricing: { input: 0.06 },
           },
         },
       ],
@@ -265,9 +265,7 @@ describe('ThinkingMiddleware', () => {
       // Middleware catches error and disables thinking
       expect(ctx.thinkingConfig).toBeUndefined();
       const logger = ctx.logger as unknown as MockLogger;
-      expect(logger.messages.some((m) => m.includes('exceeds maximum of 65536 tokens'))).toBe(
-        true
-      );
+      expect(logger.messages.some((m) => m.includes('exceeds maximum of 65536 tokens'))).toBe(true);
     });
 
     it('should default enabled=true when config object provided', async () => {
@@ -355,9 +353,9 @@ describe('ThinkingMiddleware', () => {
 
       const logger = ctx.logger as unknown as MockLogger;
       expect(logger.messages.some((m) => m.includes('⚠️  WARNING'))).toBe(true);
-      expect(
-        logger.messages.some((m) => m.includes('does not support extended thinking'))
-      ).toBe(true);
+      expect(logger.messages.some((m) => m.includes('does not support extended thinking'))).toBe(
+        true
+      );
     });
 
     it('should warn when budget exceeds 50% of context', async () => {
@@ -421,9 +419,7 @@ describe('ThinkingMiddleware', () => {
       // Create messages approaching context limit (but not exceeding 90%)
       // With improved estimation: 550k chars ~= 173k tokens (550k/3.5 + 4 overhead + 10% margin)
       // This is 86.5% of 200k context, leaving ~7k tokens for thinking
-      const messages: Message[] = [
-        { role: 'user', content: 'x'.repeat(550000) },
-      ];
+      const messages: Message[] = [{ role: 'user', content: 'x'.repeat(550000) }];
       const ctx = createTestContext({
         modelName: 'anthropic/claude-opus-4-1',
         messages,
@@ -434,8 +430,8 @@ describe('ThinkingMiddleware', () => {
 
       expect(ctx.thinkingConfig).toBeDefined();
       // Budget should be reduced from 20000 to fit available space
-      expect(ctx.thinkingConfig!.budgetTokens).toBeLessThan(20000);
-      expect(ctx.thinkingConfig!.budgetTokens).toBeGreaterThan(0);
+      expect(ctx.thinkingConfig?.budgetTokens).toBeLessThan(20000);
+      expect(ctx.thinkingConfig?.budgetTokens).toBeGreaterThan(0);
     });
 
     it('should prevent negative budget with Math.max', async () => {
@@ -538,9 +534,7 @@ describe('ThinkingMiddleware', () => {
 
       expect(ctx.thinkingConfig).toBeUndefined();
       const logger = ctx.logger as unknown as MockLogger;
-      expect(logger.messages.some((m) => m.includes('Global thinking limits exceeded'))).toBe(
-        true
-      );
+      expect(logger.messages.some((m) => m.includes('Global thinking limits exceeded'))).toBe(true);
     });
 
     it('should pass when under global cost limit', async () => {
