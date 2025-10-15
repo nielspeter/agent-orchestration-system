@@ -1,5 +1,5 @@
 import { BaseTool, ExecutionContext, Message } from '@/base-types';
-import { Agent } from '@/config/types';
+import { Agent, NormalizedThinkingConfig, ModelConfig } from '@/config/types';
 import { AgentLogger } from '@/logging';
 import { ILLMProvider } from '@/providers/llm-provider.interface';
 import { ProviderWithConfig } from '@/providers/provider-factory';
@@ -58,6 +58,15 @@ export interface MiddlewareContext {
 
   // LLM metadata for usage tracking across tool calls
   lastLLMMetadata?: import('@/session/types').LLMMetadata;
+
+  // Thinking/reasoning configuration
+  thinkingConfig?: NormalizedThinkingConfig;
+  providerModelConfig?: ModelConfig; // Model config from providers-config.json
+  thinkingMetrics?: {
+    totalTokensUsed: number;
+    totalCost: number;
+    contextUsagePercent: number;
+  };
 }
 
 /**

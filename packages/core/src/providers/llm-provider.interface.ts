@@ -1,4 +1,5 @@
 import { BaseTool, Message } from '@/base-types';
+import { NormalizedThinkingConfig } from '@/config/types';
 
 /**
  * Simple usage metrics interface for POC
@@ -10,14 +11,16 @@ export interface UsageMetrics {
   promptCacheHitTokens?: number; // Anthropic style
   promptCacheMissTokens?: number; // Anthropic style
   cached_tokens?: number; // xAI/OpenRouter style
+  thinkingTokens?: number; // Extended thinking tokens
 }
 
 /**
- * Configuration for structured output
+ * Configuration for structured output and thinking
  */
 export interface StructuredOutputConfig {
   response_format?: 'text' | 'json' | 'json_schema';
   json_schema?: object;
+  thinking?: NormalizedThinkingConfig; // Extended thinking configuration
 }
 
 /**

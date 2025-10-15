@@ -11,6 +11,7 @@ import { createContextSetupMiddleware } from '@/middleware/context-setup.middlew
 import { createSafetyChecksMiddleware } from '@/middleware/safety-checks.middleware';
 import { createProviderSelectionMiddleware } from '@/middleware/provider-selection.middleware';
 import { createLLMCallMiddleware } from '@/middleware/llm-call.middleware';
+import { createThinkingMiddleware } from '@/middleware/thinking.middleware';
 import { createToolExecutionMiddleware } from '@/middleware/tool-execution.middleware';
 import { createErrorHandlerMiddleware } from '@/middleware/error-handler.middleware';
 import { DEFAULTS } from '@/config/defaults';
@@ -69,16 +70,18 @@ export class AgentExecutor {
    * Pipeline order:
    * 1. ErrorHandler - Catches and handles all errors
    * 2. AgentLoader - Loads agent definition and filters tools
-   * 3. ContextSetup - Initializes conversation context
-   * 4. ProviderSelection - Selects appropriate LLM provider based on model
-   * 5. SafetyChecks - Enforces execution limits
-   * 6. LLMCall - Communicates with the language model
-   * 7. ToolExecution - Executes tools and handles delegation
+   * 3. ThinkingMiddleware - Validates and normalizes thinking configuration
+   * 4. ContextSetup - Initializes conversation context
+   * 5. ProviderSelection - Selects appropriate LLM provider based on model
+   * 6. SafetyChecks - Enforces execution limits
+   * 7. LLMCall - Communicates with the language model
+   * 8. ToolExecution - Executes tools and handles delegation
    */
   private setupPipeline(): void {
     this.pipeline
       .use(createErrorHandlerMiddleware())
       .use(createAgentLoaderMiddleware(this.agentLoader, this.toolRegistry))
+      .use(createThinkingMiddleware()) // NEW: Validate and normalize thinking config
       .use(createContextSetupMiddleware())
       .use(
         createProviderSelectionMiddleware(this.modelName, this.config.defaultBehavior, this.logger)

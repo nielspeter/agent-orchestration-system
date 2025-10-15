@@ -5,6 +5,7 @@ export { createErrorHandlerMiddleware } from './error-handler.middleware';
 export { createLLMCallMiddleware } from './llm-call.middleware';
 export { createProviderSelectionMiddleware } from './provider-selection.middleware';
 export { createSafetyChecksMiddleware } from './safety-checks.middleware';
+export { createThinkingMiddleware } from './thinking.middleware';
 export { createToolExecutionMiddleware } from './tool-execution.middleware';
 export { MiddlewarePipeline } from './pipeline';
 

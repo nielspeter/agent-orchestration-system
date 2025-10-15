@@ -93,6 +93,7 @@ you step in to ensure the task gets completed by returning useful results.`,
           top_p: inlineAgent.top_p,
           response_format: inlineAgent.response_format,
           json_schema: inlineAgent.json_schema,
+          thinking: inlineAgent.thinking,
         };
       }
     }
@@ -119,6 +120,7 @@ you step in to ensure the task gets completed by returning useful results.`,
         top_p: data.top_p,
         response_format: data.response_format,
         json_schema: data.json_schema,
+        thinking: data.thinking,
       };
     } catch (error) {
       // Provide more helpful error messages
