@@ -7,6 +7,7 @@
  */
 
 import * as dotenv from 'dotenv';
+
 import type { Agent } from '@agent-system/core';
 import { AgentSystemBuilder } from '@agent-system/core';
 
