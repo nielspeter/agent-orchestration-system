@@ -206,7 +206,7 @@ export class ConsoleLogger implements AgentLogger {
   }
 
   logToolResult(agent: string, _tool: string, _toolId: string, result: unknown): void {
-    if (this.verbosity !== 'verbose') return;
+    if (this.verbosity === 'minimal') return;
 
     const indent = this.getIndent(agent);
     const timestamp = this.formatTimestamp();
@@ -225,11 +225,20 @@ export class ConsoleLogger implements AgentLogger {
       resultStr = JSON.stringify(result, null, 2);
     }
 
-    if (resultStr.length > 200) {
-      resultStr = resultStr.substring(0, 200) + '...';
+    // In normal mode, truncate long results for readability
+    const maxLength = this.verbosity === 'verbose' ? 1000 : 300;
+    if (resultStr.length > maxLength) {
+      const lines = resultStr.split('\n');
+      if (lines.length > 5 && this.verbosity === 'normal') {
+        // Show first few lines with continuation indicator
+        const preview = lines.slice(0, 3).join('\n');
+        resultStr = `${preview}\n... (${lines.length - 3} more lines)`;
+      } else {
+        resultStr = resultStr.substring(0, maxLength) + '...';
+      }
     }
 
-    console.log(`${indent}${timestamp}${this.color('  result:', 'dim')} ${resultStr}`);
+    console.log(`${indent}${timestamp}${this.color('  ✓', 'green')} ${resultStr}`);
   }
 
   logToolError(agent: string, tool: string, _toolId: string, error: Error): void {
