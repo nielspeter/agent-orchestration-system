@@ -217,6 +217,11 @@ Most providers use OpenAI-compatible API:
 
 - **Streaming** - Text streaming support (not used in current implementation)
 
+- **Thinking Block Preservation** - Automatic preservation of thinking/reasoning blocks
+  - Uses `raw_content` field in Message type to store original API blocks
+  - Ensures multi-turn conversations work with interleaved thinking
+  - See [Extended Thinking Guide](./extended-thinking.md#thinking-block-preservation) for details
+
 ### Model Configuration
 
 ```json

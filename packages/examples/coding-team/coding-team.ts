@@ -33,10 +33,19 @@ async function runCodingTeam() {
     .withAgentsFrom(path.join(__dirname, 'agents'))
     .addBuiltinTools('shell') // Add shell to the default tools
     .with({
+      execution: {
+        defaultModel: 'anthropic/claude-sonnet-4-5', // Explicitly use claude-sonnet-4-5
+      },
       safety: {
         maxIterations: 20, // Allow more iterations for complex coding tasks
         maxDepth: 5,
         warnAtIteration: 15,
+      },
+      session: {
+        sessionId: `coding-team-${Date.now()}`, // Force new session with unique ID
+      },
+      storage: {
+        type: 'none', // Disable session persistence for clean runs
       },
     })
     .build();

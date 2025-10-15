@@ -252,29 +252,27 @@ export class OpenAICompatibleProvider implements ILLMProvider {
           } else if (this.modelName.includes('/o1') || this.modelName.includes('/o3')) {
             // Confirmed: o1/o3 have automatic reasoning, no configuration needed
             this.logger?.logSystemMessage(
-              `✓ Using automatic reasoning (o1/o3 model, no configuration needed)`
+              '✓ Using automatic reasoning (o1/o3 model, no configuration needed)'
             );
           } else if (this.modelName.includes('anthropic/') || this.modelName.includes('claude')) {
             // Other Claude models (Haiku, older versions)
             this.logger?.logSystemMessage(
               `⚠️  Model ${this.modelName} may not support extended thinking. ` +
-                `Only Claude Opus 4 and Sonnet 4 support this feature. ` +
-                `Request will be sent but thinking parameter may be ignored.`
+                'Only Claude Opus 4 and Sonnet 4 support this feature. ' +
+                'Request will be sent but thinking parameter may be ignored.'
             );
           } else {
             // Unknown model via OpenRouter
             this.logger?.logSystemMessage(
               `⚠️  Extended thinking requested for ${this.modelName} via OpenRouter. ` +
-                `Support for this model is unverified. The thinking parameter will be sent ` +
-                `but may be ignored if the model doesn't support extended thinking.`
+                'Support for this model is unverified. The thinking parameter will be sent ' +
+                "but may be ignored if the model doesn't support extended thinking."
             );
           }
         } else {
           // Native OpenAI: o1/o3 models automatically use reasoning (no parameter needed)
           if (this.modelName.includes('o1') || this.modelName.includes('o3')) {
-            this.logger?.logSystemMessage(
-              `✓ Using automatic reasoning (${this.modelName})`
-            );
+            this.logger?.logSystemMessage(`✓ Using automatic reasoning (${this.modelName})`);
           }
         }
       }

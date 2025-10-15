@@ -1,5 +1,5 @@
 {
-  "$schema": "./providers-config.schema.json",
+  "$schema": "./../../providers-config.schema.json",
 
   "_comment": "This file configures all LLM providers and models. Default model and behavior are configured in agent-config.json",
 

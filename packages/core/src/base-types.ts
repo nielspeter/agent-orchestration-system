@@ -57,6 +57,8 @@ export interface Message {
   content?: string;
   tool_calls?: ToolCall[];
   tool_call_id?: string;
+  // Raw content blocks from provider (preserved for thinking blocks, etc.)
+  raw_content?: unknown;
 }
 
 export interface ToolCall {
