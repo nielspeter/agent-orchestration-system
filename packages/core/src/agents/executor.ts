@@ -11,6 +11,7 @@ import { createContextSetupMiddleware } from '@/middleware/context-setup.middlew
 import { createSafetyChecksMiddleware } from '@/middleware/safety-checks.middleware';
 import { createProviderSelectionMiddleware } from '@/middleware/provider-selection.middleware';
 import { createLLMCallMiddleware } from '@/middleware/llm-call.middleware';
+import { createSmartRetryMiddleware } from '@/middleware/smart-retry.middleware';
 import { createThinkingMiddleware } from '@/middleware/thinking.middleware';
 import { createToolExecutionMiddleware } from '@/middleware/tool-execution.middleware';
 import { createErrorHandlerMiddleware } from '@/middleware/error-handler.middleware';
@@ -74,8 +75,9 @@ export class AgentExecutor {
    * 4. ContextSetup - Initializes conversation context
    * 5. ProviderSelection - Selects appropriate LLM provider based on model
    * 6. SafetyChecks - Enforces execution limits
-   * 7. LLMCall - Communicates with the language model
-   * 8. ToolExecution - Executes tools and handles delegation
+   * 7. SmartRetry - Retries on rate limit errors (429) with exponential backoff
+   * 8. LLMCall - Communicates with the language model
+   * 9. ToolExecution - Executes tools and handles delegation
    */
   private setupPipeline(): void {
     this.pipeline
@@ -87,6 +89,7 @@ export class AgentExecutor {
         createProviderSelectionMiddleware(this.modelName, this.config.defaultBehavior, this.logger)
       )
       .use(createSafetyChecksMiddleware(this.config.safety))
+      .use(createSmartRetryMiddleware()) // NEW: Smart retry with exponential backoff
       .use(createLLMCallMiddleware())
       .use(createToolExecutionMiddleware(this.toolRegistry, this.execute.bind(this)));
   }

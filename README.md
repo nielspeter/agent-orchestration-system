@@ -21,9 +21,11 @@ type Middleware = (ctx: MiddlewareContext, next: () => Promise<void>) => Promise
 The monolithic 500-line `AgentExecutor` has been refactored into a clean pipeline of focused middleware:
 - **ErrorHandlerMiddleware** - Global error boundary
 - **AgentLoaderMiddleware** - Loads agents and filters tools
+- **ThinkingMiddleware** - Validates and normalizes thinking configuration
 - **ContextSetupMiddleware** - Manages conversation context
 - **ProviderSelectionMiddleware** - Selects LLM provider (Anthropic, OpenRouter, etc.)
 - **SafetyChecksMiddleware** - Enforces limits (depth, iterations, tokens)
+- **SmartRetryMiddleware** - Retries on rate limits (429) with exponential backoff
 - **LLMCallMiddleware** - Handles LLM communication
 - **ToolExecutionMiddleware** - Orchestrates tool execution
 

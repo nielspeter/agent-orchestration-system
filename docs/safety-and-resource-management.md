@@ -7,6 +7,7 @@ The agent system includes multiple layers of safety mechanisms to prevent:
 - **Resource exhaustion** - Memory, token, and file size limits
 - **Security vulnerabilities** - Command and file path validation
 - **Cost overruns** - Token estimation and tracking
+- **Rate limit errors** - Smart retry with exponential backoff for 429 errors
 
 ## Execution Safety Limits
 
@@ -143,6 +144,128 @@ Helps identify:
 - Tasks that are too complex
 - Agents that need better prompts
 - Potential infinite loops
+
+### SmartRetryMiddleware
+
+The `SmartRetryMiddleware` automatically handles rate limit errors (HTTP 429) from all LLM providers with exponential backoff.
+
+#### Design Philosophy
+
+- **Stateless**: No shared state or coordination between processes
+- **Reactive**: Responds to actual rate limit errors, doesn't predict
+- **Universal**: Works with all LLM providers (Anthropic, OpenAI, OpenRouter)
+- **Self-Organizing**: Exponential backoff + jitter naturally spaces out requests
+
+#### Configuration
+
+```typescript
+interface SmartRetryConfig {
+  maxRetries: number;         // Max retry attempts
+  baseBackoffMs: number;      // Base backoff duration
+  maxBackoffMs: number;       // Maximum backoff cap
+  jitterFactor: number;       // Randomization factor
+  respectRetryAfter: boolean; // Use provider headers
+}
+```
+
+Default values:
+```typescript
+{
+  maxRetries: 5,           // Up to 5 retry attempts
+  baseBackoffMs: 1000,     // 1 second base
+  maxBackoffMs: 60000,     // 60 second maximum
+  jitterFactor: 0.3,       // ±30% randomization
+  respectRetryAfter: true  // Honor provider suggestions
+}
+```
+
+#### How It Works
+
+When an LLM call returns a 429 error:
+
+1. **Detection**: Middleware catches the error
+2. **Backoff Calculation**: Exponential growth with jitter
+   - Attempt 1: 1s (±30% = 0.7-1.3s)
+   - Attempt 2: 2s (±30% = 1.4-2.6s)
+   - Attempt 3: 4s (±30% = 2.8-5.2s)
+   - Attempt 4: 8s (±30% = 5.6-10.4s)
+   - Attempt 5: 16s (±30% = 11.2-20.8s)
+3. **Retry-After**: Uses provider header if longer than calculated backoff
+4. **Retry**: Waits and retries the LLM call
+5. **Exhaust**: After max retries, re-throws error to error handler
+
+#### Why This Works Without Coordination
+
+**Multi-Process Behavior**:
+```
+Process A hits 429 → backs off 1s → hits 429 → backs off 2s → hits 429 → backs off 4s
+Process B hits 429 → backs off 1s → succeeds
+Process C succeeds → no backoff needed
+
+Result: Aggressive processes back off more, system naturally balances
+```
+
+**Key Principles**:
+- Each process backs off independently when it hits limits
+- Exponential growth quickly reduces per-process request rate
+- Jitter prevents processes from synchronizing retries
+- No coordination needed - self-organizing equilibrium
+
+#### Provider Support
+
+**Anthropic**:
+```typescript
+// Error format
+{
+  status: 429,
+  type: 'rate_limit_error',
+  headers: { 'retry-after': '60' }
+}
+```
+
+**OpenAI**:
+```typescript
+// Error format
+{
+  status: 429,
+  message: 'Rate limit exceeded',
+  headers: { 'retry-after': '30' }
+}
+```
+
+**OpenRouter**:
+```typescript
+// OpenAI-compatible format
+{
+  status: 429,
+  response: {
+    headers: { 'Retry-After': '45' }
+  }
+}
+```
+
+#### Configuration Example
+
+```typescript
+// Use default retry behavior (recommended)
+const system = await AgentSystemBuilder.default().build();
+
+// Custom retry configuration (rarely needed)
+// Note: This is not currently exposed in builder API,
+// middleware uses sensible defaults for all providers
+```
+
+#### Monitoring
+
+Smart retry logs retry attempts to help debug rate limiting:
+
+```
+🔄 Rate limit hit. Retry 1/5 after 1.2s...
+🔄 Rate limit hit. Retry 2/5 after 2.8s...
+⏱️ Provider requested 30000ms wait (retry-after header)
+🔄 Rate limit hit. Retry 3/5 after 30.0s...
+⚠️ Rate limit retry exhausted after 5 attempts. Giving up.
+```
 
 ## Security Validation
 
