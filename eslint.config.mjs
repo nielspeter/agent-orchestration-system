@@ -60,7 +60,26 @@ export default [
     },
   },
   {
-    files: ['**/*.test.ts', '**/*.spec.ts', 'tests/**/*.ts'],
+    // Test files and config files - disable type-aware linting
+    // (they're not included in the main tsconfig.json project files)
+    files: [
+      '**/*.test.ts',
+      '**/*.spec.ts',
+      'tests/**/*.ts',
+      '**/tests/**/*.ts',
+      '**/vitest.config.*.ts',
+      '**/vite.config.ts',
+      'packages/web/server/**/*.ts',
+    ],
+    languageOptions: {
+      parser: tsparser,
+      parserOptions: {
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+        // Don't use project for test files - they're not in tsconfig.json
+        project: null,
+      },
+    },
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
       'no-console': 'off',
@@ -74,8 +93,12 @@ export default [
     },
   },
   {
-    // The console logger implementation legitimately uses console methods
-    files: ['src/core/logging/implementations/console-logger.ts'],
+    // Logger implementations legitimately use console methods
+    files: [
+      'packages/core/src/logging/console.logger.ts',
+      'packages/core/src/tracing/simple-tracer.ts',
+      'packages/core/src/session/manager.ts', // Logs sanitization issues for debugging
+    ],
     rules: {
       'no-console': 'off',
     },
