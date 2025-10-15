@@ -36,7 +36,11 @@ export class EventLogger implements AgentLogger {
     // Works with InMemoryStorage, FilesystemStorage, or NoOpStorage
     this.on('*', (event) => {
       this.storage.appendEvent(this.sessionId, event as AnySessionEvent).catch((error) => {
-        console.error(`Failed to persist event ${(event as any)?.type}:`, error);
+        const eventType =
+          typeof event === 'object' && event !== null && 'type' in event
+            ? (event as { type: string }).type
+            : 'unknown';
+        console.error(`Failed to persist event ${eventType}:`, error);
       });
     });
   }
