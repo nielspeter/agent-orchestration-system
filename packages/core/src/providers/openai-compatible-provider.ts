@@ -234,19 +234,49 @@ export class OpenAICompatibleProvider implements ILLMProvider {
       // OpenRouter forwards provider-specific parameters
       if (config?.thinking?.enabled) {
         if (this.isOpenRouter()) {
-          // For Anthropic models via OpenRouter, use Anthropic's thinking parameter format
-          if (this.modelName.includes('anthropic/') || this.modelName.includes('claude')) {
+          // For Anthropic Claude Opus 4 and Sonnet 4 via OpenRouter
+          if (
+            this.modelName.includes('anthropic/claude-opus-4') ||
+            this.modelName.includes('anthropic/claude-sonnet-4')
+          ) {
+            // Confirmed: These models support extended thinking
             Object.assign(requestBody, {
               thinking: {
                 type: 'enabled',
                 budget_tokens: config.thinking.budgetTokens,
               },
             });
+            this.logger?.logSystemMessage(
+              `✓ Extended thinking enabled (${config.thinking.budgetTokens} tokens)`
+            );
+          } else if (this.modelName.includes('/o1') || this.modelName.includes('/o3')) {
+            // Confirmed: o1/o3 have automatic reasoning, no configuration needed
+            this.logger?.logSystemMessage(
+              `✓ Using automatic reasoning (o1/o3 model, no configuration needed)`
+            );
+          } else if (this.modelName.includes('anthropic/') || this.modelName.includes('claude')) {
+            // Other Claude models (Haiku, older versions)
+            this.logger?.logSystemMessage(
+              `⚠️  Model ${this.modelName} may not support extended thinking. ` +
+                `Only Claude Opus 4 and Sonnet 4 support this feature. ` +
+                `Request will be sent but thinking parameter may be ignored.`
+            );
+          } else {
+            // Unknown model via OpenRouter
+            this.logger?.logSystemMessage(
+              `⚠️  Extended thinking requested for ${this.modelName} via OpenRouter. ` +
+                `Support for this model is unverified. The thinking parameter will be sent ` +
+                `but may be ignored if the model doesn't support extended thinking.`
+            );
           }
-          // For o1/o3 via OpenRouter, thinking happens automatically (no parameter)
-          // For other models via OpenRouter, discovery mode - we'll see if it works
+        } else {
+          // Native OpenAI: o1/o3 models automatically use reasoning (no parameter needed)
+          if (this.modelName.includes('o1') || this.modelName.includes('o3')) {
+            this.logger?.logSystemMessage(
+              `✓ Using automatic reasoning (${this.modelName})`
+            );
+          }
         }
-        // For native OpenAI, o1/o3 models automatically use reasoning (no parameter needed)
       }
 
       const response = (await this.client.chat.completions.create(

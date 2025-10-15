@@ -39,6 +39,10 @@ export interface ModelCapabilities {
   thinkingMinBudget?: number;
   thinkingMaxBudget?: number;
   thinkingDefaultBudget?: number;
+  /** Separate pricing for thinking/reasoning tokens (e.g., OpenAI o1 uses 4x input price) */
+  thinkingPricing?: {
+    input: number; // Cost per 1M thinking/reasoning tokens
+  };
   thinkingNotes?: string;
 }
 

@@ -104,18 +104,22 @@
           "id": "o1-preview",
           "contextLength": 128000,
           "maxOutputTokens": 32768,
+          "pricing": { "input": 0.015, "output": 0.060 },
           "capabilities": {
             "thinking": "automatic",
-            "thinkingNotes": "o1 models handle reasoning internally, no configuration needed"
+            "thinkingPricing": { "input": 0.060 },
+            "thinkingNotes": "o1 models handle reasoning internally. Reasoning tokens cost 4x input price ($60/1M vs $15/1M)."
           }
         },
         {
           "id": "o3",
           "contextLength": 128000,
           "maxOutputTokens": 65536,
+          "pricing": { "input": 0.015, "output": 0.060 },
           "capabilities": {
             "thinking": "automatic",
-            "thinkingNotes": "o3 models handle reasoning internally with advanced capabilities"
+            "thinkingPricing": { "input": 0.060 },
+            "thinkingNotes": "o3 models handle reasoning internally with advanced capabilities. Reasoning tokens cost 4x input price ($60/1M vs $15/1M)."
           }
         }
       ]
