@@ -1,8 +1,34 @@
-# Extended Thinking Implementation Plan ("ultrathink") - v2
+# Extended Thinking Implementation Plan ("ultrathink") - v3
+
+## 🔥 Key Changes in v3: Configuration-Driven Architecture
+
+### What's Fixed
+1. **✅ NO HARDCODED MODEL NAMES** - All model capabilities loaded from `providers-config.json`
+2. **✅ NO HARDCODED CONTEXT WINDOWS** - Context limits from configuration
+3. **✅ SIMPLIFIED USER INTERFACE** - Just use `thinking: true` in agents
+4. **✅ CAPABILITY DISCOVERY** - Dynamic providers (OpenRouter) test capabilities at runtime
+5. **✅ SMART DEFAULTS** - Auto-configure budgets based on model capabilities
+
+### Architecture Improvements
+- **Configuration-Driven**: Everything driven by `providers-config.json`
+- **Base Provider Class**: Eliminates code duplication
+- **Graceful Degradation**: Falls back when thinking fails
+- **Provider Factory Integration**: Uses configuration for provider selection
+
+### User Experience
+```yaml
+# Before (v2) - Complex
+thinking:
+  type: enabled
+  budget_tokens: 10000  # User needs to know limits
+
+# After (v3) - Simple!
+thinking: true  # System handles everything
+```
 
 ## Overview
 
-Add extended thinking capability to the agent system, allowing agents to engage in deep reasoning before generating responses. This implementation supports multiple providers (Anthropic, OpenRouter, OpenAI) with a unified configuration interface.
+Add extended thinking capability to the agent system, allowing agents to engage in deep reasoning before generating responses. This implementation supports multiple providers (Anthropic, OpenRouter, OpenAI) with a unified, configuration-driven interface.
 
 ## Background
 
@@ -83,12 +109,13 @@ Extended thinking is a pre-response reasoning mechanism where LLMs deeply consid
 **File**: `packages/core/src/config/types.ts`
 
 ```typescript
-// User-facing configuration (from YAML)
+// User-facing configuration (from YAML) - SIMPLIFIED
 export interface ThinkingConfig {
-  /** Thinking mode - only 'enabled' is supported */
-  type: 'enabled';
-  /** Token budget for thinking (minimum: 1024) */
-  budget_tokens?: number;
+  /** Simple boolean or detailed config */
+  enabled?: boolean | {
+    type: 'enabled';
+    budget_tokens?: number;
+  };
 }
 
 // Internal normalized configuration
@@ -96,7 +123,38 @@ export interface NormalizedThinkingConfig {
   enabled: boolean;
   budgetTokens: number;
   maxCostUSD?: number;
-  contextWindowPercentage?: number; // Max % of context to use for thinking
+  contextWindowPercentage?: number;
+}
+
+// Model capabilities from providers-config.json
+export interface ModelCapabilities {
+  thinking: boolean | 'automatic' | 'discovery';
+  thinkingMinBudget?: number;
+  thinkingMaxBudget?: number;
+  thinkingDefaultBudget?: number;
+  thinkingNotes?: string;
+}
+
+// Extended model config from providers-config.json
+export interface ModelConfig {
+  id: string;
+  contextLength: number;
+  maxOutputTokens?: number;
+  pricing?: {
+    input: number;
+    output: number;
+  };
+  capabilities?: ModelCapabilities;
+}
+
+// Provider config from providers-config.json
+export interface ProviderConfig {
+  type: 'native' | 'openai-compatible';
+  className?: string;
+  baseURL?: string;
+  apiKeyEnv: string;
+  models: ModelConfig[];
+  dynamicModels?: boolean;
 }
 
 // Response normalization
@@ -111,7 +169,7 @@ export interface NormalizedThinkingResponse {
 // Add to Agent interface
 export interface Agent {
   // ... existing fields
-  thinking?: ThinkingConfig;
+  thinking?: boolean | ThinkingConfig;  // Simplified!
 }
 
 // Add to ExecutionContext
@@ -120,6 +178,8 @@ export interface ExecutionContext {
   messages: Message[];
   tools?: Tool[];
   thinkingConfig?: NormalizedThinkingConfig;
+  modelConfig?: ModelConfig;  // From providers-config.json
+  providerConfig?: ProviderConfig;  // From providers-config.json
   thinkingBudgetRemaining?: number;
   thinkingMetrics?: {
     totalTokensUsed: number;
@@ -132,17 +192,26 @@ export interface ExecutionContext {
 
 ---
 
-### Phase 2: Thinking Middleware
+### Phase 2: Thinking Middleware (Configuration-Driven)
 
 **File**: `packages/core/src/middleware/thinking-middleware.ts`
 
 ```typescript
 import { Middleware, MiddlewareNext, ExecutionContext } from '../types';
-import { NormalizedThinkingConfig } from '../config/types';
+import { NormalizedThinkingConfig, ModelConfig } from '../config/types';
+import * as fs from 'fs';
+import * as path from 'path';
 
 export class ThinkingMiddleware implements Middleware {
-  private globalBudgetLimit = 50000; // Max tokens across all thinking
-  private globalCostLimit = 5.00; // Max $5 per session
+  private providersConfig: any;
+  private globalBudgetLimit = 50000;
+  private globalCostLimit = 5.00;
+
+  constructor() {
+    // Load providers-config.json once
+    const configPath = path.join(process.cwd(), 'providers-config.json');
+    this.providersConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+  }
 
   async process(context: ExecutionContext, next: MiddlewareNext): Promise<any> {
     // Skip if no thinking config
@@ -151,34 +220,80 @@ export class ThinkingMiddleware implements Middleware {
     }
 
     try {
-      // Step 1: Validate configuration at build time
+      // Step 1: Load model configuration from providers-config.json
+      const modelConfig = this.loadModelConfig(context);
+      context.modelConfig = modelConfig;
+
+      // Step 2: Check if model supports thinking
+      if (!this.modelSupportsThinking(modelConfig)) {
+        context.logger?.warn(
+          `Model ${context.agent.model} does not support thinking, continuing without it`
+        );
+        return next(context);
+      }
+
+      // Step 3: Validate configuration (no temperature/top_p conflicts)
       this.validateConfiguration(context.agent);
 
-      // Step 2: Normalize configuration
-      context.thinkingConfig = this.normalizeConfig(context.agent.thinking);
+      // Step 4: Normalize configuration with model-specific defaults
+      context.thinkingConfig = this.normalizeConfig(
+        context.agent.thinking,
+        modelConfig
+      );
 
-      // Step 3: Check global limits
+      // Step 5: Check global limits
       if (!this.checkGlobalLimits(context)) {
         context.logger?.warn('Global thinking limits exceeded, disabling thinking');
         context.thinkingConfig = undefined;
         return next(context);
       }
 
-      // Step 4: Check context window usage
-      if (!this.checkContextWindow(context)) {
+      // Step 6: Check context window usage (using config values)
+      if (!this.checkContextWindow(context, modelConfig)) {
         context.logger?.warn('Thinking would exceed context window, reducing budget');
-        this.adjustBudget(context);
+        this.adjustBudget(context, modelConfig);
       }
 
       // Continue with thinking enabled
       return next(context);
 
     } catch (error) {
-      // Log validation errors but continue without thinking
       context.logger?.error('Thinking configuration error:', error);
       context.thinkingConfig = undefined;
       return next(context);
     }
+  }
+
+  private loadModelConfig(context: ExecutionContext): ModelConfig | null {
+    const modelName = context.agent.model || context.defaultModel;
+    const [providerPrefix, ...modelParts] = modelName.split('/');
+    const modelId = modelParts.join('/');
+
+    const provider = this.providersConfig.providers[providerPrefix];
+    if (!provider) return null;
+
+    // For dynamic providers like OpenRouter
+    if (provider.dynamicModels) {
+      return {
+        id: modelId,
+        contextLength: 128000, // Default, will be discovered
+        capabilities: {
+          thinking: 'discovery'
+        }
+      };
+    }
+
+    // Find exact model in configuration
+    return provider.models.find((m: any) => m.id === modelId) || null;
+  }
+
+  private modelSupportsThinking(modelConfig: ModelConfig | null): boolean {
+    if (!modelConfig?.capabilities) return false;
+
+    const capability = modelConfig.capabilities.thinking;
+    return capability === true ||
+           capability === 'automatic' ||
+           capability === 'discovery';
   }
 
   private validateConfiguration(agent: Agent): void {
@@ -196,29 +311,77 @@ export class ThinkingMiddleware implements Middleware {
         `Agent "${agent.name}": thinking is incompatible with top_p setting`
       );
     }
-
-    // Validate budget
-    const budget = agent.thinking.budget_tokens || 10000;
-    if (budget < 1024) {
-      throw new Error(
-        `Agent "${agent.name}": thinking budget must be at least 1024 tokens`
-      );
-    }
-
-    if (budget > 100000) {
-      throw new Error(
-        `Agent "${agent.name}": thinking budget exceeds maximum of 100000 tokens`
-      );
-    }
   }
 
-  private normalizeConfig(config: ThinkingConfig): NormalizedThinkingConfig {
+  private normalizeConfig(
+    config: boolean | ThinkingConfig,
+    modelConfig: ModelConfig | null
+  ): NormalizedThinkingConfig {
+    // Handle simple boolean format
+    if (config === true) {
+      return {
+        enabled: true,
+        budgetTokens: modelConfig?.capabilities?.thinkingDefaultBudget || 10000,
+        maxCostUSD: 0.50,
+        contextWindowPercentage: 0.25,
+      };
+    }
+
+    // Handle detailed config format
+    const detailedConfig = config as any;
+    const budget = detailedConfig.budget_tokens ||
+                  modelConfig?.capabilities?.thinkingDefaultBudget ||
+                  10000;
+
+    // Validate against model-specific limits
+    if (modelConfig?.capabilities) {
+      const minBudget = modelConfig.capabilities.thinkingMinBudget || 512;
+      const maxBudget = modelConfig.capabilities.thinkingMaxBudget || 100000;
+
+      if (budget < minBudget) {
+        throw new Error(`Thinking budget must be at least ${minBudget} tokens`);
+      }
+      if (budget > maxBudget) {
+        throw new Error(`Thinking budget exceeds maximum of ${maxBudget} tokens`);
+      }
+    }
+
     return {
-      enabled: config.type === 'enabled',
-      budgetTokens: config.budget_tokens || 10000,
-      maxCostUSD: 0.50, // Default max cost per thinking operation
-      contextWindowPercentage: 0.25, // Use max 25% of context for thinking
+      enabled: true,
+      budgetTokens: budget,
+      maxCostUSD: 0.50,
+      contextWindowPercentage: 0.25,
     };
+  }
+
+  private checkContextWindow(
+    context: ExecutionContext,
+    modelConfig: ModelConfig | null
+  ): boolean {
+    const messageTokens = this.estimateMessageTokens(context.messages);
+    const thinkingBudget = context.thinkingConfig?.budgetTokens || 0;
+    const totalTokens = messageTokens + thinkingBudget;
+
+    // Use context window from configuration, not hardcoded
+    const contextLimit = modelConfig?.contextLength || 128000;
+
+    return totalTokens < contextLimit * 0.9;
+  }
+
+  private adjustBudget(
+    context: ExecutionContext,
+    modelConfig: ModelConfig | null
+  ): void {
+    if (!context.thinkingConfig) return;
+
+    const messageTokens = this.estimateMessageTokens(context.messages);
+    const contextLimit = modelConfig?.contextLength || 128000;
+    const availableTokens = Math.floor((contextLimit * 0.9) - messageTokens);
+
+    context.thinkingConfig.budgetTokens = Math.min(
+      context.thinkingConfig.budgetTokens,
+      availableTokens
+    );
   }
 
   private checkGlobalLimits(context: ExecutionContext): boolean {
@@ -228,47 +391,11 @@ export class ThinkingMiddleware implements Middleware {
       contextUsagePercent: 0,
     };
 
-    // Check token limit
-    if (metrics.totalTokensUsed >= this.globalBudgetLimit) {
-      return false;
-    }
-
-    // Check cost limit
-    if (metrics.totalCost >= this.globalCostLimit) {
-      return false;
-    }
-
-    return true;
-  }
-
-  private checkContextWindow(context: ExecutionContext): boolean {
-    // Estimate current context usage
-    const messageTokens = this.estimateMessageTokens(context.messages);
-    const thinkingBudget = context.thinkingConfig?.budgetTokens || 0;
-    const totalTokens = messageTokens + thinkingBudget;
-
-    // Assume 128k context window (configurable)
-    const contextLimit = 128000;
-
-    return totalTokens < contextLimit * 0.9; // Leave 10% buffer
-  }
-
-  private adjustBudget(context: ExecutionContext): void {
-    if (!context.thinkingConfig) return;
-
-    // Reduce budget to fit within context window
-    const messageTokens = this.estimateMessageTokens(context.messages);
-    const contextLimit = 128000;
-    const availableTokens = Math.floor((contextLimit * 0.9) - messageTokens);
-
-    context.thinkingConfig.budgetTokens = Math.min(
-      context.thinkingConfig.budgetTokens,
-      availableTokens
-    );
+    return metrics.totalTokensUsed < this.globalBudgetLimit &&
+           metrics.totalCost < this.globalCostLimit;
   }
 
   private estimateMessageTokens(messages: Message[]): number {
-    // Simple estimation: 4 chars = 1 token
     return messages.reduce((sum, msg) => {
       return sum + Math.ceil(msg.content.length / 4);
     }, 0);
@@ -302,7 +429,7 @@ return {
 
 ---
 
-### Phase 4: Base Provider Class
+### Phase 4: Base Provider Class (Configuration-Driven)
 
 **File**: `packages/core/src/providers/base-provider.ts`
 
@@ -310,25 +437,105 @@ Create an abstract base class that all providers extend:
 
 ```typescript
 import { ILLMProvider, Message, ToolCall } from './llm-provider.interface';
-import { NormalizedThinkingConfig, NormalizedThinkingResponse } from '../config/types';
+import {
+  NormalizedThinkingConfig,
+  NormalizedThinkingResponse,
+  ModelConfig,
+  ProviderConfig
+} from '../config/types';
 import { ExecutionContext } from '../types';
+import * as fs from 'fs';
+import * as path from 'path';
 
 export abstract class BaseProvider implements ILLMProvider {
-  protected thinkingConfig?: NormalizedThinkingConfig;
+  protected modelConfig: ModelConfig | null = null;
+  protected providerConfig: ProviderConfig;
+  protected providersConfigCache: any;
+
+  constructor(
+    protected readonly modelName: string,
+    protected readonly logger?: AgentLogger
+  ) {
+    this.loadConfiguration();
+  }
+
+  private loadConfiguration(): void {
+    // Load providers-config.json if not cached
+    if (!this.providersConfigCache) {
+      const configPath = path.join(process.cwd(), 'providers-config.json');
+      this.providersConfigCache = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    }
+
+    // Parse model string to get provider
+    const [providerPrefix, ...modelParts] = this.modelName.split('/');
+    const modelId = modelParts.join('/');
+
+    // Load provider config
+    this.providerConfig = this.providersConfigCache.providers[providerPrefix];
+    if (!this.providerConfig) {
+      throw new Error(`Unknown provider: ${providerPrefix}`);
+    }
+
+    // Load model config or mark for discovery
+    if (this.providerConfig.dynamicModels) {
+      // Will be discovered at runtime
+      this.modelConfig = null;
+    } else {
+      // Find in static configuration
+      this.modelConfig = this.providerConfig.models.find(
+        m => m.id === modelId
+      ) || null;
+    }
+  }
+
+  // NO HARDCODED MODEL CHECKS - use configuration
+  protected supportsThinking(): boolean {
+    // If dynamic, we'll discover at runtime
+    if (!this.modelConfig && this.providerConfig.dynamicModels) {
+      return true; // Optimistically try, will handle failure gracefully
+    }
+
+    if (!this.modelConfig?.capabilities) return false;
+
+    const capability = this.modelConfig.capabilities.thinking;
+    return capability === true ||
+           capability === 'automatic' ||
+           capability === 'discovery';
+  }
+
+  protected getContextWindow(): number {
+    return this.modelConfig?.contextLength || 128000;
+  }
+
+  protected getThinkingBudget(userBudget?: number): number {
+    const caps = this.modelConfig?.capabilities;
+    if (!caps) return userBudget || 10000;
+
+    if (userBudget) {
+      const min = caps.thinkingMinBudget || 512;
+      const max = caps.thinkingMaxBudget || 100000;
+      return Math.max(min, Math.min(max, userBudget));
+    }
+
+    return caps.thinkingDefaultBudget || 10000;
+  }
 
   // Abstract methods each provider must implement
-  protected abstract supportsThinking(): boolean;
-  protected abstract getModelCapabilities(): ModelCapabilities;
   protected abstract transformThinking(config: NormalizedThinkingConfig): any;
   protected abstract extractThinking(response: any): NormalizedThinkingResponse | undefined;
   protected abstract makeApiCall(params: any): Promise<any>;
 
   async complete(context: ExecutionContext): Promise<Message> {
     try {
+      // For dynamic providers, try to discover capabilities
+      if (!this.modelConfig && this.providerConfig.dynamicModels) {
+        await this.discoverCapabilities();
+      }
+
       // Build base parameters
       const params = this.buildBaseParams(context);
 
-      // Add thinking if supported
+      // Add thinking if supported and configured
       if (context.thinkingConfig && this.supportsThinking()) {
         const thinkingParams = this.transformThinking(context.thinkingConfig);
         Object.assign(params, thinkingParams);
@@ -369,6 +576,43 @@ export abstract class BaseProvider implements ILLMProvider {
       }
 
       throw error;
+    }
+  }
+
+  // Capability discovery for dynamic providers
+  protected async discoverCapabilities(): Promise<void> {
+    // Default implementation - providers can override
+    // Try a test request with thinking enabled
+    try {
+      const testParams = {
+        model: this.modelName.split('/').slice(1).join('/'),
+        messages: [{ role: 'user', content: 'test' }],
+        max_tokens: 1,
+        thinking: { enabled: true, budget_tokens: 1024 }
+      };
+
+      await this.makeApiCall(testParams);
+
+      // If successful, model supports thinking
+      this.modelConfig = {
+        id: this.modelName.split('/').slice(1).join('/'),
+        contextLength: 128000,
+        capabilities: {
+          thinking: true,
+          thinkingMinBudget: 512,
+          thinkingMaxBudget: 32768,
+          thinkingDefaultBudget: 8000
+        }
+      };
+    } catch (error: any) {
+      // Model doesn't support thinking
+      this.modelConfig = {
+        id: this.modelName.split('/').slice(1).join('/'),
+        contextLength: 128000,
+        capabilities: {
+          thinking: false
+        }
+      };
     }
   }
 
@@ -419,7 +663,7 @@ export abstract class BaseProvider implements ILLMProvider {
 
 ---
 
-### Phase 5: Anthropic Provider Implementation
+### Phase 5: Anthropic Provider Implementation (Configuration-Driven)
 
 **File**: `packages/core/src/providers/anthropic-provider.ts`
 
@@ -434,34 +678,17 @@ export class AnthropicProvider extends BaseProvider {
   private client: Anthropic;
 
   constructor(
-    private modelName: string,
-    private logger?: AgentLogger,
-    private pricing?: ModelPricing,
+    modelName: string,
+    logger?: AgentLogger,
     private maxOutputTokens?: number
   ) {
-    super();
+    super(modelName, logger);  // Base class loads configuration
     this.client = new Anthropic({
       apiKey: process.env.ANTHROPIC_API_KEY,
     });
   }
 
-  protected supportsThinking(): boolean {
-    // Check model compatibility
-    return this.modelName.includes('claude-3-7-sonnet') ||
-           this.modelName.includes('claude-3-opus') ||
-           this.modelName.includes('claude-4');
-  }
-
-  protected getModelCapabilities(): ModelCapabilities {
-    return {
-      contextWindow: 200000, // 200k for Claude 3
-      supportsTools: true,
-      supportsThinking: this.supportsThinking(),
-      thinkingFormat: 'thinking',
-      minThinkingBudget: 1024,
-      maxThinkingBudget: 100000,
-    };
-  }
+  // NO HARDCODED MODEL CHECKS - everything from configuration!
 
   protected transformThinking(config: NormalizedThinkingConfig): any {
     // Anthropic format
@@ -569,7 +796,7 @@ export class AnthropicProvider extends BaseProvider {
 
 ---
 
-### Phase 6: OpenRouter Provider Implementation
+### Phase 6: OpenRouter Provider Implementation (Configuration-Driven)
 
 **File**: `packages/core/src/providers/openrouter-provider.ts`
 
@@ -578,32 +805,59 @@ import { BaseProvider } from './base-provider';
 import { NormalizedThinkingConfig, NormalizedThinkingResponse } from '../config/types';
 
 export class OpenRouterProvider extends BaseProvider {
+  private capabilityCache = new Map<string, ModelConfig>();
+
   constructor(
-    private modelName: string,
-    private logger?: AgentLogger,
-    private pricing?: ModelPricing,
+    modelName: string,
+    logger?: AgentLogger,
     private maxOutputTokens?: number
   ) {
-    super();
+    super(modelName, logger);  // Base class loads configuration
   }
 
-  protected supportsThinking(): boolean {
-    // OpenRouter supports reasoning for many models
-    // Let OpenRouter determine compatibility
-    return true;
-  }
+  // Override discovery for OpenRouter-specific logic
+  protected async discoverCapabilities(): Promise<void> {
+    const modelId = this.modelName.split('/').slice(1).join('/');
 
-  protected getModelCapabilities(): ModelCapabilities {
-    // Model-specific capabilities would be fetched from OpenRouter
-    // This is a reasonable default
-    return {
-      contextWindow: 128000,
-      supportsTools: true,
-      supportsThinking: true,
-      thinkingFormat: 'reasoning',
-      minThinkingBudget: 1024,
-      maxThinkingBudget: 32000,
-    };
+    // Check cache first
+    if (this.capabilityCache.has(modelId)) {
+      this.modelConfig = this.capabilityCache.get(modelId)!;
+      return;
+    }
+
+    try {
+      // Test with reasoning enabled
+      const testResponse = await this.makeApiCall({
+        model: modelId,
+        messages: [{ role: 'user', content: 'test' }],
+        max_tokens: 1,
+        reasoning_effort: 'medium'
+      });
+
+      // If we get here, model supports reasoning
+      this.modelConfig = {
+        id: modelId,
+        contextLength: 128000,  // Could also discover this
+        capabilities: {
+          thinking: true,
+          thinkingMinBudget: 1000,
+          thinkingMaxBudget: 50000,
+          thinkingDefaultBudget: 10000
+        }
+      };
+    } catch (error: any) {
+      // Model doesn't support reasoning
+      this.modelConfig = {
+        id: modelId,
+        contextLength: 128000,
+        capabilities: {
+          thinking: false
+        }
+      };
+    }
+
+    // Cache the result
+    this.capabilityCache.set(modelId, this.modelConfig!);
   }
 
   protected transformThinking(config: NormalizedThinkingConfig): any {
@@ -710,64 +964,75 @@ export class OpenRouterProvider extends BaseProvider {
 
 ---
 
-### Phase 7: Simplified Provider Factory
+### Phase 7: Provider Factory with Configuration Integration
 
 **File**: `packages/core/src/providers/provider-factory.ts`
 
-The factory stays simple - providers self-configure:
+The factory integrates with providers-config.json:
 
 ```typescript
+import * as fs from 'fs';
+import * as path from 'path';
+import { AnthropicProvider } from './anthropic-provider';
+import { OpenRouterProvider } from './openrouter-provider';
+import { OpenAIProvider } from './openai-provider';
+
 export class ProviderFactory {
+  private static providersConfig: any;
+
+  static initialize(): void {
+    // Load providers-config.json once at startup
+    const configPath = path.join(process.cwd(), 'providers-config.json');
+    this.providersConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+  }
+
   static createProvider(
     modelString: string,
     context: ExecutionContext
   ): ILLMProvider {
-    const { provider, modelName } = this.parseModelString(modelString);
+    if (!this.providersConfig) {
+      this.initialize();
+    }
 
-    // Factory just creates instances, providers handle their own config
-    switch (provider) {
-      case 'anthropic':
-        return new AnthropicProvider(
-          modelName,
-          context.logger,
-          this.getPricing(modelName),
-          context.agent.maxOutputTokens
-        );
+    const [providerPrefix] = modelString.split('/');
+    const providerConfig = this.providersConfig.providers[providerPrefix];
 
-      case 'openrouter':
-        return new OpenRouterProvider(
-          modelName,
-          context.logger,
-          this.getPricing(modelName),
-          context.agent.maxOutputTokens
-        );
+    if (!providerConfig) {
+      throw new Error(`Unknown provider: ${providerPrefix}`);
+    }
 
-      case 'openai':
-        return new OpenAIProvider(
-          modelName,
-          context.logger,
-          this.getPricing(modelName),
-          context.agent.maxOutputTokens
-        );
+    // Factory creates instances based on provider type from config
+    switch (providerConfig.type) {
+      case 'native':
+        if (providerConfig.className === 'AnthropicProvider') {
+          return new AnthropicProvider(
+            modelString,
+            context.logger,
+            context.agent.maxOutputTokens
+          );
+        }
+        throw new Error(`Unknown native provider class: ${providerConfig.className}`);
+
+      case 'openai-compatible':
+        if (providerPrefix === 'openrouter') {
+          return new OpenRouterProvider(
+            modelString,
+            context.logger,
+            context.agent.maxOutputTokens
+          );
+        }
+        if (providerPrefix === 'openai') {
+          return new OpenAIProvider(
+            modelString,
+            context.logger,
+            context.agent.maxOutputTokens
+          );
+        }
+        throw new Error(`Unknown OpenAI-compatible provider: ${providerPrefix}`);
 
       default:
-        throw new Error(`Unknown provider: ${provider}`);
+        throw new Error(`Unknown provider type: ${providerConfig.type}`);
     }
-  }
-
-  private static parseModelString(modelString: string): {
-    provider: string;
-    modelName: string;
-  } {
-    const parts = modelString.split('/');
-    if (parts.length < 2) {
-      throw new Error(`Invalid model string: ${modelString}`);
-    }
-
-    return {
-      provider: parts[0],
-      modelName: parts.slice(1).join('/'),
-    };
   }
 }
 ```
@@ -778,7 +1043,7 @@ export class ProviderFactory {
 
 Update agent configurations to use extended thinking:
 
-#### Orchestrator Agent
+#### Orchestrator Agent (Simplified)
 **File**: `packages/examples/coding-team/agents/orchestrator.md`
 
 ```yaml
@@ -786,9 +1051,7 @@ Update agent configurations to use extended thinking:
 name: orchestrator
 tools: ["list", "todowrite", "delegate"]
 behavior: balanced
-thinking:
-  type: enabled
-  budget_tokens: 16000  # Higher budget for complex orchestration
+thinking: true  # That's it! System auto-configures budget from providers-config.json
 ---
 
 You are the Orchestrator - a technical project manager.
@@ -808,7 +1071,7 @@ Before taking action, create a detailed plan:
 Then execute your plan using the Delegate tool.
 ```
 
-#### Implementer Agent
+#### Implementer Agent (Simplified)
 **File**: `packages/examples/coding-team/agents/implementer.md`
 
 ```yaml
@@ -816,9 +1079,7 @@ Then execute your plan using the Delegate tool.
 name: implementer
 tools: ['read', 'write', 'list', 'shell']
 behavior: precise
-thinking:
-  type: enabled
-  budget_tokens: 10000  # Standard budget for code design
+thinking: true  # System auto-configures budget from providers-config.json
 ---
 
 You are the Implementer - a senior software engineer.
@@ -838,7 +1099,7 @@ Before writing code:
 Then implement the code.
 ```
 
-#### Code Reviewer Agent
+#### Code Reviewer Agent (Simplified)
 **File**: `packages/examples/coding-team/agents/code-reviewer.md`
 
 ```yaml
@@ -846,9 +1107,7 @@ Then implement the code.
 name: code-reviewer
 tools: ["read", "list"]
 behavior: precise
-thinking:
-  type: enabled
-  budget_tokens: 12000  # Higher budget for thorough analysis
+thinking: true  # System auto-configures budget from providers-config.json
 ---
 
 You are the Code Reviewer.

@@ -177,6 +177,35 @@
                       "type": "string"
                     },
                     "description": "Example model names for dynamic providers"
+                  },
+                  "capabilities": {
+                    "type": "object",
+                    "description": "Model capabilities including thinking/reasoning support",
+                    "properties": {
+                      "thinking": {
+                        "oneOf": [
+                          { "type": "boolean" },
+                          { "enum": ["automatic", "discovery"] }
+                        ],
+                        "description": "Thinking support: true/false for static, 'automatic' for o1/o3, 'discovery' for runtime detection"
+                      },
+                      "thinkingMinBudget": {
+                        "type": "number",
+                        "description": "Minimum thinking budget in tokens"
+                      },
+                      "thinkingMaxBudget": {
+                        "type": "number",
+                        "description": "Maximum thinking budget in tokens"
+                      },
+                      "thinkingDefaultBudget": {
+                        "type": "number",
+                        "description": "Default thinking budget in tokens when not specified"
+                      },
+                      "thinkingNotes": {
+                        "type": "string",
+                        "description": "Notes about thinking implementation for this model"
+                      }
+                    }
                   }
                 },
                 "required": ["id"]
