@@ -145,12 +145,15 @@ export class ConsoleLogger implements AgentLogger {
 
   private formatToolPreview(params: Record<string, unknown>): string {
     const lines: string[] = [];
-    const maxLineLength = 150;
+    const maxLineLength = 300;
     const maxLines = 8;
 
     // Priority keys to show first
     const priorityKeys = ['file_path', 'pattern', 'path', 'command', 'agent', 'task', 'content'];
     const keys = Object.keys(params);
+
+    // Keys that should never be truncated
+    const noTruncateKeys = ['file_path', 'path', 'pattern', 'command', 'agent'];
 
     // Show priority keys first, then others
     const sortedKeys = [
@@ -165,8 +168,10 @@ export class ConsoleLogger implements AgentLogger {
       let valueStr: string;
 
       if (typeof value === 'string') {
-        // Truncate long strings
-        if (value.length > maxLineLength) {
+        // Don't truncate important path/command fields
+        const shouldTruncate = !noTruncateKeys.includes(key) && value.length > maxLineLength;
+
+        if (shouldTruncate) {
           const truncated = value.substring(0, maxLineLength - 3).replace(/\n/g, '\\n');
           valueStr = `"${truncated}..."`;
         } else {
