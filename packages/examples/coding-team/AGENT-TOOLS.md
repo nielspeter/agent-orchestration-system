@@ -2,15 +2,15 @@
 
 This document explains the tools each agent needs and why.
 
-## Driver Agent
+## Orchestrator Agent
 **Tools:** `["list", "todowrite", "task"]`
 - **List** - Explores project structure to understand the codebase
 - **TodoWrite** - Tracks implementation progress with a task list
 - **Task** - Delegates work to specialist agents (implementer, test-writer, code-reviewer)
 
 **Does NOT need:**
-- Read/Write - Driver doesn't implement code, only orchestrates
-- Shell - Driver doesn't run commands, delegates verification to implementer
+- Read/Write - Orchestrator doesn't implement code, only coordinates
+- Shell - Orchestrator doesn't run commands, delegates verification to implementer
 
 ## Implementer Agent
 **Tools:** `["read", "write", "list", "shell"]`
@@ -38,7 +38,7 @@ This document explains the tools each agent needs and why.
 ## Key Principle: Minimal Necessary Tools
 
 Each agent only gets the tools it actually needs for its role. This:
-1. **Enforces separation of concerns** - Driver can't accidentally write code
+1. **Enforces separation of concerns** - Orchestrator can't accidentally write code
 2. **Improves security** - Agents have minimal permissions
 3. **Makes debugging easier** - Clear what each agent can and cannot do
 4. **Documents intent** - Tool list shows what the agent is designed to do
