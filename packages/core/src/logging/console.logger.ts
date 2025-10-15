@@ -123,7 +123,17 @@ export class ConsoleLogger implements AgentLogger {
     if (this.verbosity === 'minimal') {
       return;
     } else if (this.verbosity === 'normal') {
+      // Show truncated preview of key parameters
+      const preview = this.formatToolPreview(params);
       console.log(`${indent}${timestamp}${this.color('  calling', 'dim')} ${tool}(...)`);
+      if (preview) {
+        const previewLines = preview.split('\n');
+        previewLines.forEach((line) => {
+          console.log(
+            `${indent}${''.padStart(timestamp.length + 2, ' ')}${this.color('│', 'dim')} ${line}`
+          );
+        });
+      }
     } else {
       const paramStr = JSON.stringify(params, null, 2)
         .split('\n')
@@ -131,6 +141,54 @@ export class ConsoleLogger implements AgentLogger {
         .join('\n');
       console.log(`${indent}${timestamp}${this.color('  calling', 'dim')} ${tool}(${paramStr})`);
     }
+  }
+
+  private formatToolPreview(params: Record<string, unknown>): string {
+    const lines: string[] = [];
+    const maxLineLength = 80;
+    const maxLines = 3;
+
+    // Priority keys to show first
+    const priorityKeys = ['file_path', 'pattern', 'path', 'command', 'agent', 'task', 'content'];
+    const keys = Object.keys(params);
+
+    // Show priority keys first, then others
+    const sortedKeys = [
+      ...priorityKeys.filter((k) => keys.includes(k)),
+      ...keys.filter((k) => !priorityKeys.includes(k)),
+    ];
+
+    for (const key of sortedKeys) {
+      if (lines.length >= maxLines) break;
+
+      const value = params[key];
+      let valueStr: string;
+
+      if (typeof value === 'string') {
+        // Truncate long strings
+        if (value.length > maxLineLength) {
+          const truncated = value.substring(0, maxLineLength - 3).replace(/\n/g, '\\n');
+          valueStr = `"${truncated}..."`;
+        } else {
+          valueStr = `"${value.replace(/\n/g, '\\n')}"`;
+        }
+      } else if (Array.isArray(value)) {
+        valueStr = `[${value.length} items]`;
+      } else if (typeof value === 'object' && value !== null) {
+        const objKeys = Object.keys(value);
+        valueStr = `{${objKeys.slice(0, 2).join(', ')}${objKeys.length > 2 ? ', ...' : ''}}`;
+      } else {
+        valueStr = String(value);
+      }
+
+      lines.push(`${key}: ${valueStr}`);
+    }
+
+    if (sortedKeys.length > maxLines) {
+      lines.push(`... (${sortedKeys.length - maxLines} more)`);
+    }
+
+    return lines.join('\n');
   }
 
   logToolExecution(_agent: string, _tool: string, _toolId: string): void {
