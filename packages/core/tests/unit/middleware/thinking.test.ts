@@ -46,15 +46,6 @@ const mockProvidersConfig = {
       type: 'openai-compatible',
       models: [
         {
-          id: 'o1-preview',
-          contextLength: 128000,
-          pricing: { input: 0.015, output: 0.06 },
-          capabilities: {
-            thinking: 'automatic' as const,
-            thinkingPricing: { input: 0.06 },
-          },
-        },
-        {
           id: 'o3',
           contextLength: 128000,
           pricing: { input: 0.015, output: 0.06 },
@@ -146,10 +137,10 @@ describe('ThinkingMiddleware', () => {
       expect(ctx.thinkingConfig?.budgetTokens).toBe(8000); // Model-specific default
     });
 
-    it('should detect OpenAI o1 automatic reasoning', async () => {
+    it('should detect OpenAI o3 automatic reasoning', async () => {
       const middleware = new ThinkingMiddleware(mockProvidersConfig);
       const ctx = createTestContext({
-        modelName: 'openai/o1-preview',
+        modelName: 'openai/o3',
         agent: { name: 'test', prompt: 'test', thinking: true } as Agent,
       });
 
