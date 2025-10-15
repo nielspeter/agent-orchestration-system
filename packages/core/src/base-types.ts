@@ -77,4 +77,10 @@ export interface ExecutionContext {
   parentMessages?: Message[];
   traceId?: string;
   parentCallId?: string;
+  // Thinking metrics that flow through delegations
+  thinkingMetrics?: {
+    totalTokensUsed: number;
+    totalCost: number;
+    contextUsagePercent: number;
+  };
 }

@@ -11,12 +11,6 @@ import { AgentLogger } from '@/logging';
  * These utilities provide common functionality without forcing inheritance.
  */
 
-export interface ThinkingMetricsInput {
-  thinkingTokens: number;
-  model: string;
-  provider: string;
-}
-
 export interface ThinkingContentBlock {
   type: 'thinking' | 'redacted_thinking';
   content?: string;
@@ -54,54 +48,4 @@ export function logThinkingMetrics(
   }
 
   logger.logSystemMessage(`📊 Thinking Metrics: ${thinkingTokens} tokens used for reasoning`);
-}
-
-/**
- * Calculate thinking cost based on pricing
- * Thinking tokens are typically priced the same as input tokens
- */
-export function calculateThinkingCost(thinkingTokens: number, inputPricePerK: number): number {
-  return (thinkingTokens / 1000) * inputPricePerK;
-}
-
-/**
- * Format thinking content blocks for display
- */
-export function formatThinkingContent(thinkingBlocks: ThinkingContentBlock[]): string {
-  const parts: string[] = [];
-
-  for (const block of thinkingBlocks) {
-    if (block.type === 'thinking' && block.content) {
-      parts.push(block.content);
-    } else if (block.type === 'redacted_thinking') {
-      parts.push('[REDACTED]');
-    }
-  }
-
-  return parts.join('\n\n');
-}
-
-/**
- * Check if a response contains thinking/reasoning content
- */
-export function hasThinkingContent(response: unknown): boolean {
-  if (!response || typeof response !== 'object') return false;
-
-  // Anthropic format: response.content array with thinking blocks
-  if ('content' in response && Array.isArray(response.content)) {
-    return response.content.some(
-      (block: unknown) =>
-        typeof block === 'object' &&
-        block !== null &&
-        'type' in block &&
-        (block.type === 'thinking' || block.type === 'redacted_thinking')
-    );
-  }
-
-  // OpenAI o1 format: response.reasoning field
-  if ('reasoning' in response && typeof response.reasoning === 'string') {
-    return response.reasoning.length > 0;
-  }
-
-  return false;
 }

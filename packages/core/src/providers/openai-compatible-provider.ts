@@ -3,7 +3,7 @@ import { ILLMProvider, StructuredOutputConfig, UsageMetrics } from './llm-provid
 import { BaseTool, Message } from '@/base-types';
 import { AgentLogger } from '@/logging';
 import { DEFAULTS } from '@/config/defaults';
-import { logThinkingMetrics, ThinkingContentBlock } from './thinking-utils';
+import { logThinkingMetrics } from './thinking-utils';
 
 // Extended usage type for providers that support caching and thinking
 interface ExtendedUsage extends OpenAI.Completions.CompletionUsage {
@@ -231,15 +231,22 @@ export class OpenAICompatibleProvider implements ILLMProvider {
 
       // Add thinking/reasoning support if configured
       // Note: OpenAI o1/o3 models handle thinking automatically (no config needed)
-      // OpenRouter supports thinking for compatible models in discovery mode
+      // OpenRouter forwards provider-specific parameters
       if (config?.thinking?.enabled) {
-        // OpenRouter uses `reasoning_effort` for models that support thinking
         if (this.isOpenRouter()) {
-          Object.assign(requestBody, {
-            reasoning_effort: 'high', // OpenRouter thinking mode
-          });
+          // For Anthropic models via OpenRouter, use Anthropic's thinking parameter format
+          if (this.modelName.includes('anthropic/') || this.modelName.includes('claude')) {
+            Object.assign(requestBody, {
+              thinking: {
+                type: 'enabled',
+                budget_tokens: config.thinking.budgetTokens,
+              },
+            });
+          }
+          // For o1/o3 via OpenRouter, thinking happens automatically (no parameter)
+          // For other models via OpenRouter, discovery mode - we'll see if it works
         }
-        // For OpenAI, o1/o3 models automatically use reasoning (no parameter needed)
+        // For native OpenAI, o1/o3 models automatically use reasoning (no parameter needed)
       }
 
       const response = (await this.client.chat.completions.create(

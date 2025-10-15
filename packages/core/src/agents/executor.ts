@@ -171,6 +171,8 @@ export class AgentExecutor {
       sessionId: this.sessionId,
       traceId: execContext.traceId,
       parentCallId: execContext.parentCallId,
+      // Initialize thinking metrics from execution context (flows through delegations)
+      thinkingMetrics: execContext.thinkingMetrics,
     };
 
     // Main execution loop with timeout protection

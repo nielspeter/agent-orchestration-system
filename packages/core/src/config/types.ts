@@ -29,8 +29,6 @@ export interface ThinkingConfig {
 export interface NormalizedThinkingConfig {
   enabled: boolean;
   budgetTokens: number;
-  maxCostUSD?: number;
-  contextWindowPercentage?: number;
 }
 
 /**
@@ -68,17 +66,6 @@ export interface ProviderConfig {
   apiKeyEnv: string;
   models: ModelConfig[];
   dynamicModels?: boolean;
-}
-
-/**
- * Response normalization for thinking
- */
-export interface NormalizedThinkingResponse {
-  content: string;
-  tokens: number;
-  visibility: 'full' | 'summary' | 'hidden';
-  cost: number;
-  provider: string;
 }
 
 /**
