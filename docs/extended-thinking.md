@@ -629,6 +629,84 @@ Extended thinking and reasoning give your agents the ability to think deeply bef
 
 ---
 
+## Implementation Details
+
+### Thinking Block Preservation
+
+**Background**: Claude's interleaved thinking API requires thinking blocks to be preserved across multi-turn conversations. If thinking blocks are lost during format conversion, the API will reject subsequent requests.
+
+**The Challenge**: When the system receives a response from Claude containing thinking blocks, it must:
+1. Extract text content for the user
+2. Extract tool calls for execution
+3. **Preserve thinking blocks** for the next API call
+
+**The Solution**: We use a `raw_content` field in our Message type to preserve the original API response structure:
+
+```typescript
+export interface Message {
+  role: 'system' | 'user' | 'assistant' | 'tool';
+  content?: string;           // User-visible text
+  tool_calls?: ToolCall[];   // Tool executions
+  raw_content?: unknown;     // Original API blocks (includes thinking)
+}
+```
+
+**How It Works**:
+
+1. **Response Formatting** (packages/core/src/providers/anthropic-provider.ts:329):
+   ```typescript
+   private formatResponse(response: Anthropic.Message): Message {
+     // Extract text content (excluding thinking)
+     const textContent = response.content
+       .filter((c) => c.type === 'text')
+       .map((c) => c.text)
+       .join('');
+
+     // Check if response contains thinking blocks
+     const hasThinkingBlocks = response.content.some(
+       (c) => c.type === 'thinking' || c.type === 'redacted_thinking'
+     );
+
+     const message: Message = {
+       role: 'assistant',
+       content: textContent,
+     };
+
+     // Preserve raw content blocks if thinking is present
+     if (hasThinkingBlocks) {
+       message.raw_content = response.content;  // KEY: Store original blocks
+     }
+
+     return message;
+   }
+   ```
+
+2. **Message Re-use** (packages/core/src/providers/anthropic-provider.ts:231):
+   ```typescript
+   if (msg.role === 'assistant') {
+     // If raw content blocks are present, use them directly
+     if (msg.raw_content && Array.isArray(msg.raw_content)) {
+       formatted.push({
+         role: 'assistant',
+         content: msg.raw_content,  // KEY: Use preserved blocks
+       });
+       continue;
+     }
+   }
+   ```
+
+**Why This Matters**:
+- **Interleaved thinking** (`interleaved-thinking-2025-05-14`) requires all assistant messages to start with thinking blocks
+- **Extended thinking** (`extended-thinking-2024-12-12`) also benefits from block preservation
+- Without this, multi-turn conversations fail with: "Expected `thinking` or `redacted_thinking`, but found `text`"
+
+**Token Reporting Differences**:
+- **Extended thinking** (Claude 3.7): Reports `thinking_tokens` in usage metrics
+- **Interleaved thinking** (Claude 4): Does NOT report `thinking_tokens` in usage metrics
+- Our implementation handles both by checking for thinking blocks directly, not relying on token counts
+
+For the complete technical breakdown, see: `packages/core/docs/thinking-block-preservation-fix.md`
+
 ## Additional Resources
 
 ### Official Provider Documentation
@@ -643,6 +721,7 @@ Extended thinking and reasoning give your agents the ability to think deeply bef
 ### Implementation Guides (for developers)
 - [Extended Thinking Implementation Plan](./extended-thinking-implementation-plan.md)
 - [Multi-Provider Architecture](./extended-thinking-implementation-plan.md#phase-11-provider-agnostic-mapping-layer)
+- [Thinking Block Preservation Fix](../packages/core/docs/thinking-block-preservation-fix.md) - Technical deep dive
 
 ---
 

@@ -78,19 +78,24 @@ export class AnthropicProvider implements ILLMProvider {
     const totalCachedBlocks = this.countCacheBlocks(formattedSystem, formattedMessages);
 
     try {
+      // When thinking is enabled, Claude requires temperature=1 (or omit it)
+      // See: https://docs.claude.com/en/docs/build-with-claude/extended-thinking#important-considerations-when-using-extended-thinking
+      const thinkingEnabled = config?.thinking?.enabled;
+
       // Create the request params with proper typing
+      // Claude Sonnet 4.5 doesn't allow both temperature AND top_p, use only temperature
       const params: Anthropic.MessageCreateParams = {
         model: this.modelName,
         max_tokens: this.maxOutputTokens,
-        temperature: this.temperature,
-        top_p: this.topP,
+        temperature: thinkingEnabled ? 1 : this.temperature,
+        // top_p: thinkingEnabled ? undefined : this.topP, // Disabled - Sonnet 4.5 can't use both
         system: formattedSystem,
         messages: formattedMessages,
         tools: formattedTools,
       };
 
       // Add thinking configuration if enabled
-      if (config?.thinking?.enabled) {
+      if (thinkingEnabled && config?.thinking) {
         Object.assign(params, {
           thinking: {
             type: 'enabled',
@@ -101,8 +106,9 @@ export class AnthropicProvider implements ILLMProvider {
 
       // Build beta headers
       const betaHeaders = ['prompt-caching-2024-07-31'];
-      if (config?.thinking?.enabled) {
-        betaHeaders.push('extended-thinking-2024-12-12');
+      if (thinkingEnabled) {
+        // Claude 4 models use interleaved-thinking (not extended-thinking)
+        betaHeaders.push('interleaved-thinking-2025-05-14');
       }
 
       // Add headers separately to enable caching and thinking
@@ -132,10 +138,14 @@ export class AnthropicProvider implements ILLMProvider {
         if (this.logger) {
           this.logCacheMetrics(response.usage);
 
-          // Log thinking metrics using shared utility
-          if (usageWithThinking.thinking_tokens) {
-            const thinkingBlocks = this.extractThinkingBlocks(response.content);
-            logThinkingMetrics(this.logger, usageWithThinking.thinking_tokens, thinkingBlocks);
+          // Extract and log thinking blocks regardless of thinking_tokens field
+          // (interleaved thinking may not report thinking_tokens in usage)
+          const thinkingBlocks = this.extractThinkingBlocks(response.content);
+
+          if (thinkingBlocks.length > 0) {
+            // Use thinking_tokens if available, otherwise estimate from blocks
+            const thinkingTokenCount = usageWithThinking.thinking_tokens || 0;
+            logThinkingMetrics(this.logger, thinkingTokenCount, thinkingBlocks);
           }
         }
       }
@@ -217,45 +227,58 @@ export class AnthropicProvider implements ILLMProvider {
         continue;
       }
 
-      // Handle assistant messages with tool calls
-      if (msg.role === 'assistant' && msg.tool_calls) {
-        const content: Array<Anthropic.TextBlockParam | Anthropic.ToolUseBlockParam> = [];
-
-        // Add text content if present
-        if (msg.content) {
-          content.push({
-            type: 'text',
-            text: msg.content,
+      // Handle assistant messages
+      if (msg.role === 'assistant') {
+        // If raw content blocks are present (e.g., from thinking), use them directly
+        if (msg.raw_content && Array.isArray(msg.raw_content)) {
+          // Use raw content blocks as-is to preserve thinking blocks
+          formatted.push({
+            role: 'assistant',
+            content: msg.raw_content as Anthropic.ContentBlock[],
           });
+          continue;
         }
 
-        // Add tool calls
-        for (const tc of msg.tool_calls) {
-          const toolUse: Anthropic.ToolUseBlockParam = {
-            type: 'tool_use',
-            id: tc.id,
-            name: tc.function.name,
-            input: JSON.parse(tc.function.arguments),
-          };
-          content.push(toolUse);
-        }
+        // Otherwise, reconstruct content from tool calls and text
+        if (msg.tool_calls) {
+          const content: Array<Anthropic.TextBlockParam | Anthropic.ToolUseBlockParam> = [];
 
-        // Only cache the last content block if this is one of the last 2 messages
-        if (shouldCacheThisMessage && content.length > 0) {
-          const lastBlock = content[content.length - 1];
-          // Only cache if it's a text block (not tool_use)
-          if (lastBlock.type === 'text') {
-            (
-              lastBlock as Anthropic.TextBlockParam & { cache_control?: { type: 'ephemeral' } }
-            ).cache_control = { type: 'ephemeral' };
+          // Add text content if present
+          if (msg.content) {
+            content.push({
+              type: 'text',
+              text: msg.content,
+            });
           }
-        }
 
-        formatted.push({
-          role: 'assistant',
-          content,
-        });
-        continue;
+          // Add tool calls
+          for (const tc of msg.tool_calls) {
+            const toolUse: Anthropic.ToolUseBlockParam = {
+              type: 'tool_use',
+              id: tc.id,
+              name: tc.function.name,
+              input: JSON.parse(tc.function.arguments),
+            };
+            content.push(toolUse);
+          }
+
+          // Only cache the last content block if this is one of the last 2 messages
+          if (shouldCacheThisMessage && content.length > 0) {
+            const lastBlock = content[content.length - 1];
+            // Only cache if it's a text block (not tool_use)
+            if (lastBlock.type === 'text') {
+              (
+                lastBlock as Anthropic.TextBlockParam & { cache_control?: { type: 'ephemeral' } }
+              ).cache_control = { type: 'ephemeral' };
+            }
+          }
+
+          formatted.push({
+            role: 'assistant',
+            content,
+          });
+          continue;
+        }
       }
 
       // Handle regular text messages (user, assistant without tools)
@@ -329,18 +352,27 @@ export class AnthropicProvider implements ILLMProvider {
     // Store stop_reason for metadata
     this.lastStopReason = response.stop_reason;
 
-    if (toolCalls.length > 0) {
-      return {
-        role: 'assistant',
-        content: textContent || undefined,
-        tool_calls: toolCalls,
-      };
+    // Check if response contains thinking blocks
+    const hasThinkingBlocks = response.content.some(
+      (c) => c.type === 'thinking' || c.type === 'redacted_thinking'
+    );
+
+    // Preserve raw content blocks if thinking is present
+    // This ensures thinking blocks are included when the message is sent back to the API
+    const message: Message = {
+      role: 'assistant',
+      content: textContent || (toolCalls.length > 0 ? undefined : ''),
+    };
+
+    if (hasThinkingBlocks) {
+      message.raw_content = response.content;
     }
 
-    return {
-      role: 'assistant',
-      content: textContent || '',
-    };
+    if (toolCalls.length > 0) {
+      message.tool_calls = toolCalls;
+    }
+
+    return message;
   }
 
   private logCacheMetrics(usage: Anthropic.Message['usage']) {

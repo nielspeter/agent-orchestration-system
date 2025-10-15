@@ -54,9 +54,7 @@ function loadProvidersConfig(configPath?: string): ProvidersConfigFile {
     return JSON.parse(content);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    throw new Error(
-      `Failed to load providers configuration from ${path}: ${errorMessage}`
-    );
+    throw new Error(`Failed to load providers configuration from ${path}: ${errorMessage}`);
   }
 }
 
@@ -103,7 +101,7 @@ export class ThinkingMiddleware {
         if (explicitlyEnabled) {
           ctx.logger.logSystemMessage(
             `⚠️  WARNING: Agent "${ctx.agent.name}" has thinking enabled, but model ${ctx.modelName} does not support extended thinking. ` +
-              `Thinking will be disabled. To use thinking, switch to a compatible model (Claude 3.7 Sonnet, o1, o3, etc.).`
+              'Thinking will be disabled. To use thinking, switch to a compatible model (Claude 3.7 Sonnet, o1, o3, etc.).'
           );
         } else {
           ctx.logger.logSystemMessage(
@@ -124,7 +122,7 @@ export class ThinkingMiddleware {
       if (modelConfig?.contextLength && ctx.thinkingConfig.budgetTokens > halfContext) {
         ctx.logger.logSystemMessage(
           `⚠️  WARNING: Thinking budget (${ctx.thinkingConfig.budgetTokens} tokens) exceeds 50% of model's context window (${modelConfig.contextLength} tokens). ` +
-          `This leaves little room for messages and may cause context window issues.`
+            'This leaves little room for messages and may cause context window issues.'
         );
       }
 
@@ -158,6 +156,33 @@ export class ThinkingMiddleware {
    */
   private loadModelConfig(ctx: MiddlewareContext): ModelConfig | null {
     const modelName = ctx.modelName;
+
+    // Handle both formats: "anthropic/claude-sonnet-4-5" AND "claude-sonnet-4-5"
+    // If no '/' found, try to find the model in all providers
+    if (!modelName.includes('/')) {
+      // Search all providers for this model
+      for (const [_providerName, providerConfig] of Object.entries(
+        this.providersConfig.providers
+      )) {
+        if (providerConfig.dynamicModels) {
+          return {
+            id: modelName,
+            contextLength: THINKING_DEFAULTS.DEFAULT_CONTEXT_LENGTH,
+            capabilities: {
+              thinking: 'discovery' as const,
+            },
+          };
+        }
+
+        const modelConfig = providerConfig.models.find((m) => m.id === modelName || m.id === '*');
+        if (modelConfig) {
+          return modelConfig;
+        }
+      }
+      return null;
+    }
+
+    // Handle "provider/model" format
     const [providerPrefix, ...modelParts] = modelName.split('/');
     const modelId = modelParts.join('/');
 
@@ -208,16 +233,16 @@ export class ThinkingMiddleware {
     if (agent.thinking && agent.temperature !== undefined) {
       throw new Error(
         `Agent "${agent.name}": Extended thinking is incompatible with temperature setting. ` +
-          `Remove the temperature configuration when using thinking, as the model controls ` +
-          `its own sampling parameters during reasoning.`
+          'Remove the temperature configuration when using thinking, as the model controls ' +
+          'its own sampling parameters during reasoning.'
       );
     }
 
     if (agent.thinking && agent.top_p !== undefined) {
       throw new Error(
         `Agent "${agent.name}": Extended thinking is incompatible with top_p setting. ` +
-          `Remove the top_p configuration when using thinking, as the model controls ` +
-          `its own sampling parameters during reasoning.`
+          'Remove the top_p configuration when using thinking, as the model controls ' +
+          'its own sampling parameters during reasoning.'
       );
     }
   }
@@ -368,8 +393,7 @@ export class ThinkingMiddleware {
 
       // Content tokens
       if (msg.content) {
-        const content =
-          typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content);
+        const content = typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content);
         // More accurate: length / 3.5 for mixed content
         // English text: ~4 chars/token, JSON: ~3 chars/token
         totalTokens += Math.ceil(content.length / 3.5);

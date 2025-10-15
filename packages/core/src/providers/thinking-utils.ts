@@ -24,7 +24,10 @@ export function logThinkingMetrics(
   thinkingTokens: number,
   thinkingBlocks?: ThinkingContentBlock[]
 ): void {
-  if (!logger || !thinkingTokens) return;
+  if (!logger) return;
+
+  // Allow logging even if thinkingTokens is 0 (interleaved thinking may not report token count)
+  if (!thinkingBlocks || thinkingBlocks.length === 0) return;
 
   let thinkingText = '';
   let hasRedacted = false;

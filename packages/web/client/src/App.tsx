@@ -153,7 +153,11 @@ function App() {
               {isRunning ? '⏳ Running...' : '▶️ Start'}
             </button>
             {sessionId && (
-              <button onClick={handleNewSession} disabled={isRunning} className="new-session-button">
+              <button
+                onClick={handleNewSession}
+                disabled={isRunning}
+                className="new-session-button"
+              >
                 🔄 New Session
               </button>
             )}
@@ -163,12 +167,18 @@ function App() {
         <div className="event-timeline">
           <h2>Event Timeline ({events.length})</h2>
           <div className="events">
-            {events.length === 0 && <div className="no-events">No events yet. Start an execution to see events stream in real-time.</div>}
+            {events.length === 0 && (
+              <div className="no-events">
+                No events yet. Start an execution to see events stream in real-time.
+              </div>
+            )}
             {events.map((event, i) => (
               <div key={i} className="event">
                 <div className="event-header">
                   <span className="event-type">{event.type}</span>
-                  <span className="event-timestamp">{new Date(event.timestamp).toLocaleTimeString()}</span>
+                  <span className="event-timestamp">
+                    {new Date(event.timestamp).toLocaleTimeString()}
+                  </span>
                 </div>
                 {event.data && (
                   <pre className="event-data">{JSON.stringify(event.data, null, 2)}</pre>
