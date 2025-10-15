@@ -2,6 +2,7 @@ import { AnySessionEvent, SessionStorage, ToolCallEvent } from './types';
 import { TodoItem } from '@/tools/todowrite.tool';
 import { isSessionEvent } from '@/utils/type-guards';
 import { Message, ToolCall } from '@/base-types';
+import { sanitizeRecoveredMessages, formatSanitizationIssues } from './message-sanitizer';
 
 // Using Message type from base-types for consistency
 // This ensures compatibility with the rest of the system
@@ -12,6 +13,10 @@ import { Message, ToolCall } from '@/base-types';
  * Converts stored events back into LLM message format.
  * The recovered messages can be sent directly to the LLM
  * to continue the conversation from where it left off.
+ *
+ * CRITICAL: Session recovery now includes automatic sanitization
+ * to ensure recovery works from ANY state, including incomplete
+ * tool calls, corrupted messages, or other edge cases.
  */
 export class SimpleSessionManager {
   constructor(private readonly storage: SessionStorage) {}
@@ -22,6 +27,10 @@ export class SimpleSessionManager {
    * Reads all events and converts them to base-types Message format.
    * The messages represent the complete conversation history
    * and can be sent to the LLM to continue execution.
+   *
+   * IMPORTANT: Messages are automatically sanitized to handle incomplete
+   * tool calls, corrupted data, and other edge cases. This guarantees
+   * that recovered sessions can ALWAYS be resumed, regardless of state.
    */
   async recoverSession(sessionId: string): Promise<Message[]> {
     const events = await this.storage.readEvents(sessionId);
@@ -89,7 +98,18 @@ export class SimpleSessionManager {
       }
     }
 
-    return messages;
+    // CRITICAL: Sanitize messages to handle incomplete tool calls,
+    // corrupted data, and ensure API compatibility
+    const sanitizationResult = sanitizeRecoveredMessages(messages);
+
+    // Log any issues that were found and fixed
+    if (sanitizationResult.issues.length > 0) {
+      console.log(
+        `Session ${sessionId} recovery: ${formatSanitizationIssues(sanitizationResult.issues)}`
+      );
+    }
+
+    return sanitizationResult.messages;
   }
 
   /**
