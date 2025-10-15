@@ -166,10 +166,7 @@ function isEmpty(msg: Message): boolean {
  * 2. Orphaned tool results (result without call)
  * 3. Partial parallel execution (some tools completed, some not)
  */
-function fixToolCallRelationships(
-  messages: Message[],
-  issues: SanitizationIssue[]
-): Message[] {
+function fixToolCallRelationships(messages: Message[], issues: SanitizationIssue[]): Message[] {
   const fixed: Message[] = [];
 
   for (let i = 0; i < messages.length; i++) {
@@ -197,7 +194,7 @@ function fixToolCallRelationships(
             type: 'incomplete_tool_call',
             index: i,
             action: 'removed_message',
-            details: `Removed message with only incomplete tool calls`,
+            details: 'Removed message with only incomplete tool calls',
           });
         }
         continue;
@@ -271,10 +268,7 @@ function findIncompleteToolCalls(messages: Message[], assistantIndex: number): s
  *
  * Returns the cleaned message, or null if message should be removed entirely
  */
-function removeIncompleteToolCalls(
-  msg: Message,
-  incompleteIds: string[]
-): Message | null {
+function removeIncompleteToolCalls(msg: Message, incompleteIds: string[]): Message | null {
   // If ALL tool calls are incomplete, check if we have other content
   const allIncomplete = msg.tool_calls?.every((tc) => incompleteIds.includes(tc.id));
 

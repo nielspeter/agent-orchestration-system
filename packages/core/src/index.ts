@@ -29,8 +29,4 @@ export {
 } from './session/message-sanitizer';
 export type { SanitizationResult, SanitizationIssue } from './session/message-sanitizer';
 export { InMemoryStorage, FilesystemStorage, NoOpStorage } from './session';
-export type {
-  SessionStorage,
-  SessionEvent,
-  AnySessionEvent,
-} from './session/types';
+export type { SessionStorage, SessionEvent, AnySessionEvent } from './session/types';
