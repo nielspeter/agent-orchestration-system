@@ -40,9 +40,11 @@ logs/
 temp/
 tmp/
 
-# Examples
+# Examples (generated output)
 examples/coding-team/sample-project/
 examples/udbud/output/
+packages/examples/coding-team/sample-project/
+packages/examples/udbud/output/
 
 # Test artifacts
 *.zip
