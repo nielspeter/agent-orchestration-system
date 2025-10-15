@@ -11,8 +11,6 @@ Key capabilities:
 - **Production-Ready**: Built-in security, retry logic, session persistence, and comprehensive monitoring
 - **Cost Efficient**: Smart caching delivers up to 90% cost savings on multi-agent workflows
 
-> **Production Readiness**: This system includes built-in security features, retry logic, and monitoring. See [Security Documentation](docs/security.md) and [Production Readiness Assessment](docs/production-readiness.md) for details.
-
 ## 🎯 Architecture Highlights
 
 ### Clean Middleware Pipeline
