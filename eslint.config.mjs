@@ -19,7 +19,7 @@ export default [
         project: [
           './packages/core/tsconfig.json',
           './packages/cli/tsconfig.lint.json',
-          './packages/web/tsconfig.json',
+          './packages/examples/tsconfig.json',
         ],
       },
     },
@@ -68,7 +68,7 @@ export default [
   },
   {
     // Examples need console.log for demonstration purposes
-    files: ['examples/**/*.ts'],
+    files: ['packages/examples/**/*.ts'],
     rules: {
       'no-console': 'off',
     },

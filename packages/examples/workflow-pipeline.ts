@@ -16,9 +16,9 @@
  */
 
 import * as dotenv from 'dotenv';
-import { AgentSystemBuilder } from '@/config';
+import { AgentSystemBuilder } from '@agent-system/core';
 
-dotenv.config();
+dotenv.config({ path: '../../.env' });
 
 interface Transaction {
   id: string;
@@ -60,7 +60,7 @@ async function processTransaction(transaction: Transaction) {
   // the need to re-pass all data while maintaining the orchestrated flow.
   const { executor, cleanup } = await AgentSystemBuilder.minimal()
     .withModel('anthropic/claude-3-5-haiku-latest')
-    .withAgentsFrom('examples/workflow-pipeline/agents')
+    .withAgentsFrom('workflow-pipeline/agents')
     .withConsole(false) // Disable console for clean output
     .withSessionId(`transaction-${transaction.id}`)
     .build();

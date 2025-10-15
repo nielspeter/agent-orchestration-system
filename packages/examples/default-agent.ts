@@ -8,10 +8,10 @@
  */
 
 import * as dotenv from 'dotenv';
-import { AgentSystemBuilder } from '../src';
+import { AgentSystemBuilder } from '@agent-system/core';
 
 // Load environment variables from .env file
-dotenv.config();
+dotenv.config({ path: '../../.env' });
 
 async function main() {
   console.log('🤖 Default Agent Example\n');

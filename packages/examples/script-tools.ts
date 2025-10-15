@@ -8,7 +8,11 @@
  * - Complete abstraction - agents don't know if tools are TypeScript or scripts
  */
 
-import { AgentSystemBuilder } from '../src';
+import * as dotenv from 'dotenv';
+import { AgentSystemBuilder } from '@agent-system/core';
+
+// Load environment variables
+dotenv.config({ path: '../../.env' });
 
 async function main() {
   console.log('🛠️  Script Tools Example');
@@ -16,7 +20,7 @@ async function main() {
 
   // Build system with script tools
   const builder = AgentSystemBuilder.minimal()
-    .withToolsFrom('examples/script-tools/tools')
+    .withToolsFrom('script-tools/tools')
     .withBuiltinTools('shell'); // Include shell for comparison
 
   const { toolRegistry, cleanup } = await builder.build();
@@ -64,8 +68,8 @@ async function main() {
 
   // Rebuild with agents
   const builderWithAgents = AgentSystemBuilder.minimal()
-    .withToolsFrom('examples/script-tools/tools')
-    .withAgentsFrom('examples/script-tools/agents');
+    .withToolsFrom('script-tools/tools')
+    .withAgentsFrom('script-tools/agents');
 
   const systemWithAgents = await builderWithAgents.build();
 

@@ -11,10 +11,14 @@
  * containing metrics, Mermaid diagrams, and detailed message tracking.
  */
 
-import { AgentSystemBuilder } from '../src';
+import * as dotenv from 'dotenv';
+import { AgentSystemBuilder } from '@agent-system/core';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as readline from 'readline/promises';
+
+// Load environment variables
+dotenv.config({ path: '../../.env' });
 
 async function listSessions(): Promise<string[]> {
   const logsDir = path.join(process.cwd(), 'logs');
@@ -51,7 +55,7 @@ async function main() {
   try {
     // Build system with session-analyzer agent
     const builder = AgentSystemBuilder.minimal()
-      .withAgentsFrom('examples/session-analyzer/agents')
+      .withAgentsFrom('session-analyzer/agents')
       .withBuiltinTools('read', 'write', 'list');
 
     const { executor, cleanup } = await builder.build();

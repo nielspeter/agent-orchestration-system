@@ -1,31 +1,30 @@
 #!/usr/bin/env npx tsx
 /**
- * Critical Illness Claim Processing Example (STRUCTURED OUTPUT VERSION)
+ * Critical Illness Claim Processing Example
  *
  * This example demonstrates a complex insurance claim workflow using:
- * - Pure JSON structured output for agent communication
- * - Schema validation for all agent inputs/outputs
- * - Type-safe agent orchestration
- * - Native LLM structured output mode (GPT-4o)
- * - Decision points and routing logic with JSON schemas
+ * - Agent orchestration for workflow management
+ * - Script-based tools loaded from Python files
+ * - Structured data processing with audit trails
+ * - Decision points and routing logic
  */
 
-import { AgentSystemBuilder } from '@/config/system-builder';
+import { AgentSystemBuilder } from '@agent-system/core';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as dotenv from 'dotenv';
 
 // Load environment variables from .env file
-dotenv.config();
+dotenv.config({ path: '../../.env' });
 
 async function main() {
-  console.log('🏥 Critical Illness Claim Processing System (Structured Output)');
-  console.log('============================================================\n');
+  console.log('🏥 Critical Illness Claim Processing System');
+  console.log('==========================================\n');
 
   // Build the agent system with agents and tools from this example
   const builder = AgentSystemBuilder.default()
-    .withAgentsFrom('examples/critical-illness-claim-structured/agents')
-    .withToolsFrom('examples/critical-illness-claim-structured/tools')
+    .withAgentsFrom('critical-illness-claim/agents')
+    .withToolsFrom('critical-illness-claim/tools')
     // Use default builtin tools which includes: read, write, list, task, todowrite
     .withSafetyLimits({
       maxIterations: 30, // Allow sufficient iterations for complex workflow
@@ -37,9 +36,7 @@ async function main() {
   const system = await builder.build();
 
   // Load claim notification data from JSON file
-  const claimPath = path.join(
-    'examples/critical-illness-claim-structured/claims/happy_path_claim.json'
-  );
+  const claimPath = path.join('critical-illness-claim/claims/happy_path_claim.json');
   const claimData = await fs.readFile(claimPath, 'utf-8');
   const claimNotification = JSON.parse(claimData);
 
@@ -65,9 +62,7 @@ ${JSON.stringify(claimNotification, null, 2)}`
     console.log(result);
 
     // The orchestrator should have saved results to the results directory
-    console.log(
-      '\n📄 Results saved to: examples/critical-illness-claim-structured/results/{claimId}.json'
-    );
+    console.log('\n📄 Results saved to: examples/critical-illness-claim/results/{claimId}.json');
     console.log(
       'Check the results directory for the claim-specific JSON file with complete audit trail.'
     );

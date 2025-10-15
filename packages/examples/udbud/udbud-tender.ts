@@ -12,13 +12,13 @@
  * - Structured analysis with FAKTA/ESTIMAT/ANTAGET/UKENDT distinctions
  */
 
-import { AgentSystemBuilder } from '@/config';
+import { AgentSystemBuilder } from '@agent-system/core';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import * as dotenv from 'dotenv';
 
 // Load environment variables from .env file
-dotenv.config();
+dotenv.config({ path: '../../.env' });
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
