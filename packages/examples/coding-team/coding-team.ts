@@ -2,7 +2,7 @@
  * Coding Team Example
  *
  * Demonstrates how multiple agents can collaborate to implement software features.
- * The driver agent orchestrates, while specialist agents handle implementation and testing.
+ * The orchestrator agent coordinates, while specialist agents handle implementation and testing.
  *
  * This example shows:
  * - Pull architecture: Each agent discovers what they need
@@ -36,12 +36,12 @@ async function runCodingTeam() {
       safety: {
         maxIterations: 20, // Allow more iterations for complex coding tasks
         maxDepth: 5,
-        warnAtIteration: 10,
+        warnAtIteration: 15,
       },
     })
     .build();
 
-  // Feature specification - minimal, let driver figure out the details
+  // Feature specification - minimal, let orchestrator figure out the details
   const projectPath = path.join(__dirname, 'sample-project');
   const featureSpec = `
 Implement a factorial function in the TypeScript project located at: ${projectPath}. If dir is not existent, create it.
@@ -58,11 +58,11 @@ Requirements:
   console.log(featureSpec);
   console.log('\n' + '='.repeat(50));
 
-  // Execute the driver agent with the feature request
-  console.log('\n🎯 Driver agent starting orchestration...\n');
+  // Execute the orchestrator agent with the feature request
+  console.log('\n🎯 Orchestrator agent starting orchestration...\n');
 
   try {
-    const result = await system.executor.execute('driver', featureSpec);
+    const result = await system.executor.execute('orchestrator', featureSpec);
 
     console.log('\n' + '='.repeat(50));
     console.log('✅ Feature Implementation Complete!');

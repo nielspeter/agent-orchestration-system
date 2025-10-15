@@ -8,10 +8,10 @@ This example demonstrates how multiple specialized agents can collaborate to imp
 
 ```mermaid
 graph TD
-    User[User Request] --> Driver[Driver Agent]
-    Driver --> Todo[TodoWrite Tool]
-    Driver --> Impl[Implementer Agent]
-    Driver --> Test[Test Writer Agent]
+    User[User Request] --> Orchestrator[Orchestrator Agent]
+    Orchestrator --> Todo[TodoWrite Tool]
+    Orchestrator --> Impl[Implementer Agent]
+    Orchestrator --> Test[Test Writer Agent]
     Impl --> Code[Write Code]
     Test --> Tests[Write Tests]
     Code --> Shell1[Run Build]
@@ -20,7 +20,7 @@ graph TD
 
 ## Agents
 
-### Driver Agent
+### Orchestrator Agent
 - **Role**: Project manager / Tech lead
 - **Tools**: `read`, `list`, `task`, `todowrite`
 - **Responsibilities**:
@@ -67,7 +67,7 @@ Iteration 6: Fix issues if needed
 ```
 
 ### 3. TodoWrite Integration
-The driver maintains a visible task list showing progress:
+The orchestrator maintains a visible task list showing progress:
 ```
 [ ] Analyze codebase structure
 [ ] Implement factorial function
@@ -101,16 +101,16 @@ npx tsx coding-team.ts
 
 ### What Happens
 
-1. **Driver** receives the feature request (implement factorial function)
-2. **Driver** explores the codebase and creates a task plan
-3. **Driver** delegates implementation to **Implementer**
+1. **Orchestrator** receives the feature request (implement factorial function)
+2. **Orchestrator** explores the codebase and creates a task plan
+3. **Orchestrator** delegates implementation to **Implementer**
 4. **Implementer** searches for patterns, reads existing code, writes factorial function
 5. **Implementer** runs type checking to ensure no errors
-6. **Driver** delegates test creation to **Test Writer**
+6. **Orchestrator** delegates test creation to **Test Writer**
 7. **Test Writer** reads the implementation, writes comprehensive tests
 8. **Test Writer** runs tests to ensure they pass
-9. **Driver** validates everything meets requirements
-10. **Driver** marks all tasks as complete
+9. **Orchestrator** validates everything meets requirements
+10. **Orchestrator** marks all tasks as complete
 
 ## Expected Output
 
