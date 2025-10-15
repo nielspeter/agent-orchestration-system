@@ -1,5 +1,5 @@
-import * as fs from 'fs';
-import * as path from 'path';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import { ThinkingConfig, NormalizedThinkingConfig, ModelConfig } from '@/config/types';
 import { Agent } from '@/config/types';
 import { Middleware, MiddlewareContext } from './middleware-types';
@@ -29,6 +29,7 @@ const THINKING_DEFAULTS = {
   // Safety thresholds
   CONTEXT_WINDOW_THRESHOLD: 0.9, // Use max 90% of context for messages + thinking
 } as const;
+
 interface ProvidersConfigFile {
   providers: Record<
     string,
@@ -40,25 +41,35 @@ interface ProvidersConfigFile {
   >;
 }
 
+/**
+ * Load providers configuration from file system
+ * @param configPath Optional path to providers-config.json (defaults to process.cwd())
+ * @returns Parsed providers configuration
+ * @throws Error if file cannot be read or parsed
+ */
+function loadProvidersConfig(configPath?: string): ProvidersConfigFile {
+  const path = configPath || join(process.cwd(), 'providers-config.json');
+  try {
+    const content = readFileSync(path, 'utf8');
+    return JSON.parse(content);
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    throw new Error(
+      `Failed to load providers configuration from ${path}: ${errorMessage}`
+    );
+  }
+}
+
 export class ThinkingMiddleware {
-  private providersConfig: ProvidersConfigFile;
   private globalBudgetLimit: number;
   private globalCostLimit: number;
 
   constructor(
+    private readonly providersConfig: ProvidersConfigFile,
     private readonly safetyConfig?: {
       thinking?: { globalBudgetLimit?: number; globalCostLimit?: number };
     }
   ) {
-    // Load providers-config.json once
-    const configPath = path.join(process.cwd(), 'providers-config.json');
-    try {
-      this.providersConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-    } catch (error) {
-      console.warn('Failed to load providers-config.json, thinking features disabled:', error);
-      this.providersConfig = { providers: {} };
-    }
-
     // Use configured limits or defaults
     this.globalBudgetLimit =
       safetyConfig?.thinking?.globalBudgetLimit || THINKING_DEFAULTS.GLOBAL_BUDGET_LIMIT;
@@ -109,7 +120,8 @@ export class ThinkingMiddleware {
       ctx.thinkingConfig = this.normalizeConfig(ctx.agent.thinking, modelConfig);
 
       // Warn if budget is unreasonably large for context window
-      if (modelConfig?.contextLength && ctx.thinkingConfig.budgetTokens > modelConfig.contextLength * 0.5) {
+      const halfContext = modelConfig?.contextLength ? modelConfig.contextLength * 0.5 : Infinity;
+      if (modelConfig?.contextLength && ctx.thinkingConfig.budgetTokens > halfContext) {
         ctx.logger.logSystemMessage(
           `⚠️  WARNING: Thinking budget (${ctx.thinkingConfig.budgetTokens} tokens) exceeds 50% of model's context window (${modelConfig.contextLength} tokens). ` +
           `This leaves little room for messages and may cause context window issues.`
@@ -138,6 +150,12 @@ export class ThinkingMiddleware {
     }
   }
 
+  /**
+   * Load model configuration from providers config
+   *
+   * @param ctx Middleware context containing model name
+   * @returns Model configuration if found, null otherwise
+   */
   private loadModelConfig(ctx: MiddlewareContext): ModelConfig | null {
     const modelName = ctx.modelName;
     const [providerPrefix, ...modelParts] = modelName.split('/');
@@ -161,6 +179,12 @@ export class ThinkingMiddleware {
     return provider.models.find((m) => m.id === modelId) || null;
   }
 
+  /**
+   * Check if model supports thinking/reasoning
+   *
+   * @param modelConfig Model configuration to check
+   * @returns True if model supports thinking
+   */
   private modelSupportsThinking(modelConfig: ModelConfig | null): boolean {
     if (!modelConfig?.capabilities) return false;
 
@@ -168,6 +192,15 @@ export class ThinkingMiddleware {
     return capability === true || capability === 'automatic' || capability === 'discovery';
   }
 
+  /**
+   * Validate agent configuration for thinking compatibility
+   *
+   * Throws error if agent has thinking enabled with incompatible settings
+   * like temperature or top_p (model controls these during reasoning)
+   *
+   * @param agent Agent configuration to validate
+   * @throws Error if configuration is invalid
+   */
   private validateConfiguration(agent: Agent): void {
     if (!agent.thinking) return;
 
@@ -189,6 +222,17 @@ export class ThinkingMiddleware {
     }
   }
 
+  /**
+   * Normalize thinking configuration
+   *
+   * Converts simple boolean or detailed config to normalized format with
+   * model-specific defaults and validates against model limits
+   *
+   * @param config User-provided thinking configuration
+   * @param modelConfig Model configuration for defaults and limits
+   * @returns Normalized thinking configuration
+   * @throws Error if budget exceeds model min/max limits
+   */
   private normalizeConfig(
     config: boolean | ThinkingConfig,
     modelConfig: ModelConfig | null
@@ -234,6 +278,13 @@ export class ThinkingMiddleware {
     };
   }
 
+  /**
+   * Check if thinking budget fits within context window
+   *
+   * @param ctx Middleware context with messages and thinking config
+   * @param modelConfig Model configuration for context length
+   * @returns True if total tokens (messages + thinking) < 90% of context
+   */
   private checkContextWindow(ctx: MiddlewareContext, modelConfig: ModelConfig | null): boolean {
     const messageTokens = this.estimateMessageTokens(ctx.messages);
     const thinkingBudget = ctx.thinkingConfig?.budgetTokens || 0;
@@ -245,13 +296,24 @@ export class ThinkingMiddleware {
     return totalTokens < contextLimit * THINKING_DEFAULTS.CONTEXT_WINDOW_THRESHOLD;
   }
 
+  /**
+   * Adjust thinking budget to fit within available context space
+   *
+   * Reduces budget or disables thinking if messages take too much space
+   *
+   * @param ctx Middleware context to update
+   * @param modelConfig Model configuration for context length
+   */
   private adjustBudget(ctx: MiddlewareContext, modelConfig: ModelConfig | null): void {
     if (!ctx.thinkingConfig) return;
 
     const messageTokens = this.estimateMessageTokens(ctx.messages);
     const contextLimit = modelConfig?.contextLength || THINKING_DEFAULTS.DEFAULT_CONTEXT_LENGTH;
     // CRITICAL: Use Math.max to prevent negative budget when messages exceed context limit
-    const availableTokens = Math.max(0, Math.floor(contextLimit * THINKING_DEFAULTS.CONTEXT_WINDOW_THRESHOLD - messageTokens));
+    const maxThinkingSpace = Math.floor(
+      contextLimit * THINKING_DEFAULTS.CONTEXT_WINDOW_THRESHOLD - messageTokens
+    );
+    const availableTokens = Math.max(0, maxThinkingSpace);
 
     ctx.thinkingConfig.budgetTokens = Math.min(ctx.thinkingConfig.budgetTokens, availableTokens);
 
@@ -264,6 +326,14 @@ export class ThinkingMiddleware {
     }
   }
 
+  /**
+   * Check if global thinking limits have been exceeded
+   *
+   * Global limits apply across all agents in a session to prevent runaway costs
+   *
+   * @param ctx Middleware context with thinking metrics
+   * @returns True if under both global budget and cost limits
+   */
   private checkGlobalLimits(ctx: MiddlewareContext): boolean {
     const metrics = ctx.thinkingMetrics || {
       totalTokensUsed: 0,
@@ -276,20 +346,91 @@ export class ThinkingMiddleware {
     );
   }
 
+  /**
+   * Estimate token count for messages
+   *
+   * Uses improved character-based estimation with:
+   * - Message formatting overhead (~4 tokens per message)
+   * - Different ratios for text vs JSON content
+   * - Tool call token counting
+   * - 10% safety margin for encoding variations
+   *
+   * @param messages Messages to estimate tokens for
+   * @returns Estimated token count
+   */
   private estimateMessageTokens(messages: Message[]): number {
-    return messages.reduce((sum, msg) => {
-      const content = typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content);
-      return sum + Math.ceil(content.length / 4);
-    }, 0);
+    let totalTokens = 0;
+
+    for (const msg of messages) {
+      // Message formatting overhead (role markers, JSON structure)
+      // Anthropic/OpenAI: ~4 tokens per message
+      totalTokens += 4;
+
+      // Content tokens
+      if (msg.content) {
+        const content =
+          typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content);
+        // More accurate: length / 3.5 for mixed content
+        // English text: ~4 chars/token, JSON: ~3 chars/token
+        totalTokens += Math.ceil(content.length / 3.5);
+      }
+
+      // Tool call tokens (name + JSON arguments)
+      if (msg.tool_calls) {
+        for (const tc of msg.tool_calls) {
+          // Tool name: usually short, ~4 chars/token
+          totalTokens += Math.ceil(tc.function.name.length / 4);
+          // Arguments: JSON, denser encoding ~3 chars/token
+          totalTokens += Math.ceil(tc.function.arguments.length / 3);
+          // Tool call structure overhead
+          totalTokens += 10;
+        }
+      }
+
+      // Tool result ID tokens
+      if (msg.role === 'tool' && msg.tool_call_id) {
+        totalTokens += Math.ceil(msg.tool_call_id.length / 4);
+      }
+    }
+
+    // Add 10% safety margin for encoding variations
+    return Math.ceil(totalTokens * 1.1);
   }
 }
 
 /**
  * Factory function to create thinking middleware
+ *
+ * Supports two call patterns:
+ * - createThinkingMiddleware(safetyConfig) - Use default config path
+ * - createThinkingMiddleware(configPath, safetyConfig) - Use custom config path
+ *
+ * @param configPathOrSafetyConfig Path to providers-config.json OR safety config object
+ * @param safetyConfig Optional safety configuration for global limits (when first param is string)
+ * @returns Middleware function
+ * @throws Error if providers-config.json cannot be loaded
  */
-export function createThinkingMiddleware(safetyConfig?: {
-  thinking?: { globalBudgetLimit?: number; globalCostLimit?: number };
-}): Middleware {
-  const middleware = new ThinkingMiddleware(safetyConfig);
+export function createThinkingMiddleware(
+  configPathOrSafetyConfig?:
+    | string
+    | { thinking?: { globalBudgetLimit?: number; globalCostLimit?: number } },
+  safetyConfig?: {
+    thinking?: { globalBudgetLimit?: number; globalCostLimit?: number };
+  }
+): Middleware {
+  // Detect call pattern: if first arg is string, it's config path
+  let configPath: string | undefined;
+  let finalSafetyConfig: typeof safetyConfig;
+
+  if (typeof configPathOrSafetyConfig === 'string') {
+    configPath = configPathOrSafetyConfig;
+    finalSafetyConfig = safetyConfig;
+  } else {
+    configPath = undefined; // Use default
+    finalSafetyConfig = configPathOrSafetyConfig;
+  }
+
+  const providersConfig = loadProvidersConfig(configPath);
+  const middleware = new ThinkingMiddleware(providersConfig, finalSafetyConfig);
   return (ctx, next) => middleware.process(ctx, next);
 }
