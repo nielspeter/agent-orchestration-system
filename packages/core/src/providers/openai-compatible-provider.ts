@@ -3,8 +3,9 @@ import { ILLMProvider, StructuredOutputConfig, UsageMetrics } from './llm-provid
 import { BaseTool, Message } from '@/base-types';
 import { AgentLogger } from '@/logging';
 import { DEFAULTS } from '@/config/defaults';
+import { logThinkingMetrics, ThinkingContentBlock } from './thinking-utils';
 
-// Extended usage type for providers that support caching
+// Extended usage type for providers that support caching and thinking
 interface ExtendedUsage extends OpenAI.Completions.CompletionUsage {
   prompt_cache_hit_tokens?: number;
   prompt_cache_miss_tokens?: number;
@@ -12,6 +13,10 @@ interface ExtendedUsage extends OpenAI.Completions.CompletionUsage {
   prompt_tokens_details?: {
     cached_tokens?: number;
   };
+  // OpenAI o1/o3 reasoning tokens
+  reasoning_tokens?: number;
+  // OpenRouter thinking tokens (discovery mode)
+  thinking_tokens?: number;
 }
 
 // OpenRouter extends OpenAI message format with cache_control
@@ -224,6 +229,19 @@ export class OpenAICompatibleProvider implements ILLMProvider {
         requestBody.provider = this.buildOpenRouterProvider();
       }
 
+      // Add thinking/reasoning support if configured
+      // Note: OpenAI o1/o3 models handle thinking automatically (no config needed)
+      // OpenRouter supports thinking for compatible models in discovery mode
+      if (config?.thinking?.enabled) {
+        // OpenRouter uses `reasoning_effort` for models that support thinking
+        if (this.isOpenRouter()) {
+          Object.assign(requestBody, {
+            reasoning_effort: 'high', // OpenRouter thinking mode
+          });
+        }
+        // For OpenAI, o1/o3 models automatically use reasoning (no parameter needed)
+      }
+
       const response = (await this.client.chat.completions.create(
         requestBody
       )) as OpenAI.Chat.ChatCompletion;
@@ -255,13 +273,25 @@ export class OpenAICompatibleProvider implements ILLMProvider {
           cacheMissTokens = extendedUsage.prompt_cache_miss_tokens;
         }
 
+        // Extract thinking/reasoning tokens
+        // OpenAI o1/o3 use 'reasoning_tokens', OpenRouter may use 'thinking_tokens'
+        const thinkingTokens = extendedUsage.reasoning_tokens || extendedUsage.thinking_tokens;
+
         this.lastUsage = {
           promptTokens: usage.prompt_tokens,
           completionTokens: usage.completion_tokens,
           totalTokens: usage.total_tokens,
           promptCacheHitTokens: cacheHitTokens,
           promptCacheMissTokens: cacheMissTokens,
+          thinkingTokens,
         };
+
+        // Log thinking metrics if present
+        if (thinkingTokens && this.logger) {
+          // For OpenAI/OpenRouter, thinking content is usually not exposed
+          // We just log the token count
+          logThinkingMetrics(this.logger, thinkingTokens);
+        }
       }
 
       // Handle tool calls

@@ -81,7 +81,7 @@ export class AgentExecutor {
     this.pipeline
       .use(createErrorHandlerMiddleware())
       .use(createAgentLoaderMiddleware(this.agentLoader, this.toolRegistry))
-      .use(createThinkingMiddleware()) // NEW: Validate and normalize thinking config
+      .use(createThinkingMiddleware(this.config.safety)) // NEW: Validate and normalize thinking config
       .use(createContextSetupMiddleware())
       .use(
         createProviderSelectionMiddleware(this.modelName, this.config.defaultBehavior, this.logger)

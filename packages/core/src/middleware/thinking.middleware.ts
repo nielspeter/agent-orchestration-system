@@ -29,10 +29,14 @@ interface ProvidersConfigFile {
 
 export class ThinkingMiddleware {
   private providersConfig: ProvidersConfigFile;
-  private globalBudgetLimit = 50000; // Max tokens across all thinking
-  private globalCostLimit = 5.0; // Max $5 per session
+  private globalBudgetLimit: number;
+  private globalCostLimit: number;
 
-  constructor() {
+  constructor(
+    private readonly safetyConfig?: {
+      thinking?: { globalBudgetLimit?: number; globalCostLimit?: number };
+    }
+  ) {
     // Load providers-config.json once
     const configPath = path.join(process.cwd(), 'providers-config.json');
     try {
@@ -41,11 +45,20 @@ export class ThinkingMiddleware {
       console.warn('Failed to load providers-config.json, thinking features disabled:', error);
       this.providersConfig = { providers: {} };
     }
+
+    // Use configured limits or defaults
+    this.globalBudgetLimit = safetyConfig?.thinking?.globalBudgetLimit || 50000;
+    this.globalCostLimit = safetyConfig?.thinking?.globalCostLimit || 5.0;
   }
 
   async process(ctx: MiddlewareContext, next: () => Promise<void>): Promise<void> {
     // Skip if no agent loaded yet or no thinking config
     if (!ctx.agent?.thinking) {
+      return next();
+    }
+
+    // Handle explicit disable: thinking: { enabled: false }
+    if (typeof ctx.agent.thinking === 'object' && ctx.agent.thinking.enabled === false) {
       return next();
     }
 
@@ -123,13 +136,21 @@ export class ThinkingMiddleware {
   private validateConfiguration(agent: Agent): void {
     if (!agent.thinking) return;
 
-    // Check incompatible features
+    // Check incompatible features with better error messages
     if (agent.thinking && agent.temperature !== undefined) {
-      throw new Error(`Agent "${agent.name}": thinking is incompatible with temperature setting`);
+      throw new Error(
+        `Agent "${agent.name}": Extended thinking is incompatible with temperature setting. ` +
+          `Remove the temperature configuration when using thinking, as the model controls ` +
+          `its own sampling parameters during reasoning.`
+      );
     }
 
     if (agent.thinking && agent.top_p !== undefined) {
-      throw new Error(`Agent "${agent.name}": thinking is incompatible with top_p setting`);
+      throw new Error(
+        `Agent "${agent.name}": Extended thinking is incompatible with top_p setting. ` +
+          `Remove the top_p configuration when using thinking, as the model controls ` +
+          `its own sampling parameters during reasoning.`
+      );
     }
   }
 
@@ -149,6 +170,10 @@ export class ThinkingMiddleware {
 
     // Handle detailed config format
     const detailedConfig = config as ThinkingConfig;
+
+    // Default enabled to true if not explicitly specified (config object exists)
+    const enabled = detailedConfig.enabled !== false;
+
     const budget =
       detailedConfig.budget_tokens || modelConfig?.capabilities?.thinkingDefaultBudget || 10000;
 
@@ -166,7 +191,7 @@ export class ThinkingMiddleware {
     }
 
     return {
-      enabled: true,
+      enabled,
       budgetTokens: budget,
       maxCostUSD: 0.5,
       contextWindowPercentage: 0.25,
@@ -217,7 +242,9 @@ export class ThinkingMiddleware {
 /**
  * Factory function to create thinking middleware
  */
-export function createThinkingMiddleware(): Middleware {
-  const middleware = new ThinkingMiddleware();
+export function createThinkingMiddleware(safetyConfig?: {
+  thinking?: { globalBudgetLimit?: number; globalCostLimit?: number };
+}): Middleware {
+  const middleware = new ThinkingMiddleware(safetyConfig);
   return (ctx, next) => middleware.process(ctx, next);
 }

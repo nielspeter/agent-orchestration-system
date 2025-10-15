@@ -76,6 +76,36 @@ export function createLLMCallMiddleware(): Middleware {
     // Store metadata in context for tool calls to reference
     ctx.lastLLMMetadata = metadata;
 
+    // Update thinking metrics if thinking was used
+    if (usageMetrics?.thinkingTokens) {
+      // Initialize metrics if not exists
+      if (!ctx.thinkingMetrics) {
+        ctx.thinkingMetrics = {
+          totalTokensUsed: 0,
+          totalCost: 0,
+          contextUsagePercent: 0,
+        };
+      }
+
+      // Increment total thinking tokens used
+      ctx.thinkingMetrics.totalTokensUsed += usageMetrics.thinkingTokens;
+
+      // Calculate thinking cost if pricing is available
+      // Thinking tokens are typically priced the same as input tokens
+      if (ctx.providerModelConfig?.pricing) {
+        const thinkingCost =
+          (usageMetrics.thinkingTokens / 1000) * ctx.providerModelConfig.pricing.input;
+        ctx.thinkingMetrics.totalCost += thinkingCost;
+      }
+
+      // Calculate context window usage percentage
+      if (ctx.providerModelConfig?.contextLength) {
+        const totalTokens = usageMetrics.totalTokens + usageMetrics.thinkingTokens;
+        ctx.thinkingMetrics.contextUsagePercent =
+          (totalTokens / ctx.providerModelConfig.contextLength) * 100;
+      }
+    }
+
     // Log response with metadata passed directly
     if (ctx.response.content) {
       ctx.logger.logAssistantMessage(ctx.agentName, ctx.response.content, metadata);

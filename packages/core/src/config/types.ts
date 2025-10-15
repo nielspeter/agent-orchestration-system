@@ -165,6 +165,13 @@ export interface SafetyConfig {
   maxTokens?: number;
   /** Maximum delegation depth */
   maxDepth: number;
+  /** Thinking/reasoning safety limits */
+  thinking?: {
+    /** Maximum total thinking tokens across all iterations */
+    globalBudgetLimit?: number;
+    /** Maximum total cost in USD for thinking */
+    globalCostLimit?: number;
+  };
 }
 
 /**

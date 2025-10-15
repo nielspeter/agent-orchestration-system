@@ -3,6 +3,7 @@ import { BaseTool, Message, ToolCall } from '@/base-types';
 import { AgentLogger } from '@/logging';
 import { CacheMetricsCollector, ModelPricing } from '@/metrics/cache-collector';
 import { ILLMProvider, StructuredOutputConfig, UsageMetrics } from './llm-provider.interface';
+import { logThinkingMetrics, ThinkingContentBlock } from './thinking-utils';
 
 export interface CacheMetrics {
   inputTokens: number;
@@ -130,7 +131,12 @@ export class AnthropicProvider implements ILLMProvider {
         // Log traditional metrics and thinking metrics
         if (this.logger) {
           this.logCacheMetrics(response.usage);
-          this.logThinkingMetrics(response.usage, response.content);
+
+          // Log thinking metrics using shared utility
+          if (usageWithThinking.thinking_tokens) {
+            const thinkingBlocks = this.extractThinkingBlocks(response.content);
+            logThinkingMetrics(this.logger, usageWithThinking.thinking_tokens, thinkingBlocks);
+          }
         }
       }
 
@@ -369,42 +375,21 @@ export class AnthropicProvider implements ILLMProvider {
     }
   }
 
-  private logThinkingMetrics(usage: Anthropic.Message['usage'], content: Anthropic.ContentBlock[]) {
-    const usageWithThinking = usage as Anthropic.Usage & { thinking_tokens?: number };
-    const thinkingTokens = usageWithThinking.thinking_tokens;
-    if (!thinkingTokens) return;
-
-    // Extract thinking content
-    const thinkingBlocks = content.filter(
-      (c) => c.type === 'thinking' || c.type === 'redacted_thinking'
-    );
-
-    if (thinkingBlocks.length === 0) return;
-
-    let thinkingText = '';
-    let hasRedacted = false;
-
-    for (const block of thinkingBlocks) {
-      if (block.type === 'thinking' && 'thinking' in block) {
-        thinkingText += (block as { type: 'thinking'; thinking: string }).thinking + '\n\n';
-      } else if (block.type === 'redacted_thinking') {
-        hasRedacted = true;
-        thinkingText += '[REDACTED - Content encrypted for safety]\n\n';
-      }
-    }
-
-    const icon = hasRedacted ? '🔒' : '🧠';
-    const label = hasRedacted ? 'Hidden Reasoning' : 'Agent Thinking';
-
-    if (thinkingText && !hasRedacted && this.logger) {
-      this.logger.logSystemMessage(`${icon} ${label}:\n${thinkingText.trim()}`);
-    }
-
-    if (this.logger) {
-      this.logger.logSystemMessage(
-        `📊 Thinking Metrics: ${thinkingTokens} tokens used for reasoning`
-      );
-    }
+  /**
+   * Extract thinking content blocks from Anthropic response
+   */
+  private extractThinkingBlocks(content: Anthropic.ContentBlock[]): ThinkingContentBlock[] {
+    return content
+      .filter((c) => c.type === 'thinking' || c.type === 'redacted_thinking')
+      .map((block) => {
+        if (block.type === 'thinking' && 'thinking' in block) {
+          return {
+            type: 'thinking' as const,
+            content: (block as { type: 'thinking'; thinking: string }).thinking,
+          };
+        }
+        return { type: 'redacted_thinking' as const };
+      });
   }
 
   getModelName(): string {
