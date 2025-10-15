@@ -168,10 +168,14 @@ export class ConsoleLogger implements AgentLogger {
       let valueStr: string;
 
       if (typeof value === 'string') {
-        // Don't truncate important path/command fields
-        const shouldTruncate = !noTruncateKeys.includes(key) && value.length > maxLineLength;
+        // Don't truncate important path/command fields - just show them in full
+        const isPathOrCommand = noTruncateKeys.includes(key);
 
-        if (shouldTruncate) {
+        if (isPathOrCommand) {
+          // Never truncate these important fields
+          valueStr = `"${value.replace(/\n/g, '\\n')}"`;
+        } else if (value.length > maxLineLength) {
+          // Truncate long content/task fields
           const truncated = value.substring(0, maxLineLength - 3).replace(/\n/g, '\\n');
           valueStr = `"${truncated}..."`;
         } else {
