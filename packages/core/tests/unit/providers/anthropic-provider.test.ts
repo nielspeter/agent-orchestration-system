@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, test, vi } from 'vitest';
+import { beforeEach, describe, expect, test } from 'vitest';
 import { AnthropicProvider } from '@/providers/anthropic-provider';
 import type { Message } from '@/base-types';
 
@@ -252,10 +252,7 @@ describe('AnthropicProvider Thinking Block Preservation', () => {
     test('should extract redacted_thinking blocks', () => {
       const extractThinkingBlocks = (provider as any).extractThinkingBlocks.bind(provider);
 
-      const content = [
-        { type: 'redacted_thinking' },
-        { type: 'text', text: 'Response' },
-      ];
+      const content = [{ type: 'redacted_thinking' }, { type: 'text', text: 'Response' }];
 
       const result = extractThinkingBlocks(content);
 
