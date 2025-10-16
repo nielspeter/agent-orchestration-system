@@ -10,6 +10,7 @@
 
 import { AgentSystemBuilder } from '@agent-system/core';
 import { startServer } from '@agent-system/web/server';
+import { resolve } from 'node:path';
 import open from 'open';
 import { formatOutput, type OutputFormat } from './output.js';
 import { safeConsoleLog } from './error-handler.js';
@@ -30,6 +31,7 @@ export interface CommandOptions {
   port?: number;
   host?: string;
   open?: boolean;
+  workingDir?: string;
 }
 
 /**
@@ -166,18 +168,23 @@ export async function serveWeb(ctx: CommandContext): Promise<void> {
   const port = options.port || 3000;
   const host = options.host || 'localhost';
   const shouldOpen = options.open || false;
-  const agentsDir = options.agentsDir;
+  const workingDir = options.workingDir;
 
   try {
+    // Change working directory if specified
+    if (workingDir) {
+      const resolvedPath = resolve(workingDir);
+      safeConsoleLog(`📁 Changing working directory to: ${resolvedPath}\n`);
+      process.chdir(resolvedPath);
+    }
+
     safeConsoleLog('Starting web server...\n');
 
-    await startServer({ port, host, agentsDir });
+    await startServer({ port, host });
 
     const url = `http://${host}:${port}`;
     safeConsoleLog(`✅ Server running at ${url}`);
-    if (agentsDir) {
-      safeConsoleLog(`📁 Using agents from: ${agentsDir}`);
-    }
+    safeConsoleLog(`📂 Working directory: ${process.cwd()}`);
     safeConsoleLog('\n📝 Open your browser and use the form to start agents\n');
 
     if (shouldOpen) {
