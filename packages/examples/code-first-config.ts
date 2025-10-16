@@ -16,7 +16,7 @@ import { AgentSystemBuilder, type ProvidersConfig } from '@agent-system/core';
  * In production, this would be AWS Secrets Manager, Vault, etc.
  */
 class MockSecretManager {
-  private secrets: Record<string, string>;
+  private readonly secrets: Record<string, string>;
 
   constructor() {
     // Simulate secrets from a secret manager
@@ -215,9 +215,7 @@ async function example4_DynamicConfig() {
     .build();
 
   console.log('✅ Dynamic configuration applied');
-  console.log(
-    `   Providers: ${Object.keys(config.providersConfig?.providers || {}).join(', ')}`
-  );
+  console.log(`   Providers: ${Object.keys(config.providersConfig?.providers || {}).join(', ')}`);
   console.log(
     `   Behavior presets: ${Object.keys(config.providersConfig?.behaviorPresets || {}).join(', ')}`
   );
@@ -257,9 +255,11 @@ async function example5_KeyPrecedence() {
     .build();
 
   const usedKey = config.apiKeys?.ANTHROPIC_API_KEY;
-  console.log(`\n✅ Programmatic key takes precedence`);
+  console.log('\n✅ Programmatic key takes precedence');
   console.log(`   Used key: ${usedKey?.substring(0, 20)}...`);
-  console.log(`   Match: ${usedKey === 'programmatic-key-67890' ? 'programmatic ✓' : 'environment ✗'}`);
+  console.log(
+    `   Match: ${usedKey === 'programmatic-key-67890' ? 'programmatic ✓' : 'environment ✗'}`
+  );
 
   await cleanup();
 }
