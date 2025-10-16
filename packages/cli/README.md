@@ -94,7 +94,7 @@ Options:
   -p, --port <port>       Port number (default: 3000)
   --host <host>           Hostname (default: "localhost")
   -o, --open              Open browser automatically
-  --agents-dir <path>     Path to agents directory
+  --working-dir <path>    Working directory for agent execution (changes CWD)
   -h, --help              display help for command
 ```
 
@@ -119,11 +119,14 @@ agent serve --port 8080 --host 0.0.0.0
 # Auto-open browser
 agent serve --open
 
-# Specify custom agents directory
-agent serve --agents-dir ./my-agents
+# Set working directory (for agents, logs, file operations)
+agent serve --working-dir ~/my-project
 
-# Run from anywhere with custom agents
-agent serve --agents-dir /path/to/agents --open
+# Run from anywhere - all paths relative to working-dir
+agent serve --working-dir /path/to/project --open
+
+# Combine options
+agent serve --working-dir ~/project --port 8080 --open
 
 # Or use from workspace
 npm run cli:serve

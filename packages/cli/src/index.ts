@@ -47,7 +47,7 @@ program
   .option('-p, --port <port>', 'Port number', '3000')
   .option('--host <host>', 'Hostname', 'localhost')
   .option('-o, --open', 'Open browser automatically', false)
-  .option('--agents-dir <path>', 'Path to agents directory')
+  .option('--working-dir <path>', 'Working directory for agent execution (changes CWD)')
   .action(async (options) => {
     const ctx: CommandContext = { options };
     const signalHandler = new SignalHandler();
