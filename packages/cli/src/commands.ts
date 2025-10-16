@@ -5,9 +5,12 @@
  * - Agent execution
  * - Listing agents
  * - Listing tools
+ * - Starting web server
  */
 
 import { AgentSystemBuilder } from '@agent-system/core';
+import { startServer } from '@agent-system/web/server';
+import open from 'open';
 import { formatOutput, type OutputFormat } from './output.js';
 import { safeConsoleLog } from './error-handler.js';
 
@@ -23,6 +26,10 @@ export interface CommandOptions {
   listAgents?: boolean;
   listTools?: boolean;
   json?: boolean;
+  // Serve command options
+  port?: number;
+  host?: string;
+  open?: boolean;
 }
 
 /**
@@ -148,5 +155,37 @@ export async function listTools(ctx: CommandContext): Promise<void> {
 
   if (ctx.cleanup) {
     await ctx.cleanup();
+  }
+}
+
+/**
+ * Start web UI server
+ */
+export async function serveWeb(ctx: CommandContext): Promise<void> {
+  const { options } = ctx;
+  const port = options.port || 3000;
+  const host = options.host || 'localhost';
+  const shouldOpen = options.open || false;
+
+  try {
+    safeConsoleLog('Starting web server...\n');
+
+    await startServer({ port, host });
+
+    const url = `http://${host}:${port}`;
+    safeConsoleLog(`✅ Server running at ${url}`);
+    safeConsoleLog('\n📝 Open your browser and use the form to start agents\n');
+
+    if (shouldOpen) {
+      await open(url);
+      safeConsoleLog('📱 Opened browser automatically\n');
+    }
+
+    safeConsoleLog('Press Ctrl+C to stop\n');
+
+    // Keep process alive
+    await new Promise(() => {}); // Never resolves
+  } catch (error) {
+    throw new Error(`Failed to start server: ${error instanceof Error ? error.message : String(error)}`);
   }
 }

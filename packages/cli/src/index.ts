@@ -3,7 +3,7 @@ import * as dotenv from 'dotenv';
 import { Command } from 'commander';
 import { SignalHandler } from './signal-handler.js';
 import { readStdin } from './stdin.js';
-import { type CommandContext, executeAgent, listAgents, listTools } from './commands.js';
+import { type CommandContext, executeAgent, listAgents, listTools, serveWeb } from './commands.js';
 import { formatAndDisplayError, safeConsoleError } from './error-handler.js';
 
 // Load environment variables
@@ -17,7 +17,10 @@ program
   .description('CLI tool for running agents (accepts input via -p flag or stdin)')
   .version('1.0.0');
 
+// Run command (default)
 program
+  .command('run', { isDefault: true })
+  .description('Execute an agent task')
   .option('-p, --prompt <text>', 'The prompt to send to the agent (or pipe via stdin)')
   .option('-a, --agent <name>', 'Agent to use', 'default')
   .option('-m, --model <model>', 'Model to use')
@@ -25,16 +28,35 @@ program
   .option('-o, --output <format>', 'Output format: clean, verbose, json', 'clean')
   .option('--list-agents', 'List available agents')
   .option('--list-tools', 'List available tools')
-  .option('--json', 'Output as JSON (shorthand for --output json)');
+  .option('--json', 'Output as JSON (shorthand for --output json)')
+  .action(async (options) => {
+    await runCommand(options);
+  });
 
-program.parse();
+// Serve command
+program
+  .command('serve')
+  .description('Start web UI server')
+  .option('-p, --port <port>', 'Port number', '3000')
+  .option('--host <host>', 'Hostname', 'localhost')
+  .option('-o, --open', 'Open browser automatically', false)
+  .action(async (options) => {
+    const ctx: CommandContext = { options };
+    const signalHandler = new SignalHandler();
+    signalHandler.setup();
 
-const options = program.opts();
+    try {
+      await serveWeb(ctx);
+    } catch (error) {
+      formatAndDisplayError(error, options);
+      process.exit(1);
+    }
+  });
 
 /**
- * Main CLI entry point
+ * Run command handler
  */
-async function main(): Promise<void> {
+async function runCommand(options: any): Promise<void> {
   // Setup context and signal handling
   const ctx: CommandContext = { options };
   const signalHandler = new SignalHandler();
@@ -81,12 +103,4 @@ async function main(): Promise<void> {
     formatAndDisplayError(error, options);
     process.exit(1);
   }
-}
-
-// Run main and handle any unhandled errors
-try {
-  await main();
-} catch (error) {
-  console.error('Fatal error:', error);
-  process.exit(1);
 }
