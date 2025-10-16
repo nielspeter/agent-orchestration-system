@@ -16,7 +16,7 @@ export { createApp, type WebServerConfig } from './app.js';
  */
 export async function startServer(config: WebServerConfig = {}): Promise<Server> {
   const { port = 3001, host = 'localhost' } = config;
-  const app = createApp();
+  const app = createApp(config);
 
   return new Promise((resolve, reject) => {
     try {

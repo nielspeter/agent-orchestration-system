@@ -166,14 +166,18 @@ export async function serveWeb(ctx: CommandContext): Promise<void> {
   const port = options.port || 3000;
   const host = options.host || 'localhost';
   const shouldOpen = options.open || false;
+  const agentsDir = options.agentsDir;
 
   try {
     safeConsoleLog('Starting web server...\n');
 
-    await startServer({ port, host });
+    await startServer({ port, host, agentsDir });
 
     const url = `http://${host}:${port}`;
     safeConsoleLog(`✅ Server running at ${url}`);
+    if (agentsDir) {
+      safeConsoleLog(`📁 Using agents from: ${agentsDir}`);
+    }
     safeConsoleLog('\n📝 Open your browser and use the form to start agents\n');
 
     if (shouldOpen) {

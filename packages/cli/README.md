@@ -91,10 +91,11 @@ Start the web UI server:
 agent serve [options]
 
 Options:
-  -p, --port <port>      Port number (default: 3000)
-  --host <host>          Hostname (default: "localhost")
-  -o, --open             Open browser automatically
-  -h, --help             display help for command
+  -p, --port <port>       Port number (default: 3000)
+  --host <host>           Hostname (default: "localhost")
+  -o, --open              Open browser automatically
+  --agents-dir <path>     Path to agents directory
+  -h, --help              display help for command
 ```
 
 ### Global Options
@@ -117,6 +118,12 @@ agent serve --port 8080 --host 0.0.0.0
 
 # Auto-open browser
 agent serve --open
+
+# Specify custom agents directory
+agent serve --agents-dir ./my-agents
+
+# Run from anywhere with custom agents
+agent serve --agents-dir /path/to/agents --open
 
 # Or use from workspace
 npm run cli:serve
