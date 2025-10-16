@@ -374,8 +374,7 @@ export class AgentSystemBuilder {
     const errors: string[] = [];
 
     // Check API keys (environment or programmatic)
-    const hasAnthropicKey =
-      process.env.ANTHROPIC_API_KEY || this.config.apiKeys?.ANTHROPIC_API_KEY;
+    const hasAnthropicKey = process.env.ANTHROPIC_API_KEY || this.config.apiKeys?.ANTHROPIC_API_KEY;
     const hasOpenRouterKey =
       process.env.OPENROUTER_API_KEY || this.config.apiKeys?.OPENROUTER_API_KEY;
 
