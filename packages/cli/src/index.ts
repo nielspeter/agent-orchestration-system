@@ -3,7 +3,14 @@ import * as dotenv from 'dotenv';
 import { Command } from 'commander';
 import { SignalHandler } from './signal-handler.js';
 import { readStdin } from './stdin.js';
-import { type CommandContext, executeAgent, listAgents, listTools, serveWeb } from './commands.js';
+import {
+  type CommandContext,
+  type CommandOptions,
+  executeAgent,
+  listAgents,
+  listTools,
+  serveWeb,
+} from './commands.js';
 import { formatAndDisplayError, safeConsoleError } from './error-handler.js';
 
 // Load environment variables
@@ -56,7 +63,7 @@ program
 /**
  * Run command handler
  */
-async function runCommand(options: any): Promise<void> {
+async function runCommand(options: CommandOptions): Promise<void> {
   // Setup context and signal handling
   const ctx: CommandContext = { options };
   const signalHandler = new SignalHandler();
@@ -80,7 +87,7 @@ async function runCommand(options: any): Promise<void> {
     let prompt = options.prompt;
 
     if (!prompt) {
-      prompt = await readStdin();
+      prompt = (await readStdin()) ?? undefined;
     }
 
     if (!prompt) {
@@ -104,3 +111,6 @@ async function runCommand(options: any): Promise<void> {
     process.exit(1);
   }
 }
+
+// Parse command line arguments
+program.parse(process.argv);

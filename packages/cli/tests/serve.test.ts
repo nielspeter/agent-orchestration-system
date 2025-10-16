@@ -5,16 +5,26 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import type { CommandContext } from '../src/commands';
 
+// Create hoisted mocks for ESM compatibility
+const mocks = vi.hoisted(() => ({
+  startServer: vi.fn(async () => {
+    // Return a mock server object
+    return {
+      close: vi.fn(),
+      listening: true,
+      address: () => ({ port: 3000, address: 'localhost' }),
+    };
+  }),
+  open: vi.fn(async () => {}),
+}));
+
 // Mock dependencies
 vi.mock('@agent-system/web/server', () => ({
-  startServer: vi.fn(async () => ({
-    close: vi.fn(),
-    listening: true,
-  })),
+  startServer: mocks.startServer,
 }));
 
 vi.mock('open', () => ({
-  default: vi.fn(async () => {}),
+  default: mocks.open,
 }));
 
 describe('Serve Command', () => {
@@ -29,7 +39,6 @@ describe('Serve Command', () => {
   describe('serveWeb', () => {
     it('should start server with default options', async () => {
       const { serveWeb } = await import('../src/commands');
-      const { startServer } = await import('@agent-system/web/server');
 
       const ctx: CommandContext = {
         options: {},
@@ -41,7 +50,7 @@ describe('Serve Command', () => {
       // Give it a moment to call startServer
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      expect(startServer).toHaveBeenCalledWith({
+      expect(mocks.startServer).toHaveBeenCalledWith({
         port: 3000,
         host: 'localhost',
       });
@@ -49,7 +58,6 @@ describe('Serve Command', () => {
 
     it('should start server with custom port and host', async () => {
       const { serveWeb } = await import('../src/commands');
-      const { startServer } = await import('@agent-system/web/server');
 
       const ctx: CommandContext = {
         options: {
@@ -61,7 +69,7 @@ describe('Serve Command', () => {
       serveWeb(ctx);
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      expect(startServer).toHaveBeenCalledWith({
+      expect(mocks.startServer).toHaveBeenCalledWith({
         port: 8080,
         host: '0.0.0.0',
       });
@@ -69,7 +77,6 @@ describe('Serve Command', () => {
 
     it('should open browser when --open flag is set', async () => {
       const { serveWeb } = await import('../src/commands');
-      const open = (await import('open')).default;
 
       const ctx: CommandContext = {
         options: {
@@ -82,12 +89,11 @@ describe('Serve Command', () => {
       serveWeb(ctx);
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      expect(open).toHaveBeenCalledWith('http://localhost:3000');
+      expect(mocks.open).toHaveBeenCalledWith('http://localhost:3000');
     });
 
     it('should not open browser when --open flag is false', async () => {
       const { serveWeb } = await import('../src/commands');
-      const open = (await import('open')).default;
 
       const ctx: CommandContext = {
         options: {
@@ -98,12 +104,11 @@ describe('Serve Command', () => {
       serveWeb(ctx);
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      expect(open).not.toHaveBeenCalled();
+      expect(mocks.open).not.toHaveBeenCalled();
     });
 
     it('should handle server startup errors', async () => {
-      const { startServer } = await import('@agent-system/web/server');
-      vi.mocked(startServer).mockRejectedValueOnce(new Error('Port already in use'));
+      mocks.startServer.mockRejectedValueOnce(new Error('Port already in use'));
 
       const { serveWeb } = await import('../src/commands');
 
@@ -116,7 +121,6 @@ describe('Serve Command', () => {
 
     it('should format URL correctly with custom host and port', async () => {
       const { serveWeb } = await import('../src/commands');
-      const open = (await import('open')).default;
 
       const ctx: CommandContext = {
         options: {
@@ -129,7 +133,7 @@ describe('Serve Command', () => {
       serveWeb(ctx);
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      expect(open).toHaveBeenCalledWith('http://192.168.1.100:8080');
+      expect(mocks.open).toHaveBeenCalledWith('http://192.168.1.100:8080');
     });
   });
 
@@ -148,7 +152,6 @@ describe('Serve Command', () => {
 
     it('should handle string port number (from CLI)', async () => {
       const { serveWeb } = await import('../src/commands');
-      const { startServer } = await import('@agent-system/web/server');
 
       const ctx: CommandContext = {
         options: {
@@ -160,7 +163,7 @@ describe('Serve Command', () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Should convert to number or handle correctly
-      expect(startServer).toHaveBeenCalled();
+      expect(mocks.startServer).toHaveBeenCalled();
     });
   });
 });

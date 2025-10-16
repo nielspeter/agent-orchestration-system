@@ -186,6 +186,8 @@ export async function serveWeb(ctx: CommandContext): Promise<void> {
     // Keep process alive
     await new Promise(() => {}); // Never resolves
   } catch (error) {
-    throw new Error(`Failed to start server: ${error instanceof Error ? error.message : String(error)}`);
+    throw new Error(
+      `Failed to start server: ${error instanceof Error ? error.message : String(error)}`
+    );
   }
 }
