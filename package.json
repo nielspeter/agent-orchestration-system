@@ -26,6 +26,7 @@
     "dev:web": "npm run dev -w @agent-system/web",
     "dev:cli": "npm run dev -w @agent-system/cli",
     "cli": "tsx packages/cli/src/index.ts",
+    "cli:serve": "npm run cli -- serve --open",
     "test": "npm run test -w @agent-system/core",
     "test:unit": "npm run test -w @agent-system/core",
     "test:unit:coverage": "npm run test:coverage -w @agent-system/core",

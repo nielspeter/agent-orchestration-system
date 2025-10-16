@@ -68,8 +68,32 @@ export interface ProviderConfig {
   className?: string;
   baseURL?: string;
   apiKeyEnv: string;
-  models: ModelConfig[];
+  headers?: Record<string, string>;
+  models?: ModelConfig[];
   dynamicModels?: boolean;
+  routing?: {
+    order?: string[];
+    only?: string[];
+    allowFallbacks?: boolean;
+    sort?: 'price' | 'latency' | 'throughput';
+  };
+}
+
+/**
+ * Behavior settings for temperature/top_p presets
+ */
+export interface BehaviorSettings {
+  temperature: number;
+  top_p: number;
+  description?: string;
+}
+
+/**
+ * Complete providers configuration
+ */
+export interface ProvidersConfig {
+  behaviorPresets?: Record<string, BehaviorSettings>;
+  providers: Record<string, ProviderConfig>;
 }
 
 /**
@@ -247,6 +271,10 @@ export interface SystemConfig {
   defaultModel?: string;
   /** Default behavior preset to use */
   defaultBehavior?: string;
+  /** Providers configuration (optional - will load from file if not provided) */
+  providersConfig?: ProvidersConfig;
+  /** API keys (optional - will use process.env if not provided) */
+  apiKeys?: Record<string, string>;
   /** Agent configuration */
   agents?: AgentConfig;
   /** Tool configuration */
@@ -275,6 +303,8 @@ export interface ResolvedSystemConfig {
   model: string;
   defaultModel: string;
   defaultBehavior: string;
+  providersConfig?: ProvidersConfig;
+  apiKeys?: Record<string, string>;
   agents: AgentConfig;
   tools: Required<ToolConfig>;
   safety: SafetyConfig;
@@ -437,6 +467,16 @@ export function mergeConfigs(...configs: Partial<SystemConfig>[]): SystemConfig 
     // Handle storage config
     if (config.storage !== undefined) {
       result.storage = deepMergeObjects<StorageConfig>(result.storage, config.storage);
+    }
+
+    // Handle providers config
+    if (config.providersConfig !== undefined) {
+      result.providersConfig = config.providersConfig; // Replace entirely, no deep merge
+    }
+
+    // Handle API keys
+    if (config.apiKeys !== undefined) {
+      result.apiKeys = { ...result.apiKeys, ...config.apiKeys }; // Merge keys
     }
   }
 

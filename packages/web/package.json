@@ -4,15 +4,22 @@
   "private": true,
   "type": "module",
   "description": "Web UI for agent orchestration system",
+  "exports": {
+    "./server": {
+      "types": "./server/dist/index.d.ts",
+      "import": "./server/dist/index.js"
+    }
+  },
   "scripts": {
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
-    "dev:server": "tsx watch server/src/index.ts",
+    "dev:server": "tsx watch server/src/standalone.ts",
     "dev:client": "vite",
     "build": "npm run build:client && npm run build:server",
     "build:client": "vite build",
     "build:server": "tsc -p server/tsconfig.json",
     "preview": "vite preview",
-    "start": "node server/dist/index.js"
+    "serve": "tsx server/src/standalone.ts",
+    "start": "node server/dist/standalone.js"
   },
   "dependencies": {
     "@agent-system/core": "*",

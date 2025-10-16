@@ -9,7 +9,16 @@ export { AgentSystemBuilder } from './config/system-builder';
 export type { BuildResult } from './config/system-builder';
 
 // Configuration types
-export type { Agent, AgentConfig, ModelConfig, SafetyConfig, ThinkingConfig } from './config/types';
+export type {
+  Agent,
+  AgentConfig,
+  ModelConfig,
+  SafetyConfig,
+  ThinkingConfig,
+  ProvidersConfig,
+  ProviderConfig,
+  BehaviorSettings,
+} from './config/types';
 
 // Event logging - used by web UI for SSE
 export { EventLogger } from './logging/event.logger';

@@ -91,6 +91,7 @@ echo "Analyze this" | npm run cli       # stdin support
 npx tsx packages/examples/quickstart.ts          # Simple quickstart
 npx tsx packages/examples/orchestration.ts       # Agent orchestration
 npx tsx packages/examples/configuration.ts       # Config file usage
+npx tsx packages/examples/code-first-config.ts   # Code-first configuration (no files)
 npx tsx packages/examples/logging.ts             # Logging features
 npx tsx packages/examples/mcp-integration.ts     # MCP server support
 npx tsx packages/examples/werewolf-game.ts       # Autonomous multi-agent game
@@ -107,6 +108,20 @@ Shows how agents delegate tasks to specialized sub-agents using the Delegate too
 
 ### Configuration Files (configuration.ts)
 Demonstrates loading agent system configuration from JSON files.
+
+### Code-First Configuration (code-first-config.ts)
+Shows programmatic configuration without config files. Includes 5 examples:
+- Basic code-first configuration with `.withProvidersConfig()` and `.withAPIKeys()`
+- Secret manager integration (simulated AWS Secrets Manager)
+- Testing configuration (no file dependencies)
+- Dynamic configuration based on runtime conditions
+- API key precedence demonstration
+
+```bash
+npx tsx packages/examples/code-first-config.ts
+```
+
+Ideal for testing, CI/CD, and production deployments where config files aren't practical.
 
 ### Werewolf Game - Autonomous Agents (werewolf-game.ts)
 A complex multi-agent game demonstrating true agent autonomy:
@@ -142,7 +157,7 @@ npx tsx packages/examples/coding-team.ts
 
 ## 💻 Command-Line Interface
 
-The `@agent-system/cli` package provides a production-ready CLI tool for interacting with agents:
+The `@agent-system/cli` package provides a production-ready CLI tool with dual modes:
 
 ### Installation
 ```bash
@@ -154,12 +169,15 @@ npm run cli
 ```
 
 ### Features
+- **Dual Interface**: CLI mode for terminal use, Web UI mode for browser interface
 - **Unix-friendly**: stdin/stdout support, proper exit codes, EPIPE handling
 - **Security**: 10MB input limit, 30s timeout, signal handling (SIGINT/SIGTERM)
 - **Output modes**: clean (default), verbose, json
 - **Flexible**: Use -p flag or pipe from stdin
 
 ### Usage Examples
+
+**CLI Mode (Run agents from terminal):**
 ```bash
 # Basic usage
 agent -p "Hello, world!"
@@ -177,9 +195,21 @@ agent -p "Review code" -a code-reviewer
 # List available
 agent --list-agents
 agent --list-tools
+```
 
-# Verbose output with metrics
-agent -p "Test" --output verbose
+**Web UI Mode (Start server):**
+```bash
+# Start web server
+agent serve --open
+
+# Custom port and host
+agent serve --port 8080 --host 0.0.0.0
+
+# Set working directory (agents, logs, file operations)
+agent serve --working-dir ~/my-project --open
+
+# Or use convenience script
+npm run cli:serve
 ```
 
 For complete CLI documentation, see [packages/cli/README.md](packages/cli/README.md).
@@ -406,6 +436,80 @@ const fromFile = await AgentSystemBuilder
 
 // Always cleanup when done
 await full.cleanup();
+```
+
+### Code-First Configuration (No Files Required)
+
+The system supports fully programmatic configuration, making config files optional. This is ideal for:
+- **Testing**: Inject controlled configuration without file dependencies
+- **Secret Managers**: Load API keys from AWS Secrets Manager, Vault, etc.
+- **Library Usage**: Embed the agent system in other applications
+- **Dynamic Configuration**: Build configuration at runtime
+
+```typescript
+import { AgentSystemBuilder, type ProvidersConfig } from '@agent-system/core';
+
+// Define providers config programmatically
+const providersConfig: ProvidersConfig = {
+  providers: {
+    anthropic: {
+      type: 'native',
+      apiKeyEnv: 'ANTHROPIC_API_KEY',
+      models: [
+        {
+          id: 'claude-3-5-haiku-latest',
+          contextLength: 200000,
+          maxOutputTokens: 8192,
+        },
+      ],
+    },
+    openrouter: {
+      type: 'openai-compatible',
+      baseURL: 'https://openrouter.ai/api/v1',
+      apiKeyEnv: 'OPENROUTER_API_KEY',
+    },
+  },
+  behaviorPresets: {
+    balanced: { temperature: 0.5, top_p: 0.85 },
+    precise: { temperature: 0.2, top_p: 0.6 },
+  },
+};
+
+// Load API keys from your secret manager
+const apiKeys = {
+  ANTHROPIC_API_KEY: await secretManager.get('anthropic-api-key'),
+  OPENROUTER_API_KEY: await secretManager.get('openrouter-api-key'),
+};
+
+// Build the system with programmatic configuration
+const { executor, cleanup } = await AgentSystemBuilder.default()
+  .withModel('anthropic/claude-3-5-haiku-latest')
+  .withProvidersConfig(providersConfig)
+  .withAPIKeys(apiKeys)
+  .build();
+
+try {
+  const result = await executor.execute('orchestrator', 'Your task here');
+  console.log(result);
+} finally {
+  await cleanup();
+}
+```
+
+**Key Points:**
+- **No files needed**: System works entirely from code
+- **API key precedence**: Programmatic keys override environment variables
+- **Type safety**: Full TypeScript support for configuration objects
+- **Fallback behavior**: Still falls back to `process.env` if keys not provided
+
+**Minimal Example (Testing):**
+```typescript
+// Minimal configuration for testing
+const { executor, cleanup } = await AgentSystemBuilder.minimal()
+  .withAPIKeys({
+    ANTHROPIC_API_KEY: 'test-key',
+  })
+  .build();
 ```
 
 ## 🔧 Adding Custom Middleware
