@@ -7,6 +7,7 @@ import { AgentSystemBuilder, EventLogger } from '@agent-system/core';
 export interface WebServerConfig {
   port?: number;
   host?: string;
+  agentsDir?: string;
 }
 
 // Store active event loggers by sessionId
@@ -15,8 +16,9 @@ const activeSessions = new Map<string, EventLogger>();
 /**
  * Create Express app with all routes and middleware
  */
-export function createApp(): Express {
+export function createApp(config: WebServerConfig = {}): Express {
   const app = express();
+  const { agentsDir } = config;
 
   // Middleware
   app.use(cors());
@@ -85,10 +87,14 @@ export function createApp(): Express {
 
       // Build agent system
       const actualSessionId = sessionId || `session-${Date.now()}`;
-      const system = await AgentSystemBuilder.default()
-        .withAgents([agentPath])
-        .withSessionId(actualSessionId)
-        .build();
+      let builder = AgentSystemBuilder.default().withAgents([agentPath]);
+
+      // Use custom agents directory if provided
+      if (agentsDir) {
+        builder = builder.withAgentsFrom(agentsDir);
+      }
+
+      const system = await builder.withSessionId(actualSessionId).build();
 
       // Store event logger for SSE streaming
       activeSessions.set(actualSessionId, system.eventLogger);
