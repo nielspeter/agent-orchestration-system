@@ -88,13 +88,13 @@ npm run cli -- -p "Hello, world!"       # CLI tool
 echo "Analyze this" | npm run cli       # stdin support
 
 # Run examples
-npx tsx examples/quickstart.ts          # Simple quickstart
-npx tsx examples/orchestration.ts       # Agent orchestration
-npx tsx examples/configuration.ts       # Config file usage
-npx tsx examples/logging.ts             # Logging features
-npx tsx examples/mcp-integration.ts     # MCP server support
-npx tsx examples/werewolf-game.ts       # Autonomous multi-agent game
-npx tsx examples/coding-team/coding-team.ts  # Collaborative coding agents
+npx tsx packages/examples/quickstart.ts          # Simple quickstart
+npx tsx packages/examples/orchestration.ts       # Agent orchestration
+npx tsx packages/examples/configuration.ts       # Config file usage
+npx tsx packages/examples/logging.ts             # Logging features
+npx tsx packages/examples/mcp-integration.ts     # MCP server support
+npx tsx packages/examples/werewolf-game.ts       # Autonomous multi-agent game
+npx tsx packages/examples/coding-team.ts         # Collaborative coding agents
 ```
 
 ## 🎮 Examples
@@ -119,7 +119,7 @@ This example showcases how agents can be truly autonomous entities that receive 
 
 ```bash
 # Run the werewolf game
-npx tsx examples/werewolf-game.ts
+npx tsx packages/examples/werewolf-game.ts
 ```
 
 ### Coding Team - Collaborative Development (coding-team/)
@@ -134,10 +134,10 @@ This example shows the practical application of the pull architecture where each
 
 ```bash
 # Set up the sample project
-cd examples/coding-team/sample-project && npm install && cd -
+cd packages/examples/coding-team/sample-project && npm install && cd -
 
 # Run the coding team
-npx tsx examples/coding-team/coding-team.ts
+npx tsx packages/examples/coding-team.ts
 ```
 
 ## 💻 Command-Line Interface
@@ -284,20 +284,23 @@ agent-orchestration-system/
 │   │   │   ├── providers/   # LLM providers
 │   │   │   ├── logging/     # Logging
 │   │   │   └── lib/         # Utilities
-│   │   ├── tests/           # Test suite
-│   │   └── examples/        # Usage examples
+│   │   └── tests/           # Test suite
 │   ├── cli/                 # CLI tool (@agent-system/cli)
 │   │   ├── src/
 │   │   │   ├── index.ts     # CLI entry point with stdin support
 │   │   │   └── output.ts    # Output formatting utilities
 │   │   ├── tests/           # CLI tests
 │   │   └── README.md        # CLI documentation
+│   ├── examples/            # Example scripts (@agent-system/examples)
+│   │   ├── coding-team/     # Collaborative coding example
+│   │   ├── thinking/        # Extended thinking demos
+│   │   ├── udbud/           # Tender analysis example
+│   │   └── *.ts             # Various example scripts
 │   └── web/                 # Web UI (@agent-system/web)
 │       ├── src/             # React frontend
 │       └── server/          # Express backend
 ├── agents/                   # Shared agent definitions
-├── docs/                     # Documentation
-└── examples/                 # Legacy examples (moving to packages/core/examples)
+└── docs/                     # Documentation
 ```
 
 ## 🏗️ Middleware Architecture Benefits

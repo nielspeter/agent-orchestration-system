@@ -4,7 +4,7 @@ import './matchers';
 import { AgentSystemBuilder } from '@/config';
 import { describeWithFixtures } from '../../utils/fixture-runner';
 import type { EventMessage } from '../../types/event-types';
-import path from 'path';
+import path from 'node:path';
 import * as dotenv from 'dotenv';
 
 dotenv.config();

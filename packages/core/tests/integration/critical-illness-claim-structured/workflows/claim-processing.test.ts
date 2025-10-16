@@ -4,7 +4,7 @@ import { describeWithFixtures, type FixtureData } from '../../../utils/fixture-r
 import { ClaimEventParser } from '../parser';
 import '../matchers';
 import * as fs from 'fs/promises';
-import * as path from 'path';
+import * as path from 'node:path';
 import * as dotenv from 'dotenv';
 
 // Load environment variables

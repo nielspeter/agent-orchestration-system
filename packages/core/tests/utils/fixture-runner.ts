@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import path from 'path';
-import fs from 'fs';
+import path from 'node:path';
+import fs from 'node:fs';
 
 export interface FixtureConfig {
   name: string;

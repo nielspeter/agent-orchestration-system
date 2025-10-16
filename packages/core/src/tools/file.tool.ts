@@ -1,5 +1,5 @@
 import * as fs from 'fs/promises';
-import * as path from 'path';
+import * as path from 'node:path';
 import { BaseTool, ToolResult } from '@/base-types';
 
 // Type definitions for tool arguments

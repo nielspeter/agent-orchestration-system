@@ -102,7 +102,6 @@ export default [
     // Logger implementations legitimately use console methods
     files: [
       'packages/core/src/logging/console.logger.ts',
-      'packages/core/src/tracing/simple-tracer.ts',
       'packages/core/src/session/manager.ts', // Logs sanitization issues for debugging
     ],
     rules: {

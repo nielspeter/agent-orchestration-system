@@ -650,7 +650,7 @@ Max delegation depth (5) reached
 ```
 
 **Investigation**:
-1. Use SimpleTracer to visualize delegation tree
+1. Enable verbose logging to see delegation chain
 2. Check if delegation is unnecessary
 3. Look for delegation loops
 

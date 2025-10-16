@@ -132,3 +132,17 @@ export type AnySessionEvent =
   | AssistantMessageEvent
   | ToolCallEvent
   | ToolResultEvent;
+
+/**
+ * Type guard to check if an object is a valid session event
+ * @param event - The value to check
+ * @returns True if the value is a SessionEvent
+ */
+export function isSessionEvent(event: unknown): event is SessionEvent {
+  if (typeof event !== 'object' || event === null) {
+    return false;
+  }
+
+  const e = event as Record<string, unknown>;
+  return typeof e.type === 'string' && typeof e.timestamp === 'number' && e.data !== undefined;
+}

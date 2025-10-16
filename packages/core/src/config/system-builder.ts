@@ -7,7 +7,7 @@
  */
 
 import * as fs from 'fs/promises';
-import * as fsSync from 'fs';
+import * as fsSync from 'node:fs';
 import { v4 as uuidv4 } from 'uuid';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';

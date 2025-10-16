@@ -14,7 +14,7 @@
 import * as dotenv from 'dotenv';
 import { AgentSystemBuilder } from '@agent-system/core';
 import * as fs from 'fs/promises';
-import * as path from 'path';
+import * as path from 'node:path';
 import * as readline from 'readline/promises';
 
 // Load environment variables

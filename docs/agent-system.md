@@ -32,11 +32,29 @@ You are an expert at...
 
 ```yaml
 ---
-name: string           # Required: Unique agent identifier
-tools: string[]        # Required: Tool access list or ["*"] for all
-model?: string         # Optional: Override default model
-temperature?: number   # Optional: LLM temperature (0-1)
-maxTokens?: number    # Optional: Max response tokens
+# Required
+name: string                    # Unique agent identifier
+tools: string[] | "*"           # Tool access list or "*" for all
+
+# Model Configuration
+model?: string                  # Override default model (e.g., "anthropic/claude-sonnet-4-5")
+temperature?: number            # LLM temperature (0-1)
+top_p?: number                  # Top-p sampling (0-1)
+behavior?: string               # Behavior preset: "deterministic" | "precise" | "balanced" | "creative" | "exploratory"
+
+# Thinking/Reasoning
+thinking?: boolean | object     # Enable extended thinking
+  enabled?: boolean             # Enable thinking mode
+  budget_tokens?: number        # Token budget for thinking (2000-24000)
+
+# Structured Output
+response_format?: string        # Output format: "text" | "json" | "json_schema"
+json_schema?: object            # JSON schema for validation (when using json_schema format)
+
+# Agent Behavior
+maxDepth?: number               # Override max delegation depth
+id?: string                     # Agent identifier (defaults to name)
+description?: string            # Agent description (for backward compatibility)
 ---
 ```
 
@@ -407,6 +425,173 @@ name: reader
 tools: ["read", "list"]
 ---
 You can only read files, not modify them.
+```
+
+## Advanced Configuration Examples
+
+### Extended Thinking Agent
+
+For complex reasoning and planning tasks:
+
+```yaml
+---
+name: architect
+tools: ["read", "write", "delegate"]
+thinking:
+  enabled: true
+  budget_tokens: 16000
+---
+
+You are a software architect. Before making decisions:
+- Analyze trade-offs deeply
+- Consider long-term implications
+- Evaluate alternative approaches
+- Plan implementation steps
+
+Use your extended thinking to reason through complex architectural decisions.
+```
+
+Or simplified:
+
+```yaml
+---
+name: deep-reasoner
+tools: ["*"]
+thinking: true  # Uses default budget
+---
+You think deeply before responding.
+```
+
+### Behavior Preset Agent
+
+For consistent, predictable outputs:
+
+```yaml
+---
+name: validator
+tools: ["read"]
+behavior: deterministic  # temperature: 0.1, top_p: 0.5
+---
+
+You validate code for correctness. Your responses must be:
+- Consistent
+- Deterministic
+- Factual
+- Precise
+```
+
+Available behavior presets:
+- **deterministic** (0.1/0.5): Validation, routing, business logic
+- **precise** (0.2/0.6): Code analysis, verification, structured outputs
+- **balanced** (0.5/0.85): Default - general tasks, orchestration
+- **creative** (0.7/0.95): Storytelling, content generation
+- **exploratory** (0.9/0.98): Research, brainstorming
+
+### Structured Output Agent
+
+For JSON responses with validation:
+
+```yaml
+---
+name: data-extractor
+tools: ["read"]
+response_format: json_schema
+json_schema:
+  type: object
+  properties:
+    name:
+      type: string
+    email:
+      type: string
+      format: email
+    age:
+      type: number
+      minimum: 0
+  required: ["name", "email"]
+---
+
+Extract user information from documents and return as structured JSON.
+```
+
+Or simpler JSON output:
+
+```yaml
+---
+name: json-formatter
+tools: ["read"]
+response_format: json
+---
+
+Return results as valid JSON objects.
+```
+
+### Multi-Model Agent
+
+Override model for specific capabilities:
+
+```yaml
+---
+name: creative-writer
+tools: ["write"]
+model: anthropic/claude-opus-4
+temperature: 0.8
+top_p: 0.95
+---
+
+You write creative, engaging content with varied vocabulary and style.
+```
+
+### Depth-Limited Agent
+
+Prevent deep delegation chains:
+
+```yaml
+---
+name: lightweight-helper
+tools: ["read", "write"]
+maxDepth: 2  # Can only delegate 2 levels deep
+---
+
+You handle simple tasks without complex delegation hierarchies.
+```
+
+### Combined Configuration
+
+Agent with multiple advanced features:
+
+```yaml
+---
+name: master-orchestrator
+tools: ["*"]
+model: anthropic/claude-sonnet-4-5
+behavior: balanced
+thinking:
+  enabled: true
+  budget_tokens: 12000
+maxDepth: 5
+---
+
+# Master Orchestrator
+
+You coordinate complex projects by:
+1. **Planning**: Use thinking to develop comprehensive plans
+2. **Delegation**: Distribute work to specialized agents
+3. **Monitoring**: Track progress and adjust strategy
+4. **Integration**: Combine results into cohesive deliverables
+
+## Your Process
+
+Before delegating:
+- Think through the overall strategy
+- Identify which specialists to involve
+- Plan the coordination approach
+- Anticipate integration challenges
+
+Use your extended thinking to reason about:
+- Task dependencies
+- Resource allocation
+- Risk mitigation
+- Quality assurance
 ```
 
 ## Best Practices

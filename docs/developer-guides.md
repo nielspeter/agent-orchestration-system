@@ -18,7 +18,7 @@ cp .env.example .env
 npm run build
 
 # Run a simple example
-npx tsx examples/quickstart.ts
+npx tsx packages/examples/quickstart/quickstart.ts
 ```
 
 ### 2. Your First Agent
@@ -185,6 +185,98 @@ You convert markdown files to HTML:
 3. Write the HTML output
 
 Preserve formatting and structure.
+```
+
+### Advanced Agent Configuration
+
+#### Extended Thinking
+
+For complex reasoning tasks, enable extended thinking:
+
+```markdown
+---
+name: deep-reasoner
+tools: ["read", "write"]
+thinking:
+  enabled: true
+  budget_tokens: 16000
+---
+
+You solve complex problems by thinking deeply before responding.
+Use your extended thinking to reason through:
+- Trade-offs and alternatives
+- Long-term implications
+- Edge cases
+```
+
+Or simplified:
+
+```markdown
+---
+name: quick-thinker
+tools: ["*"]
+thinking: true  # Uses default budget
+---
+```
+
+#### Behavior Presets
+
+Control response consistency and creativity:
+
+```markdown
+---
+name: validator
+tools: ["read"]
+behavior: deterministic  # temperature: 0.1, top_p: 0.5
+---
+
+You validate code for correctness. Your responses must be consistent and deterministic.
+```
+
+Available presets:
+- **deterministic** (0.1/0.5): Validation, routing, business logic
+- **precise** (0.2/0.6): Code analysis, verification
+- **balanced** (0.5/0.85): Default - general tasks
+- **creative** (0.7/0.95): Content generation, storytelling
+- **exploratory** (0.9/0.98): Research, brainstorming
+
+#### Structured Output
+
+For JSON responses with validation:
+
+```markdown
+---
+name: data-extractor
+tools: ["read"]
+response_format: json_schema
+json_schema:
+  type: object
+  properties:
+    name:
+      type: string
+    email:
+      type: string
+      format: email
+  required: ["name", "email"]
+---
+
+Extract user information and return as structured JSON.
+```
+
+#### Custom Model and Parameters
+
+Override default model and sampling:
+
+```markdown
+---
+name: creative-writer
+tools: ["write"]
+model: anthropic/claude-opus-4
+temperature: 0.8
+top_p: 0.95
+---
+
+You write creative, engaging content with varied style.
 ```
 
 ## Creating Tools
@@ -651,5 +743,5 @@ await system.cleanup();
 - [Tool System](./tool-system.md)
 - [Agent System](./agent-system.md)
 - [Configuration](./unified-configuration.md)
-- Examples: `examples/` directory
-- Tests: `tests/` directory
+- Examples: `packages/examples/` directory
+- Tests: `packages/core/tests/` directory

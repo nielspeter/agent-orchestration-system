@@ -5,7 +5,7 @@ export interface ModelPricing {
   output: number; // Cost per 1K tokens
 }
 
-export interface DetailedCacheMetrics {
+export interface DetailedLLMMetrics {
   // Request metadata
   timestamp: string;
   sessionId: string;
@@ -37,7 +37,7 @@ export interface DetailedCacheMetrics {
   cacheEfficiency: number; // 0-1 scale
 }
 
-export interface CacheSessionSummary {
+export interface LLMSessionSummary {
   sessionId: string;
   startTime: string;
   endTime: string;
@@ -51,21 +51,22 @@ export interface CacheSessionSummary {
 }
 
 /**
- * Collects and analyzes cache metrics for performance monitoring
+ * Collects and analyzes LLM request metrics for performance monitoring
+ * Tracks tokens, costs, cache performance, and response times
  */
-export class CacheMetricsCollector {
-  private readonly metrics: DetailedCacheMetrics[] = [];
+export class LLMMetricsCollector {
+  private readonly metrics: DetailedLLMMetrics[] = [];
   private readonly sessionId = this.generateSessionId();
   private readonly sessionStart = Date.now();
 
   constructor(private readonly logger?: AgentLogger) {}
 
   /**
-   * Record a cache metrics entry
+   * Record LLM request metrics
    * @param metrics The metrics to record
    * @param pricing Optional model-specific pricing (per 1K tokens)
    */
-  recordMetrics(metrics: Partial<DetailedCacheMetrics>, pricing?: ModelPricing): void {
+  recordMetrics(metrics: Partial<DetailedLLMMetrics>, pricing?: ModelPricing): void {
     const timestamp = new Date().toISOString();
     const requestId = this.generateRequestId();
 
@@ -94,7 +95,7 @@ export class CacheMetricsCollector {
     const savings = Math.max(0, noCacheCost - totalCost);
     const savingsPercentage = noCacheCost > 0 ? (savings / noCacheCost) * 100 : 0;
 
-    const detailedMetrics: DetailedCacheMetrics = {
+    const detailedMetrics: DetailedLLMMetrics = {
       timestamp,
       sessionId: this.sessionId,
       requestId,
@@ -130,7 +131,7 @@ export class CacheMetricsCollector {
   /**
    * Get session summary
    */
-  getSessionSummary(): CacheSessionSummary {
+  getSessionSummary(): LLMSessionSummary {
     if (this.metrics.length === 0) {
       return {
         sessionId: this.sessionId,

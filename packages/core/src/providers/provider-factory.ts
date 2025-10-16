@@ -1,5 +1,5 @@
-import * as fs from 'fs';
-import * as path from 'path';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import { ILLMProvider } from './llm-provider.interface';
 import { AnthropicProvider } from './anthropic-provider';
 import { OpenAICompatibleConfig, OpenAICompatibleProvider } from './openai-compatible-provider';

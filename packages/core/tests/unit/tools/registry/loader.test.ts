@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import * as fs from 'fs/promises';
-import * as path from 'path';
+import * as path from 'node:path';
 import { ToolLoader } from '@/tools/registry/loader';
 import { createShellTool } from '@/tools/shell.tool';
 

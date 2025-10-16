@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { AgentSystemBuilder } from '@/config/system-builder';
 import * as fs from 'fs/promises';
-import * as path from 'path';
+import * as path from 'node:path';
 import { tmpdir } from 'os';
 
 describe('Structured Output Validation', () => {

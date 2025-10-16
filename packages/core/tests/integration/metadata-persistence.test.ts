@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test } from 'vitest';
-import { existsSync, readFileSync, rmSync } from 'fs';
-import { join } from 'path';
+import { existsSync, readFileSync, rmSync } from 'node:fs';
+import { join } from 'node:path';
 import { tmpdir } from 'os';
 import { AgentSystemBuilder } from '@/config/system-builder';
 import { FilesystemStorage } from '@/session/filesystem.storage';

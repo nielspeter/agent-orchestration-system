@@ -3,8 +3,8 @@ import { InMemoryStorage } from '@/session/memory.storage';
 import { FilesystemStorage } from '@/session/filesystem.storage';
 import { SessionStorage } from '@/session/types';
 import * as fs from 'fs/promises';
-import * as path from 'path';
-import { existsSync } from 'fs';
+import * as path from 'node:path';
+import { existsSync } from 'node:fs';
 
 describe('Storage Implementations', () => {
   describe('InMemoryStorage', () => {

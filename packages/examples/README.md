@@ -1,82 +1,206 @@
 # Agent Orchestration Examples
 
-This directory contains example scripts demonstrating various features of the agent orchestration system. Examples are numbered in order of increasing complexity.
+This directory contains example scripts demonstrating various features of the agent orchestration system, organized by complexity and use case.
 
 ## Prerequisites
 
 Before running any examples, ensure you have:
-1. Set up your environment variables in `.env` file
+1. Set up your environment variables in `.env` file at the repository root
 2. Added your `ANTHROPIC_API_KEY` to the `.env` file
-3. Installed dependencies: `npm install`
-4. Built the project: `npm run build`
+3. Installed dependencies: `npm install` (from repository root)
+4. Built the project: `npm run build` (from repository root)
 
-## Examples
+## Running Examples
 
-### 01-quickstart.ts
-**Basic Hello World Example**
+All examples can be run using npm scripts from the `packages/examples` directory:
+
 ```bash
-npm run example:quickstart
+cd packages/examples
+npm run <example-name>
 ```
-A simple example showing the minimal setup needed to get started with the agent orchestration system.
 
-### 02-orchestration.ts
-**Agent Orchestration and Delegation**
+Or directly with `tsx` from the repository root:
+
 ```bash
-npm run example:orchestration
+npx tsx packages/examples/<path-to-example>
 ```
-Demonstrates how agents autonomously decide to delegate work to specialized agents. Shows the difference between simple tasks handled directly and complex tasks requiring delegation.
 
-### 03-configuration.ts
+## Basic Examples
+
+### default-agent
+**Minimal Setup with Default Agent**
+```bash
+npm run default-agent
+# or: npx tsx packages/examples/default-agent.ts
+```
+Shows the system running with the built-in default agent (no agent definitions required).
+
+### inline-agents
+**Programmatic Agent Definition**
+```bash
+npm run inline-agents
+# or: npx tsx packages/examples/inline-agents.ts
+```
+Demonstrates how to define agents programmatically in code rather than loading from markdown files.
+
+### quickstart
+**Basic Agent Execution**
+```bash
+npm run quickstart
+# or: npx tsx packages/examples/quickstart/quickstart.ts
+```
+Simple introduction to agent execution with file operations.
+
+## Configuration & Setup
+
+### configuration
 **Configuration Options**
 ```bash
-npm run example:configuration
+npm run configuration
+# or: npx tsx packages/examples/configuration/configuration.ts
 ```
-Shows different ways to configure the system using the AgentSystemBuilder:
+Shows different ways to configure the system:
 - Minimal setup (no tools)
 - Default setup (file tools)
 - Full setup (all tools including TodoWrite)
 - Custom configuration with specific settings
 - Loading from config file
 
-### 04-logging.ts
+### mcp-integration
+**MCP Server Integration**
+```bash
+npm run mcp
+# or: npx tsx packages/examples/mcp-integration.ts
+```
+Demonstrates integration with Model Context Protocol (MCP) servers for external tools.
+
+## Orchestration & Delegation
+
+### orchestration
+**Agent Orchestration and Delegation**
+```bash
+npm run orchestration
+# or: npx tsx packages/examples/orchestration/orchestration.ts
+```
+Shows how agents autonomously delegate work to specialized agents. Demonstrates the difference between simple tasks handled directly and complex tasks requiring delegation.
+
+### coding-team
+**Collaborative Development**
+```bash
+npm run coding-team
+# or: npx tsx packages/examples/coding-team/coding-team.ts
+```
+Multi-agent system where specialized agents collaborate to implement software features:
+- **Driver agent**: Orchestrates the development process
+- **Implementer agent**: Writes production code
+- **Test-writer agent**: Creates comprehensive test suites
+- **Shell tool integration**: Enables running tests and type checking
+- **TodoWrite tracking**: Real-time progress visibility
+
+## Advanced Features
+
+### thinking
+**Extended Thinking & Reasoning**
+```bash
+npm run thinking
+# or: npx tsx packages/examples/thinking/thinking.ts
+```
+Demonstrates extended thinking/reasoning features with different agents:
+- Deep Reasoner: Default thinking budget with Anthropic
+- Quick Thinker: Custom thinking budget
+- OpenRouter Reasoner: Thinking via OpenRouter
+
+### werewolf-game
+**Autonomous Multi-Agent Game**
+```bash
+npm run werewolf
+# or: npx tsx packages/examples/werewolf-game/werewolf-game.ts
+```
+A complex multi-agent game demonstrating true agent autonomy:
+- **Game-master agent**: Orchestrates the entire game independently
+- **Role agents**: Werewolf, seer, villager make strategic decisions
+- **Evidence-based gameplay**: Alibis, deductions, and voting
+- **No hardcoded logic**: All game rules exist in agent prompts
+
+## Logging & Debugging
+
+### logging
 **Detailed Logging and Debugging**
 ```bash
-npm run example:logging
+npm run logging
+# or: npx tsx packages/examples/logging/logging.ts
 ```
-Demonstrates how to enable verbose logging to see the full orchestration flow, including:
+Shows how to enable verbose logging to see the full orchestration flow:
 - Agent delegation decisions
 - Tool executions
 - Conversation history
 - Depth tracking
 
-### 05-mcp-integration.ts
-**MCP Server Integration**
+### session-analyzer
+**Session Analysis**
 ```bash
-npm run example:mcp
+npm run session-analyzer
+# or: npx tsx packages/examples/session-analyzer/session-analyzer.ts
 ```
-Shows how to integrate with Model Context Protocol (MCP) servers. Requires `agent-config.json` with MCP server configuration.
+Analyzes session logs and provides insights into agent behavior and tool usage.
 
-## Running Examples
+## Specialized Use Cases
 
-You can run examples in two ways:
+### udbud
+**Tender Analysis System (Danish)**
+```bash
+npm run udbud
+# or: npx tsx packages/examples/udbud/udbud.ts
+```
+Multi-agent system for analyzing and preparing tender/bid documentation:
+- Document conversion
+- Technical analysis
+- GO/NO-GO decision support
+- Clarification question identification
 
-1. **Using npm scripts:**
-   ```bash
-   npm run example:quickstart
-   npm run example:orchestration
-   npm run example:configuration
-   npm run example:logging
-   npm run example:mcp
-   ```
+See [udbud/README.md](udbud/README.md) for detailed documentation.
 
-2. **Direct execution:**
-   ```bash
-   tsx examples/01-quickstart.ts
-   tsx examples/02-orchestration.ts
-   tsx examples/03-configuration.ts
-   tsx examples/04-logging.ts
-   tsx examples/05-mcp-integration.ts
-   ```
+### critical-illness
+**Insurance Claim Processing**
+```bash
+npm run critical-illness
+# or: npx tsx packages/examples/critical-illness-claim/critical-illness-claim.ts
+```
+Workflow-based claim processing demonstrating multi-step agent workflows.
+
+### critical-illness-structured
+**Structured Output Claim Processing**
+```bash
+npm run critical-illness-structured
+# or: npx tsx packages/examples/critical-illness-claim-structured/critical-illness-claim-structured.ts
+```
+Similar to critical-illness but uses structured JSON output for integration with external systems.
+
+## Additional Examples
+
+### memory-patterns
+**Memory and State Management**
+```bash
+npm run memory-patterns
+# or: npx tsx packages/examples/memory-patterns.ts
+```
+Demonstrates different patterns for managing agent memory and state across conversations.
+
+### script-tools
+**Custom Script Tools**
+```bash
+npm run script-tools
+# or: npx tsx packages/examples/script-tools/script-tools.ts
+```
+Shows how to create and use custom script-based tools that execute external commands.
+
+### workflow-pipeline
+**Workflow Orchestration**
+```bash
+npm run workflow-pipeline
+# or: npx tsx packages/examples/workflow-pipeline/workflow-pipeline.ts
+```
+Demonstrates building complex workflows with multiple agents in a pipeline pattern.
 
 ## Architecture Notes
 
@@ -87,27 +211,22 @@ You can run examples in two ways:
 
 ## Testing
 
-For more comprehensive testing, see the test suites:
-- **Unit Tests**: `npm run test:unit` - Tests without API calls
-- **Integration Tests**: `npm run test:integration` - Tests with real API calls
-- **All Tests**: `npm test`
+For comprehensive testing, see the test suites in the core package:
+- **Unit Tests**: `npm run test:unit` (from repository root) - Tests without API calls
+- **Integration Tests**: `npm run test:integration` (from repository root) - Tests with real API calls
 
-Test files are located in:
-- `/tests/unit/` - Unit tests for components
-- `/tests/integration/` - Integration tests for features
+## Configuration Files
 
-## Configuration File
-
-Some examples support loading from `agent-config.json`. Example configuration:
+Most examples support loading configuration from `agent-config.json`. Example configuration:
 
 ```json
 {
-  "model": "claude-3-5-haiku-latest",
+  "model": "anthropic/claude-3-5-haiku-latest",
   "agents": {
     "directories": ["./agents"]
   },
   "tools": {
-    "builtin": ["read", "write", "list", "task", "todowrite"]
+    "builtin": ["read", "write", "list", "delegate", "todowrite"]
   },
   "safety": {
     "maxIterations": 50,
@@ -118,13 +237,16 @@ Some examples support loading from `agent-config.json`. Example configuration:
 
 ## Common Issues
 
-1. **Missing API Key**: Ensure `ANTHROPIC_API_KEY` is set in your `.env` file
-2. **Build Errors**: Run `npm run build` before running examples
-3. **MCP Errors**: MCP server examples require proper server configuration
+1. **Missing API Key**: Ensure `ANTHROPIC_API_KEY` is set in your `.env` file at the repository root
+2. **Build Errors**: Run `npm run build` from the repository root before running examples
+3. **MCP Errors**: MCP server examples require proper server configuration in `agent-config.json`
 4. **Timeout Errors**: Complex tasks may timeout - adjust safety limits if needed
+5. **Path Issues**: Run examples from the repository root or use the correct relative paths
 
 ## Learn More
 
 - See `/docs` for detailed documentation
-- Check `/tests` for comprehensive test examples
-- Review agent definitions in `/agents` directory
+- Check `/packages/core/tests` for comprehensive test examples
+- Review agent definitions in example subdirectories (`*/agents/`)
+- Main README: [../../README.md](../../README.md)
+- Core package: [../core/README.md](../core/README.md)

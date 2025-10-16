@@ -28,12 +28,11 @@ systems using middleware pipeline architecture and pull-based information gather
 
 ### Web UI & Integration
 
-- **[Web UI Event Architecture](./web-ui-event-architecture.md)** ⭐ - Why events enable web interfaces
-- **[Web UI Integration Guide](./web-ui-integration.md)** ⭐ - Building on the event system (SSE, React, API)
+- **[Web UI Guide](./web-ui.md)** ⭐ - Complete guide: business value, architecture, and integration (SSE, React, API)
 
 ### Debugging & Monitoring
 
-- **[Logging and Debugging](./logging-and-debugging.md)** ⭐ - ConsoleLogger, SimpleTracer, debugging strategies
+- **[Logging and Debugging](./logging-and-debugging.md)** ⭐ - ConsoleLogger, EventLogger, debugging strategies
 - **[Distributed Tracing](./distributed-tracing.md)** ⭐ - Built-in execution tracing via unified sessions
 
 ### Developer Resources
@@ -128,11 +127,10 @@ This documentation evolves with the codebase. When making changes:
 | Agentic Loop Pattern             | ✅ Complete | HIGH   | ReAct: iteration vs delegation |
 | Session Persistence              | ✅ Complete | HIGH   | Storage, recovery, events    |
 | Event System                     | ✅ Complete | HIGH   | Real-time event emission     |
-| Web UI Event Architecture        | ✅ Complete | HIGH   | Why events enable web UI     |
-| Web UI Integration Guide         | ✅ Complete | HIGH   | SSE, React, API integration  |
+| Web UI Guide                     | ✅ Complete | HIGH   | Complete web UI guide (business value, architecture, integration) |
 | MCP Integration                  | ✅ Complete | HIGH   | External tool servers        |
 | LLM Provider Integration         | ✅ Complete | HIGH   | Multi-provider, costs, presets |
-| Logging & Debugging              | ✅ Complete | HIGH   | ConsoleLogger, SimpleTracer  |
+| Logging & Debugging              | ✅ Complete | HIGH   | ConsoleLogger, EventLogger   |
 | Distributed Tracing              | ✅ Complete | HIGH   | Built-in execution tracing   |
 | Safety & Resource Management     | ✅ Complete | HIGH   | Limits, security, resources  |
 | Developer Guides                 | ✅ Complete | HIGH   | Practical tutorials          |

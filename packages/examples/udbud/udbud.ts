@@ -13,8 +13,8 @@
  */
 
 import { AgentSystemBuilder } from '@agent-system/core';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import * as dotenv from 'dotenv';
 
 // Load environment variables from .env file
@@ -29,7 +29,7 @@ async function runTenderAnalysis() {
 
   // Build the system with tender agents
   const system = await AgentSystemBuilder.default()
-    .withAgentsFrom(path.join(__dirname, 'agents'))
+    .withAgentsFrom(path.join(__dirname, 'udbud', 'agents'))
     .addBuiltinTools('shell') // Add shell to the default tools
     .with({
       safety: {

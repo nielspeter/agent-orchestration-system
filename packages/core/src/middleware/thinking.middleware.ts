@@ -1,5 +1,5 @@
-import { readFileSync } from 'fs';
-import { join } from 'path';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { Agent, ModelConfig, NormalizedThinkingConfig, ThinkingConfig } from '@/config/types';
 import { Middleware, MiddlewareContext } from './middleware-types';
 import { Message } from '@/base-types';
@@ -20,7 +20,7 @@ import { Message } from '@/base-types';
 const THINKING_DEFAULTS = {
   // Default limits if not configured
   GLOBAL_BUDGET_LIMIT: 50000, // Max thinking tokens across all agents
-  GLOBAL_COST_LIMIT: 5.0, // Max $5 per session for thinking
+  GLOBAL_COST_LIMIT: 5, // Max $5 per session for thinking
   DEFAULT_BUDGET: 10000, // Default thinking budget per request
   DEFAULT_CONTEXT_LENGTH: 128000, // Fallback context window size
   DEFAULT_MIN_BUDGET: 512, // Minimum budget tokens
@@ -58,8 +58,8 @@ function loadProvidersConfig(configPath?: string): ProvidersConfigFile {
 }
 
 export class ThinkingMiddleware {
-  private globalBudgetLimit: number;
-  private globalCostLimit: number;
+  private readonly globalBudgetLimit: number;
+  private readonly globalCostLimit: number;
 
   constructor(
     private readonly providersConfig: ProvidersConfigFile,
