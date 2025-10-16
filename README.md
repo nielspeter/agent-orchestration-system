@@ -91,6 +91,7 @@ echo "Analyze this" | npm run cli       # stdin support
 npx tsx packages/examples/quickstart.ts          # Simple quickstart
 npx tsx packages/examples/orchestration.ts       # Agent orchestration
 npx tsx packages/examples/configuration.ts       # Config file usage
+npx tsx packages/examples/code-first-config.ts   # Code-first configuration (no files)
 npx tsx packages/examples/logging.ts             # Logging features
 npx tsx packages/examples/mcp-integration.ts     # MCP server support
 npx tsx packages/examples/werewolf-game.ts       # Autonomous multi-agent game
@@ -107,6 +108,20 @@ Shows how agents delegate tasks to specialized sub-agents using the Delegate too
 
 ### Configuration Files (configuration.ts)
 Demonstrates loading agent system configuration from JSON files.
+
+### Code-First Configuration (code-first-config.ts)
+Shows programmatic configuration without config files. Includes 5 examples:
+- Basic code-first configuration with `.withProvidersConfig()` and `.withAPIKeys()`
+- Secret manager integration (simulated AWS Secrets Manager)
+- Testing configuration (no file dependencies)
+- Dynamic configuration based on runtime conditions
+- API key precedence demonstration
+
+```bash
+npx tsx packages/examples/code-first-config.ts
+```
+
+Ideal for testing, CI/CD, and production deployments where config files aren't practical.
 
 ### Werewolf Game - Autonomous Agents (werewolf-game.ts)
 A complex multi-agent game demonstrating true agent autonomy:

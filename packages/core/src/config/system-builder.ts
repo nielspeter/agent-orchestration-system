@@ -373,9 +373,16 @@ export class AgentSystemBuilder {
 
     const errors: string[] = [];
 
-    // Check API keys
-    if (!process.env.ANTHROPIC_API_KEY && !process.env.OPENROUTER_API_KEY) {
-      errors.push('No API keys found. Set ANTHROPIC_API_KEY or OPENROUTER_API_KEY');
+    // Check API keys (environment or programmatic)
+    const hasAnthropicKey =
+      process.env.ANTHROPIC_API_KEY || this.config.apiKeys?.ANTHROPIC_API_KEY;
+    const hasOpenRouterKey =
+      process.env.OPENROUTER_API_KEY || this.config.apiKeys?.OPENROUTER_API_KEY;
+
+    if (!hasAnthropicKey && !hasOpenRouterKey) {
+      errors.push(
+        'No API keys found. Set ANTHROPIC_API_KEY or OPENROUTER_API_KEY environment variable, or provide via withAPIKeys()'
+      );
     }
 
     // Check if any agents are configured
