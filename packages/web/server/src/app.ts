@@ -1,5 +1,7 @@
 import express, { Request, Response, Express } from 'express';
 import cors from 'cors';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
 import { AgentSystemBuilder, EventLogger } from '@agent-system/core';
 
 export interface WebServerConfig {
@@ -33,7 +35,9 @@ export function createApp(): Express {
     res.setHeader('X-Accel-Buffering', 'no'); // Disable nginx buffering
 
     // Send initial connection event
-    res.write(`data: ${JSON.stringify({ type: 'connected', sessionId, timestamp: Date.now() })}\n\n`);
+    res.write(
+      `data: ${JSON.stringify({ type: 'connected', sessionId, timestamp: Date.now() })}\n\n`
+    );
 
     // Get or create event logger for this session
     const eventLogger = activeSessions.get(sessionId);
@@ -162,6 +166,18 @@ export function createApp(): Express {
   // Health check
   app.get('/health', (_req: Request, res: Response) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  });
+
+  // Serve static files from React build
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = dirname(__filename);
+  const clientPath = join(__dirname, '../../dist/client');
+
+  app.use(express.static(clientPath));
+
+  // Catch-all route to serve index.html for client-side routing
+  app.get('*', (_req: Request, res: Response) => {
+    res.sendFile(join(clientPath, 'index.html'));
   });
 
   return app;

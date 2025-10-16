@@ -142,7 +142,7 @@ npx tsx packages/examples/coding-team.ts
 
 ## 💻 Command-Line Interface
 
-The `@agent-system/cli` package provides a production-ready CLI tool for interacting with agents:
+The `@agent-system/cli` package provides a production-ready CLI tool with dual modes:
 
 ### Installation
 ```bash
@@ -154,12 +154,15 @@ npm run cli
 ```
 
 ### Features
+- **Dual Interface**: CLI mode for terminal use, Web UI mode for browser interface
 - **Unix-friendly**: stdin/stdout support, proper exit codes, EPIPE handling
 - **Security**: 10MB input limit, 30s timeout, signal handling (SIGINT/SIGTERM)
 - **Output modes**: clean (default), verbose, json
 - **Flexible**: Use -p flag or pipe from stdin
 
 ### Usage Examples
+
+**CLI Mode (Run agents from terminal):**
 ```bash
 # Basic usage
 agent -p "Hello, world!"
@@ -177,9 +180,18 @@ agent -p "Review code" -a code-reviewer
 # List available
 agent --list-agents
 agent --list-tools
+```
 
-# Verbose output with metrics
-agent -p "Test" --output verbose
+**Web UI Mode (Start server):**
+```bash
+# Start web server
+agent serve --open
+
+# Custom port and host
+agent serve --port 8080 --host 0.0.0.0
+
+# Or use convenience script
+npm run cli:serve
 ```
 
 For complete CLI documentation, see [packages/cli/README.md](packages/cli/README.md).
