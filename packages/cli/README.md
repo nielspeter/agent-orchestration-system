@@ -17,29 +17,27 @@ npm run cli
 ## Quick Start
 
 ```bash
-# Basic usage with -p flag
+# Run agents from command line
 agent -p "Hello, world!"
-
-# Read from stdin (Unix-style)
 echo "Analyze this text" | agent
 
-# Pipe from files
-cat document.txt | agent -p "Summarize this"
+# Start web UI server
+agent serve --open
 
-# Use specific agent
-agent -p "Review this code" -a code-reviewer
-
-# JSON output
-agent -p "List 3 colors" --json | jq '.result'
-
-# List available agents and tools
+# List available resources
 agent --list-agents
 agent --list-tools
 ```
 
 ## Features
 
-### 🔄 Unix-Friendly
+### 🌐 Dual Interface
+
+- **CLI Mode**: Run agents from command line with stdin/stdout
+- **Web UI Mode**: Start server with browser interface for interactive use
+- **Unified Access**: Both modes use the same agent system
+
+### 🔄 Unix-Friendly (CLI Mode)
 
 - **stdin Support**: Accepts input via pipe or redirect
 - **stdout/stderr Separation**: Clean output to stdout, errors to stderr
@@ -55,7 +53,7 @@ agent --list-tools
 - **Resource Cleanup**: Always calls cleanup, even on errors or signals
 - **Format Validation**: Runtime validation of output formats
 
-### 📊 Output Modes
+### 📊 Output Modes (CLI Mode)
 
 - **clean** (default): Just the result text - perfect for piping
 - **verbose**: Detailed output with metrics, tool calls, and timing
@@ -63,11 +61,17 @@ agent --list-tools
 
 ## Usage
 
+The CLI has two main commands: `run` (default) and `serve`.
+
+### Run Command (Default)
+
+Execute an agent task from the command line:
+
 ```
-agent [options]
+agent run [options]
+agent [options]  # 'run' is the default command
 
 Options:
-  -V, --version          output the version number
   -p, --prompt <text>    The prompt to send to the agent (or pipe via stdin)
   -a, --agent <name>     Agent to use (default: "default")
   -m, --model <model>    Model to use
@@ -79,7 +83,54 @@ Options:
   -h, --help             display help for command
 ```
 
+### Serve Command
+
+Start the web UI server:
+
+```
+agent serve [options]
+
+Options:
+  -p, --port <port>       Port number (default: 3000)
+  --host <host>           Hostname (default: "localhost")
+  -o, --open              Open browser automatically
+  --working-dir <path>    Working directory for agent execution (changes CWD)
+  -h, --help              display help for command
+```
+
+### Global Options
+
+```
+  -V, --version          output the version number
+  -h, --help             display help for command
+```
+
 ## Examples
+
+### Web UI Server
+
+```bash
+# Start server with defaults (localhost:3000)
+agent serve
+
+# Custom port and host
+agent serve --port 8080 --host 0.0.0.0
+
+# Auto-open browser
+agent serve --open
+
+# Set working directory (for agents, logs, file operations)
+agent serve --working-dir ~/my-project
+
+# Run from anywhere - all paths relative to working-dir
+agent serve --working-dir /path/to/project --open
+
+# Combine options
+agent serve --working-dir ~/project --port 8080 --open
+
+# Or use from workspace
+npm run cli:serve
+```
 
 ### Basic Execution
 

@@ -1,6 +1,7 @@
 import { Middleware } from './middleware-types';
 import { ProviderFactory } from '@/providers/provider-factory';
 import { AgentLogger } from '@/logging';
+import type { ProvidersConfig } from '@/config/types';
 
 /**
  * Selects the appropriate provider based on model name
@@ -9,7 +10,9 @@ import { AgentLogger } from '@/logging';
 export function createProviderSelectionMiddleware(
   defaultModelName: string,
   defaultBehaviorName: string,
-  logger?: AgentLogger
+  logger?: AgentLogger,
+  providedConfig?: ProvidersConfig,
+  apiKeys?: Record<string, string>
 ): Middleware {
   return async (ctx, next) => {
     // Use agent's model preference if specified, otherwise use default
@@ -28,8 +31,8 @@ export function createProviderSelectionMiddleware(
         top_p = ctx.agent.top_p;
       }
 
-      // Load providers config once
-      const providersConfig = ProviderFactory.loadProvidersConfig();
+      // Use provided config or load from file
+      const providersConfig = providedConfig || ProviderFactory.loadProvidersConfig();
 
       // If not explicit, check for behavior preset
       if (temperature === undefined || top_p === undefined) {
@@ -58,7 +61,8 @@ export function createProviderSelectionMiddleware(
         modelName,
         providersConfig,
         logger,
-        ctx.behaviorSettings
+        ctx.behaviorSettings,
+        apiKeys
       );
       ctx.provider = provider;
       ctx.modelConfig = modelConfig;

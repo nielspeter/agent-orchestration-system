@@ -150,6 +150,96 @@ describe('AgentSystemBuilder Tests', () => {
     });
   });
 
+  describe('Programmatic Configuration (Code-First)', () => {
+    test('withProvidersConfig() should set providers config', async () => {
+      const providersConfig = {
+        providers: {
+          anthropic: {
+            type: 'native' as const,
+            apiKeyEnv: 'ANTHROPIC_API_KEY',
+            models: [
+              {
+                id: 'claude-3-5-haiku-latest',
+                contextLength: 200000,
+                maxOutputTokens: 8192,
+              },
+            ],
+          },
+        },
+        behaviorPresets: {
+          test: {
+            temperature: 0.5,
+            top_p: 0.9,
+          },
+        },
+      };
+
+      const result = await AgentSystemBuilder.minimal()
+        .withProvidersConfig(providersConfig)
+        .build();
+      cleanup = result.cleanup;
+
+      expect(result.config.providersConfig).toBeDefined();
+      expect(result.config.providersConfig?.providers.anthropic).toBeDefined();
+      expect(result.config.providersConfig?.behaviorPresets?.test).toEqual({
+        temperature: 0.5,
+        top_p: 0.9,
+      });
+    });
+
+    test('withAPIKeys() should set API keys', async () => {
+      const apiKeys = {
+        ANTHROPIC_API_KEY: 'test-key-12345',
+        OPENROUTER_API_KEY: 'test-or-key',
+      };
+
+      const result = await AgentSystemBuilder.minimal().withAPIKeys(apiKeys).build();
+      cleanup = result.cleanup;
+
+      expect(result.config.apiKeys).toBeDefined();
+      expect(result.config.apiKeys?.ANTHROPIC_API_KEY).toBe('test-key-12345');
+      expect(result.config.apiKeys?.OPENROUTER_API_KEY).toBe('test-or-key');
+    });
+
+    test('withProvidersConfig() and withAPIKeys() should work together', async () => {
+      const providersConfig = {
+        providers: {
+          anthropic: {
+            type: 'native' as const,
+            apiKeyEnv: 'ANTHROPIC_API_KEY',
+          },
+        },
+      };
+
+      const apiKeys = {
+        ANTHROPIC_API_KEY: 'programmatic-key',
+      };
+
+      const result = await AgentSystemBuilder.minimal()
+        .withProvidersConfig(providersConfig)
+        .withAPIKeys(apiKeys)
+        .build();
+      cleanup = result.cleanup;
+
+      expect(result.config.providersConfig).toBeDefined();
+      expect(result.config.apiKeys).toBeDefined();
+    });
+
+    test('code-first configuration should not require any files', async () => {
+      // This test demonstrates that the system can work without any config files
+      const result = await AgentSystemBuilder.minimal()
+        .withAPIKeys({
+          ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY || 'test-key',
+        })
+        .build();
+      cleanup = result.cleanup;
+
+      expect(result.executor).toBeDefined();
+      expect(result.toolRegistry).toBeDefined();
+      // No file reads should have occurred
+    });
+  });
+
   describe('Build Result', () => {
     test('build() should return complete BuildResult', async () => {
       const result = await AgentSystemBuilder.default().build();

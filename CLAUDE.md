@@ -38,17 +38,22 @@ npx vitest run tests/unit/specific.test.ts
 ### Examples
 ```bash
 # Core examples
-npx tsx packages/examples/quickstart.ts       # Basic agent execution
-npx tsx packages/examples/orchestration.ts    # Agent delegation demo
-npx tsx packages/examples/configuration.ts    # Config file usage
-npx tsx packages/examples/logging.ts          # Logging features
-npx tsx packages/examples/mcp-integration.ts  # MCP tool server (time utilities)
-npx tsx packages/examples/werewolf-game.ts    # Autonomous multi-agent game
+npx tsx examples/quickstart.ts       # Basic agent execution
+npx tsx examples/orchestration.ts    # Agent delegation demo
+npx tsx examples/configuration.ts    # Config file usage
+npx tsx examples/logging.ts          # Logging features
+npx tsx examples/mcp-integration.ts  # MCP tool server (time utilities)
+npx tsx examples/werewolf-game.ts    # Autonomous multi-agent game
 
-# CLI usage
+# CLI usage - run mode
 npm run cli -- -p "Hello, world!"    # Basic CLI usage
 echo "test" | npm run cli            # stdin support
 npm run cli -- --list-agents         # List available agents
+
+# CLI usage - serve mode (web UI)
+npm run cli:serve                    # Start web server on localhost:3000
+npm run cli -- serve --open          # Start server and open browser
+npm run cli -- serve --working-dir ~/my-project --port 8080
 ```
 
 ## Security & Reliability
@@ -293,6 +298,59 @@ const builder = AgentSystemBuilder.default()
     }
   });
 ```
+
+### Code-First Configuration (No Files Required)
+
+**IMPORTANT**: Configuration files (`agent-config.json`, `providers-config.json`) are now **optional**. The system supports fully programmatic configuration, which is the preferred approach for:
+
+- **Testing**: Inject controlled configuration without file dependencies
+- **Secret Managers**: Load API keys from AWS Secrets Manager, Vault, etc.
+- **Library Usage**: Embed the agent system in other applications
+- **CI/CD**: Dynamically configure based on environment
+
+**Key Methods:**
+- `.withProvidersConfig(config)` - Provide ProvidersConfig object instead of loading from file
+- `.withAPIKeys(keys)` - Provide API keys programmatically (overrides environment variables)
+
+**Example (Secret Manager Integration):**
+```typescript
+import { AgentSystemBuilder, type ProvidersConfig } from '@agent-system/core';
+
+// Define providers config in code
+const providersConfig: ProvidersConfig = {
+  providers: {
+    anthropic: {
+      type: 'native',
+      apiKeyEnv: 'ANTHROPIC_API_KEY',
+    },
+  },
+  behaviorPresets: {
+    balanced: { temperature: 0.5, top_p: 0.85 },
+  },
+};
+
+// Load API keys from secret manager
+const apiKeys = {
+  ANTHROPIC_API_KEY: await secretManager.get('anthropic-api-key'),
+};
+
+const { executor, cleanup } = await AgentSystemBuilder.default()
+  .withModel('anthropic/claude-3-5-haiku-latest')
+  .withProvidersConfig(providersConfig)
+  .withAPIKeys(apiKeys)
+  .build();
+```
+
+**API Key Precedence:**
+1. Programmatic keys (`.withAPIKeys()`) - highest priority
+2. Environment variables (`process.env`) - fallback
+
+**When to Use:**
+- ✅ Testing: Inject test keys without touching environment
+- ✅ Production: Load from secret managers (AWS, Vault, etc.)
+- ✅ Library: Embed in other applications
+- ✅ Dynamic: Build configuration at runtime
+- ❌ Simple scripts: File-based config is still fine for quick scripts
 
 ### Safety Configuration
 

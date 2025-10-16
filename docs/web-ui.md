@@ -259,6 +259,25 @@ One event stream, many consumers:
 
 ### Starting the Web Server
 
+**Production Mode (CLI):**
+```bash
+# Start production web server with CLI
+agent serve
+
+# Custom port and host
+agent serve --port 8080 --host 0.0.0.0
+
+# Set working directory (agents, logs, file operations)
+agent serve --working-dir ~/my-project
+
+# Auto-open browser
+agent serve --open
+
+# Combine options
+agent serve --working-dir ~/project --port 3001 --open
+```
+
+**Development Mode:**
 ```bash
 # From workspace root
 npm run dev:web
