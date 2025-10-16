@@ -190,6 +190,9 @@ agent serve --open
 # Custom port and host
 agent serve --port 8080 --host 0.0.0.0
 
+# Set working directory (agents, logs, file operations)
+agent serve --working-dir ~/my-project --open
+
 # Or use convenience script
 npm run cli:serve
 ```
@@ -418,6 +421,80 @@ const fromFile = await AgentSystemBuilder
 
 // Always cleanup when done
 await full.cleanup();
+```
+
+### Code-First Configuration (No Files Required)
+
+The system supports fully programmatic configuration, making config files optional. This is ideal for:
+- **Testing**: Inject controlled configuration without file dependencies
+- **Secret Managers**: Load API keys from AWS Secrets Manager, Vault, etc.
+- **Library Usage**: Embed the agent system in other applications
+- **Dynamic Configuration**: Build configuration at runtime
+
+```typescript
+import { AgentSystemBuilder, type ProvidersConfig } from '@agent-system/core';
+
+// Define providers config programmatically
+const providersConfig: ProvidersConfig = {
+  providers: {
+    anthropic: {
+      type: 'native',
+      apiKeyEnv: 'ANTHROPIC_API_KEY',
+      models: [
+        {
+          id: 'claude-3-5-haiku-latest',
+          contextLength: 200000,
+          maxOutputTokens: 8192,
+        },
+      ],
+    },
+    openrouter: {
+      type: 'openai-compatible',
+      baseURL: 'https://openrouter.ai/api/v1',
+      apiKeyEnv: 'OPENROUTER_API_KEY',
+    },
+  },
+  behaviorPresets: {
+    balanced: { temperature: 0.5, top_p: 0.85 },
+    precise: { temperature: 0.2, top_p: 0.6 },
+  },
+};
+
+// Load API keys from your secret manager
+const apiKeys = {
+  ANTHROPIC_API_KEY: await secretManager.get('anthropic-api-key'),
+  OPENROUTER_API_KEY: await secretManager.get('openrouter-api-key'),
+};
+
+// Build the system with programmatic configuration
+const { executor, cleanup } = await AgentSystemBuilder.default()
+  .withModel('anthropic/claude-3-5-haiku-latest')
+  .withProvidersConfig(providersConfig)
+  .withAPIKeys(apiKeys)
+  .build();
+
+try {
+  const result = await executor.execute('orchestrator', 'Your task here');
+  console.log(result);
+} finally {
+  await cleanup();
+}
+```
+
+**Key Points:**
+- **No files needed**: System works entirely from code
+- **API key precedence**: Programmatic keys override environment variables
+- **Type safety**: Full TypeScript support for configuration objects
+- **Fallback behavior**: Still falls back to `process.env` if keys not provided
+
+**Minimal Example (Testing):**
+```typescript
+// Minimal configuration for testing
+const { executor, cleanup } = await AgentSystemBuilder.minimal()
+  .withAPIKeys({
+    ANTHROPIC_API_KEY: 'test-key',
+  })
+  .build();
 ```
 
 ## 🔧 Adding Custom Middleware
