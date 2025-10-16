@@ -86,7 +86,13 @@ export class AgentExecutor {
       .use(createThinkingMiddleware(this.config.safety)) // NEW: Validate and normalize thinking config
       .use(createContextSetupMiddleware())
       .use(
-        createProviderSelectionMiddleware(this.modelName, this.config.defaultBehavior, this.logger)
+        createProviderSelectionMiddleware(
+          this.modelName,
+          this.config.defaultBehavior,
+          this.logger,
+          this.config.providersConfig,
+          this.config.apiKeys
+        )
       )
       .use(createSafetyChecksMiddleware(this.config.safety))
       .use(createSmartRetryMiddleware()) // NEW: Smart retry with exponential backoff

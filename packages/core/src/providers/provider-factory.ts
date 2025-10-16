@@ -123,7 +123,8 @@ export class ProviderFactory {
     modelString: string,
     providersConfig: ProvidersConfig,
     logger?: AgentLogger,
-    behaviorSettings?: { temperature: number; top_p: number }
+    behaviorSettings?: { temperature: number; top_p: number },
+    apiKeys?: Record<string, string>
   ): ProviderWithConfig {
     // Parse provider/model
     const firstSlash = modelString.indexOf('/');
@@ -166,11 +167,11 @@ export class ProviderFactory {
       throw new Error(`Unknown provider: ${providerName}. Available: ${available}`);
     }
 
-    // Check API key
-    const apiKey = process.env[providerConfig.apiKeyEnv];
+    // Check API key - provided keys take precedence over environment
+    const apiKey = apiKeys?.[providerConfig.apiKeyEnv] ?? process.env[providerConfig.apiKeyEnv];
     if (!apiKey) {
       throw new Error(
-        `Missing API key for ${providerName}. Set ${providerConfig.apiKeyEnv} environment variable.`
+        `Missing API key for ${providerName}. Set ${providerConfig.apiKeyEnv} environment variable or provide via withAPIKeys().`
       );
     }
 
@@ -242,13 +243,15 @@ export class ProviderFactory {
     modelString: string,
     providersConfig: ProvidersConfig,
     logger?: AgentLogger,
-    behaviorSettings?: { temperature: number; top_p: number }
+    behaviorSettings?: { temperature: number; top_p: number },
+    apiKeys?: Record<string, string>
   ): ProviderWithConfig {
     return this.getDefaultInstance().createWithConfig(
       modelString,
       providersConfig,
       logger,
-      behaviorSettings
+      behaviorSettings,
+      apiKeys
     );
   }
 
@@ -256,13 +259,19 @@ export class ProviderFactory {
     modelString: string,
     providersConfig: ProvidersConfig,
     logger?: AgentLogger,
-    defaultBehaviorName?: string
+    defaultBehaviorName?: string,
+    apiKeys?: Record<string, string>
   ): ILLMProvider {
-    return this.getDefaultInstance().create(
+    const defaultBehavior = this.getDefaultInstance().getDefaultBehavior(
+      providersConfig,
+      defaultBehaviorName
+    );
+    return this.getDefaultInstance().createWithConfig(
       modelString,
       providersConfig,
       logger,
-      defaultBehaviorName
-    );
+      defaultBehavior,
+      apiKeys
+    ).provider;
   }
 }

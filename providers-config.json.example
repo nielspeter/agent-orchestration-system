@@ -1,0 +1,143 @@
+{
+  "$schema": "./providers-config.schema.json",
+
+  "_comment": "This file configures all LLM providers and models. Default model and behavior are configured in agent-config.json",
+
+  "_comment2": "Behavior presets combine temperature and top_p for different agent types",
+  "behaviorPresets": {
+    "deterministic": {
+      "temperature": 0.1,
+      "top_p": 0.5,
+      "description": "Near-deterministic for validation, routing, business logic"
+    },
+    "precise": {
+      "temperature": 0.2,
+      "top_p": 0.6,
+      "description": "Code analysis, verification, structured outputs"
+    },
+    "balanced": {
+      "temperature": 0.5,
+      "top_p": 0.85,
+      "description": "Default orchestration, tool use, general reasoning"
+    },
+    "creative": {
+      "temperature": 0.7,
+      "top_p": 0.95,
+      "description": "Storytelling, game mastering, creative content"
+    },
+    "exploratory": {
+      "temperature": 0.9,
+      "top_p": 0.98,
+      "description": "Research, brainstorming, generating alternatives"
+    }
+  },
+
+  "_comment3": "Providers are selected by explicit prefix: provider/model[:modifier]",
+  "providers": {
+    "anthropic": {
+      "type": "native",
+      "className": "AnthropicProvider",
+      "apiKeyEnv": "ANTHROPIC_API_KEY",
+      "models": [
+        {
+          "id": "claude-opus-4-1",
+          "contextLength": 200000,
+          "maxOutputTokens": 4096,
+          "pricing": { "input": 0.015, "output": 0.075 },
+          "capabilities": {
+            "thinking": true,
+            "thinkingMinBudget": 1024,
+            "thinkingMaxBudget": 65536,
+            "thinkingDefaultBudget": 12000,
+            "thinkingNotes": "Supports extended thinking with high token budgets"
+          }
+        },
+        {
+          "id": "claude-sonnet-4-5",
+          "contextLength": 200000,
+          "maxOutputTokens": 8192,
+          "pricing": { "input": 0.003, "output": 0.015 },
+          "capabilities": {
+            "thinking": true,
+            "thinkingMinBudget": 512,
+            "thinkingMaxBudget": 32768,
+            "thinkingDefaultBudget": 8000,
+            "thinkingNotes": "Supports extended thinking with moderate token budgets"
+          }
+        },
+        {
+          "id": "claude-3-5-haiku-latest",
+          "contextLength": 200000,
+          "maxOutputTokens": 4096,
+          "pricing": { "input": 0.0008, "output": 0.004 },
+          "capabilities": {
+            "thinking": false,
+            "thinkingNotes": "Does not support extended thinking"
+          }
+        }
+      ]
+    },
+    "openai": {
+      "type": "openai-compatible",
+      "baseURL": "https://api.openai.com/v1",
+      "apiKeyEnv": "OPENAI_API_KEY",
+      "models": [
+        {
+          "id": "gpt-4-turbo",
+          "contextLength": 128000,
+          "maxOutputTokens": 4096,
+          "capabilities": {
+            "thinking": false,
+            "thinkingNotes": "Does not support extended thinking"
+          }
+        },
+        {
+          "id": "gpt-3.5-turbo",
+          "contextLength": 16385,
+          "maxOutputTokens": 4096,
+          "capabilities": {
+            "thinking": false,
+            "thinkingNotes": "Does not support extended thinking"
+          }
+        },
+        {
+          "id": "o3",
+          "contextLength": 128000,
+          "maxOutputTokens": 65536,
+          "pricing": { "input": 0.015, "output": 0.060 },
+          "capabilities": {
+            "thinking": "automatic",
+            "thinkingPricing": { "input": 0.060 },
+            "thinkingNotes": "o3 models handle reasoning internally with advanced capabilities. Reasoning tokens cost 4x input price ($60/1M vs $15/1M)."
+          }
+        }
+      ]
+    },
+    "openrouter": {
+      "type": "openai-compatible",
+      "baseURL": "https://openrouter.ai/api/v1",
+      "apiKeyEnv": "OPENROUTER_API_KEY",
+      "dynamicModels": true,
+      "_comment": "OpenRouter handles :nitro and :floor modifiers directly in the model name",
+      "routing": {
+        "sort": "throughput"
+      },
+      "models": [
+        {
+          "id": "*",
+          "description": "OpenRouter supports 200+ models dynamically. Supports :nitro and :floor modifiers.",
+          "examples": [
+            "openai/gpt-oss-120b",
+            "x-ai/grok-code-fast-1",
+            "meta-llama/llama-3.1-70b-instruct:nitro",
+            "gpt-4:floor"
+          ],
+          "capabilities": {
+            "thinking": "discovery",
+            "thinkingNotes": "Capabilities discovered at runtime via API testing for each model"
+          }
+        }
+      ]
+    }
+  }
+}

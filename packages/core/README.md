@@ -166,9 +166,70 @@ Built-in security features:
 - **Timeouts**: Configurable timeouts on all operations
 - **Path Validation**: Prevents path traversal attacks
 
-## Configuration Files
+## Configuration
 
-### providers-config.json
+### Code-First Configuration (Recommended)
+
+Configuration files are optional. You can provide configuration programmatically:
+
+```typescript
+import { AgentSystemBuilder, type ProvidersConfig } from '@agent-system/core';
+
+// Define providers config in code
+const providersConfig: ProvidersConfig = {
+  providers: {
+    anthropic: {
+      type: 'native',
+      apiKeyEnv: 'ANTHROPIC_API_KEY',
+      models: [
+        {
+          id: 'claude-3-5-haiku-latest',
+          contextLength: 200000,
+          maxOutputTokens: 8192,
+        },
+      ],
+    },
+    openrouter: {
+      type: 'openai-compatible',
+      baseURL: 'https://openrouter.ai/api/v1',
+      apiKeyEnv: 'OPENROUTER_API_KEY',
+    },
+  },
+  behaviorPresets: {
+    balanced: { temperature: 0.5, top_p: 0.85 },
+    precise: { temperature: 0.2, top_p: 0.6 },
+  },
+};
+
+// Provide API keys programmatically (e.g., from secret manager)
+const apiKeys = {
+  ANTHROPIC_API_KEY: await secretManager.get('anthropic-key'),
+  OPENROUTER_API_KEY: await secretManager.get('openrouter-key'),
+};
+
+// Build with code-first configuration
+const system = await AgentSystemBuilder.default()
+  .withModel('anthropic/claude-3-5-haiku-latest')
+  .withProvidersConfig(providersConfig)
+  .withAPIKeys(apiKeys)
+  .build();
+```
+
+**Benefits:**
+- No file dependencies - ideal for testing and CI/CD
+- Secret manager integration (AWS Secrets Manager, Vault, etc.)
+- Type-safe configuration with full TypeScript support
+- Dynamic configuration at runtime
+
+**API Key Precedence:**
+1. `.withAPIKeys()` - highest priority
+2. `process.env` - fallback
+
+### Configuration Files (Optional)
+
+Alternatively, use configuration files for simpler setups.
+
+#### providers-config.json
 
 Configure LLM providers and behavior presets:
 
@@ -194,7 +255,7 @@ Configure LLM providers and behavior presets:
 }
 ```
 
-### agent-config.json
+#### agent-config.json
 
 Set system-wide defaults:
 
@@ -249,12 +310,16 @@ class AgentSystemBuilder {
   static default(): AgentSystemBuilder;
   static minimal(): AgentSystemBuilder;
   static forTest(): AgentSystemBuilder;
+  static fromConfigFile(path: string): Promise<AgentSystemBuilder>;
 
   withAgents(dirs: string[]): this;
   withTools(tools: BaseTool[]): this;
+  withModel(model: string): this;
   withSessionId(id: string): this;
   withConsole(config: ConsoleConfig): this;
   withMCPServers(servers: MCPConfig): this;
+  withProvidersConfig(config: ProvidersConfig): this;  // NEW
+  withAPIKeys(keys: Record<string, string>): this;     // NEW
 
   async build(): Promise<BuildResult>;
 }

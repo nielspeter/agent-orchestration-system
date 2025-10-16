@@ -29,6 +29,7 @@ import {
   DEFAULT_SYSTEM_CONFIG,
   MCPConfig,
   mergeConfigs,
+  ProvidersConfig,
   resolveConfig,
   ResolvedSystemConfig,
   SafetyConfig,
@@ -125,6 +126,23 @@ export class AgentSystemBuilder {
    */
   withModel(model: string): AgentSystemBuilder {
     return this.with({ model });
+  }
+
+  /**
+   * Provide providers configuration programmatically
+   * This makes providers-config.json optional
+   */
+  withProvidersConfig(config: ProvidersConfig): AgentSystemBuilder {
+    return this.with({ providersConfig: config });
+  }
+
+  /**
+   * Provide API keys programmatically
+   * Allows injection from secret managers, testing, etc.
+   * Falls back to process.env if not provided
+   */
+  withAPIKeys(keys: Record<string, string>): AgentSystemBuilder {
+    return this.with({ apiKeys: keys });
   }
 
   /**
