@@ -11,7 +11,7 @@
 
 import { AgentSystemBuilder } from '@agent-system/core';
 import * as fs from 'fs/promises';
-import * as path from 'path';
+import * as path from 'node:path';
 import * as dotenv from 'dotenv';
 
 // Load environment variables from .env file

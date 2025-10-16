@@ -12,8 +12,8 @@
  */
 
 import { AgentSystemBuilder } from '@agent-system/core';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import * as dotenv from 'dotenv';
 
 // Load environment variables from .env file
@@ -33,9 +33,7 @@ async function runCodingTeam() {
     .withAgentsFrom(path.join(__dirname, 'agents'))
     .addBuiltinTools('shell') // Add shell to the default tools
     .with({
-      execution: {
-        defaultModel: 'anthropic/claude-sonnet-4-5', // Explicitly use claude-sonnet-4-5
-      },
+      defaultModel: 'anthropic/claude-sonnet-4-5', // Explicitly use claude-sonnet-4-5
       safety: {
         maxIterations: 20, // Allow more iterations for complex coding tasks
         maxDepth: 5,

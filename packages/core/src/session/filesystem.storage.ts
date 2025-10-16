@@ -1,7 +1,18 @@
-import { promises as fs } from 'fs';
-import path from 'path';
+import { promises as fs } from 'node:fs';
+import path from 'node:path';
 import { SessionStorage } from './types.js';
-import { isNodeError } from '@/utils/type-guards';
+
+/**
+ * Type guard to check if an error is a Node.js system error with an error code
+ * Private helper - only used within this module
+ */
+function isNodeError(error: unknown): error is NodeJS.ErrnoException {
+  return (
+    error instanceof Error &&
+    'code' in error &&
+    typeof (error as Record<string, unknown>).code === 'string'
+  );
+}
 
 /**
  * Filesystem storage implementation

@@ -67,30 +67,6 @@ Every JSONL file contains:
 
 ## Visualizing Traces
 
-### Simple CLI Viewer
-The system includes a basic trace viewer (`src/tracing/simple-tracer.ts`):
-
-```bash
-npm run trace:last  # View most recent session
-npm run trace session_123  # View specific session
-```
-
-Output:
-```
-📊 Execution Waterfall
-═══════════════════════════════════════════════════════
-├─ orchestrator:task 1.20s ✓
-│  └─ delegated to: claim-agent
-├─ claim-agent:read 0.10s ✓
-├─ claim-agent:write 0.30s ✓
-├─ orchestrator:llm 0.80s ✓
-
-Summary:
-  Total Spans: 4
-  Errors: 0
-  Total Time: 2.40s
-```
-
 ### Analyzing Sessions
 Use the session-analyzer agent to generate comprehensive reports:
 

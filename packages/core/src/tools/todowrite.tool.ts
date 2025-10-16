@@ -1,6 +1,5 @@
 import { Tool, ToolResult } from '@/base-types';
 import { TodoManager } from '@/todos';
-import { isTodoItemArray } from '@/utils/type-guards';
 
 /**
  * Todo item interface for task management
@@ -11,6 +10,33 @@ export interface TodoItem {
   priority: 'high' | 'medium' | 'low';
   id: string;
   activeForm: string; // Present continuous form for display during execution
+}
+
+/**
+ * Type guard to validate TodoItem array
+ * Private helper - only used within this module
+ */
+function isTodoItemArray(value: unknown): value is TodoItem[] {
+  if (!Array.isArray(value)) {
+    return false;
+  }
+
+  return value.every((item) => {
+    if (typeof item !== 'object' || item === null) {
+      return false;
+    }
+
+    const todo = item as Record<string, unknown>;
+    return (
+      typeof todo.content === 'string' &&
+      typeof todo.status === 'string' &&
+      (todo.status === 'pending' || todo.status === 'in_progress' || todo.status === 'completed') &&
+      typeof todo.activeForm === 'string' &&
+      typeof todo.id === 'string' &&
+      typeof todo.priority === 'string' &&
+      (todo.priority === 'high' || todo.priority === 'medium' || todo.priority === 'low')
+    );
+  });
 }
 
 /**

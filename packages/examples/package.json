@@ -5,51 +5,33 @@
   "type": "module",
   "description": "Example scripts for agent orchestration system",
   "scripts": {
+    "build": "echo 'No build needed for examples'",
     "coding-team": "tsx coding-team/coding-team.ts",
-    "configuration": "tsx configuration.ts",
-    "critical-illness": "tsx critical-illness-claim.ts",
-    "critical-illness-structured": "tsx critical-illness-claim-structured.ts",
+    "configuration": "tsx configuration/configuration.ts",
+    "critical-illness": "tsx critical-illness-claim/critical-illness-claim.ts",
+    "critical-illness-structured": "tsx critical-illness-claim-structured/critical-illness-claim-structured.ts",
     "default-agent": "tsx default-agent.ts",
     "inline-agents": "tsx inline-agents.ts",
-    "logging": "tsx logging.ts",
+    "logging": "tsx logging/logging.ts",
     "mcp": "tsx mcp-integration.ts",
     "memory-patterns": "tsx memory-patterns.ts",
-    "orchestration": "tsx orchestration.ts",
-    "quickstart": "tsx quickstart.ts",
-    "script-tools": "tsx script-tools.ts",
-    "session-analyzer": "tsx session-analyzer.ts",
-    "udbud": "tsx udbud/udbud-tender.ts",
-    "werewolf": "tsx werewolf-game.ts",
-    "workflow-pipeline": "tsx workflow-pipeline.ts",
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
+    "orchestration": "tsx orchestration/orchestration.ts",
+    "quickstart": "tsx quickstart/quickstart.ts",
+    "script-tools": "tsx script-tools/script-tools.ts",
+    "session-analyzer": "tsx session-analyzer/session-analyzer.ts",
+    "thinking": "tsx thinking/thinking.ts",
+    "udbud": "tsx udbud/udbud.ts",
+    "werewolf": "tsx werewolf-game/werewolf-game.ts",
+    "workflow-pipeline": "tsx workflow-pipeline/workflow-pipeline.ts",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "dependencies": {
     "@agent-system/core": "*"
   },
   "devDependencies": {
-    "@types/jest": "^30.0.0",
     "dotenv": "^16.4.5",
-    "jest": "^30.2.0",
-    "ts-jest": "^29.4.5",
     "tsx": "^4.7.1",
     "typescript": "^5.9.3"
-  },
-  "jest": {
-    "preset": "ts-jest",
-    "testEnvironment": "node",
-    "transform": {
-      "^.+\\.tsx?$": [
-        "ts-jest",
-        {
-          "useESM": true
-        }
-      ]
-    },
-    "extensionsToTreatAsEsm": [
-      ".ts"
-    ],
-    "moduleNameMapper": {
-      "^(\\.{1,2}/.*)\\.js$": "$1"
-    }
   }
 }

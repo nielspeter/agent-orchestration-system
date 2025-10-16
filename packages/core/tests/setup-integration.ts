@@ -1,6 +1,6 @@
 import * as dotenv from 'dotenv';
-import * as path from 'path';
-import * as fs from 'fs';
+import * as path from 'node:path';
+import * as fs from 'node:fs';
 import { afterEach, vi } from 'vitest';
 
 // Load test environment variables for integration tests

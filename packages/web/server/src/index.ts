@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-import { resolve } from 'path';
+import { resolve } from 'node:path';
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import { AgentSystemBuilder, EventLogger } from '@agent-system/core';

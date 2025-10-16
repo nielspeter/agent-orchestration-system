@@ -38,12 +38,12 @@ npx vitest run tests/unit/specific.test.ts
 ### Examples
 ```bash
 # Core examples
-npx tsx examples/quickstart.ts       # Basic agent execution
-npx tsx examples/orchestration.ts    # Agent delegation demo
-npx tsx examples/configuration.ts    # Config file usage
-npx tsx examples/logging.ts          # Logging features
-npx tsx examples/mcp-integration.ts  # MCP tool server (time utilities)
-npx tsx examples/werewolf-game.ts    # Autonomous multi-agent game
+npx tsx packages/examples/quickstart.ts       # Basic agent execution
+npx tsx packages/examples/orchestration.ts    # Agent delegation demo
+npx tsx packages/examples/configuration.ts    # Config file usage
+npx tsx packages/examples/logging.ts          # Logging features
+npx tsx packages/examples/mcp-integration.ts  # MCP tool server (time utilities)
+npx tsx packages/examples/werewolf-game.ts    # Autonomous multi-agent game
 
 # CLI usage
 npm run cli -- -p "Hello, world!"    # Basic CLI usage
@@ -198,7 +198,7 @@ const result = response as ToolResult; // Avoid this!
 
 **Tools** (`src/tools/`): Implement `BaseTool` interface, registered in ToolRegistry
 
-**Agents** (`agents/` and `examples/*/agents/`): Markdown files with YAML frontmatter defining agent capabilities
+**Agents** (`agents/` and `packages/examples/*/agents/`): Markdown files with YAML frontmatter defining agent capabilities
 
 ### Testing Strategy
 

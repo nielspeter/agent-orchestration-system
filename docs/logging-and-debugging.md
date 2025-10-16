@@ -5,7 +5,6 @@
 The agent system provides comprehensive logging and debugging capabilities through multiple mechanisms:
 - **ConsoleLogger** - Real-time colored output for development
 - **EventLogger** - Event emission and persistence for audit/analysis
-- **SimpleTracer** - Post-execution distributed tracing visualization
 - **GetSessionLog tool** - Allows agents to read their own execution history
 
 ## ConsoleLogger
@@ -155,100 +154,6 @@ const executor = new AgentExecutor(
 );
 ```
 
-## SimpleTracer
-
-### Overview
-
-`SimpleTracer` provides post-execution distributed tracing visualization by analyzing session event logs. It builds a span tree showing:
-- Tool execution hierarchy
-- Timing information
-- Success/error status
-- Parent-child relationships
-
-### Usage
-
-#### Command Line
-
-```bash
-# View trace for a session
-npm run trace session-1234567890
-```
-
-#### Programmatic
-
-```typescript
-import { SimpleTracer } from '@agent-system/core';
-
-const tracer = new SimpleTracer();
-tracer.loadSession('session-1234567890');
-tracer.printWaterfall();
-```
-
-### Output Example
-
-```
-📊 Execution Waterfall
-════════════════════════════════════════════════════════════
-├─ orchestrator:WebFetch 1.23s ✓
-│  └─ delegated to: analyzer
-  ├─ analyzer:Read 0.45s ✓
-  ├─ analyzer:Grep 0.32s ✓
-  └─ analyzer:Write 0.18s ✓
-├─ orchestrator:Delegate 2.54s ✓
-  ├─ validator:Read 0.67s ✓
-  └─ validator:Grep 0.43s ✓
-
-Summary:
-  Total Spans: 7
-  Errors: 0
-  Total Time: 5.82s
-```
-
-### Features
-
-**Visual Hierarchy**
-- Tree structure shows delegation relationships
-- Indentation indicates depth
-- ASCII art for visual clarity
-
-**Status Indicators**
-- ✓ (green) - Successful completion
-- ✗ (red) - Error occurred
-- ⟳ (yellow) - Pending/incomplete
-
-**Timing Analysis**
-- Duration for each span
-- Total execution time
-- Identifies slow operations
-
-**Export Capability**
-```typescript
-const tracer = new SimpleTracer();
-tracer.loadSession('session-123');
-const data = tracer.exportJson();
-
-// Returns:
-{
-  spans: [
-    {
-      spanId: "call_abc123",
-      name: "orchestrator:WebFetch",
-      startTime: 1234567890,
-      endTime: 1234567891,
-      status: "ok",
-      attributes: { tool: "WebFetch", agent: "orchestrator" },
-      children: [...]
-    },
-    // ...
-  ],
-  summary: {
-    totalSpans: 7,
-    rootSpans: 2,
-    errors: 0
-  }
-}
-```
-
 ## EventLogger with Event System
 
 ### Overview
@@ -364,12 +269,7 @@ The tool returns the session event log in a formatted, readable way.
    new ConsoleLogger({ verbosity: 'verbose' })
    ```
 
-3. **Use SimpleTracer for performance analysis**
-   ```bash
-   npm run trace <sessionId>
-   ```
-
-4. **Add custom event subscribers for specific debugging**
+3. **Add custom event subscribers for specific debugging**
    ```typescript
    system.eventLogger.on('tool:error', (event) => {
      // Log to external monitoring system
@@ -394,14 +294,26 @@ system.eventLogger.on('agent:error', (event) => {
 
 #### Why is execution slow?
 
-```bash
-# Run SimpleTracer to see timing breakdown
-npm run trace <sessionId>
+```typescript
+// Use verbose logging to see timing for each operation
+new ConsoleLogger({ verbosity: 'verbose' })
 
-# Look for:
-# - Long-running tool calls
-# - Excessive iterations
-# - Deep delegation chains
+// Or track timing with custom event subscribers
+const toolStarts = new Map<string, number>();
+
+system.eventLogger.on('tool:call', (event) => {
+  toolStarts.set(event.data.id, event.timestamp);
+});
+
+system.eventLogger.on('tool:result', (event) => {
+  const startTime = toolStarts.get(event.data.id);
+  if (startTime) {
+    const duration = event.timestamp - startTime;
+    if (duration > 1000) {
+      console.warn(`Slow tool: ${event.data.tool} took ${duration}ms`);
+    }
+  }
+});
 ```
 
 #### Why are costs high?
@@ -486,12 +398,7 @@ await system.executor.execute('agent', 'task');
 
 ### Replaying Sessions
 
-```bash
-# View execution trace
-npm run trace debug-session-001
-```
-
-Or programmatically:
+Programmatically analyze session events:
 ```typescript
 import { FilesystemStorage } from '@agent-system/core';
 
@@ -589,7 +496,7 @@ console.log(monitor.getStats());
 ### Debugging
 1. **Start broad** - Check 'normal' console output
 2. **Zoom in** - Enable 'verbose' for specific agents
-3. **Analyze timing** - Use SimpleTracer for performance
+3. **Analyze timing** - Use event subscribers to track performance
 4. **Track events** - Subscribe to relevant event types
 5. **Replay sessions** - Use saved session logs for post-mortem
 
@@ -597,4 +504,4 @@ console.log(monitor.getStats());
 
 - [Event System](./event-system.md) - Event emission and subscription
 - [Session Persistence](./session-persistence.md) - Storage and recovery
-- [Web UI Integration](./web-ui-integration.md) - Real-time event visualization
+- [Web UI Guide](./web-ui.md) - Real-time event visualization

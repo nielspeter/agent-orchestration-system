@@ -1,5 +1,5 @@
 // Metrics module exports
-export { CacheMetricsCollector } from './cache-collector';
+export { LLMMetricsCollector } from './llm-metrics-collector';
 
 // Export types
-export type { DetailedCacheMetrics, ModelPricing, CacheSessionSummary } from './cache-collector';
+export type { DetailedLLMMetrics, ModelPricing, LLMSessionSummary } from './llm-metrics-collector';

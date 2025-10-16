@@ -7,7 +7,7 @@
  * - OpenRouter Reasoner: Uses thinking via OpenRouter
  *
  * Usage:
- *   npx tsx packages/examples/thinking/thinking-demo.ts
+ *   npx tsx packages/examples/thinking.ts
  *
  * Environment:
  *   ANTHROPIC_API_KEY=... (required for Anthropic models)
@@ -21,8 +21,8 @@ async function main() {
   console.log('='.repeat(60));
 
   // Build the agent system with example agents
-  const system = AgentSystemBuilder.default()
-    .withAgentDirectories([__dirname + '/agents'])
+  const system = await AgentSystemBuilder.default()
+    .withAgentsFrom(__dirname + '/thinking/agents')
     .withConsole()
     .build();
 
@@ -43,7 +43,7 @@ Please show your reasoning process.
 `;
 
   try {
-    const result1 = await system.execute('deep-reasoner', problem1);
+    const result1 = await system.executor.execute('deep-reasoner', problem1);
     console.log('\n✅ Result:\n', result1);
   } catch (error) {
     console.error('\n❌ Error:', error);
@@ -72,7 +72,7 @@ What edge cases might cause issues?
 `;
 
   try {
-    const result2 = await system.execute('quick-thinker', problem2);
+    const result2 = await system.executor.execute('quick-thinker', problem2);
     console.log('\n✅ Result:\n', result2);
   } catch (error) {
     console.error('\n❌ Error:', error);
@@ -94,7 +94,7 @@ Provide a brief, well-reasoned recommendation.
 `;
 
     try {
-      const result3 = await system.execute('openrouter-reasoner', problem3);
+      const result3 = await system.executor.execute('openrouter-reasoner', problem3);
       console.log('\n✅ Result:\n', result3);
     } catch (error) {
       console.error('\n❌ Error:', error);

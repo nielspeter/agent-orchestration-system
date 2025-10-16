@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, test } from 'vitest';
 import * as dotenv from 'dotenv';
 import * as fs from 'fs/promises';
-import * as path from 'path';
-import { fileURLToPath } from 'url';
+import * as path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { AgentSystemBuilder, BuildResult } from '@/config/system-builder';
 import { FilesystemStorage } from '@/session/filesystem.storage';
 

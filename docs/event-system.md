@@ -137,7 +137,7 @@ Console output is implemented as a subscriber (not shown here for brevity - see 
 
 ### Web UI Subscriber (SSE)
 
-See `docs/web-ui-integration.md` for complete examples.
+See `docs/web-ui.md` for complete examples.
 
 ```typescript
 // Express SSE endpoint
@@ -328,6 +328,6 @@ Potential future additions:
 
 ## See Also
 
-- [Web UI Integration Guide](./web-ui-integration.md)
+- [Web UI Guide](./web-ui.md)
 - [Session Persistence](./session-persistence.md)
 - [Architecture Overview](./ARCHITECTURE.md)

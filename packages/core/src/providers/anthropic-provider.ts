@@ -1,7 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { BaseTool, Message, ToolCall } from '@/base-types';
 import { AgentLogger } from '@/logging';
-import { CacheMetricsCollector, ModelPricing } from '@/metrics/cache-collector';
+import { LLMMetricsCollector, ModelPricing } from '@/metrics/llm-metrics-collector';
 import { ILLMProvider, StructuredOutputConfig, UsageMetrics } from './llm-provider.interface';
 import { logThinkingMetrics, ThinkingContentBlock } from './thinking-utils';
 
@@ -17,7 +17,7 @@ export class AnthropicProvider implements ILLMProvider {
   private readonly client: Anthropic;
   private readonly modelName: string;
   private readonly logger?: AgentLogger;
-  private readonly metricsCollector: CacheMetricsCollector;
+  private readonly metricsCollector: LLMMetricsCollector;
   private readonly pricing?: ModelPricing;
   private readonly maxOutputTokens: number;
   private readonly temperature: number;
@@ -43,7 +43,7 @@ export class AnthropicProvider implements ILLMProvider {
     this.maxOutputTokens = maxOutputTokens || 4096;
     this.temperature = temperature || 0.5; // Default 0.5 for better agent behavior
     this.topP = topP || 0.9; // Default 0.9 for balanced behavior
-    this.metricsCollector = new CacheMetricsCollector(logger);
+    this.metricsCollector = new LLMMetricsCollector(logger);
 
     if (!process.env.ANTHROPIC_API_KEY) {
       throw new Error('ANTHROPIC_API_KEY is required for AnthropicProvider');

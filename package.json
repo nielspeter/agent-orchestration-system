@@ -18,7 +18,7 @@
   "author": "",
   "license": "MIT",
   "scripts": {
-    "build": "npm run build --workspaces",
+    "build": "npm run build --workspaces --if-present",
     "build:core": "npm run build -w @agent-system/core",
     "build:web": "npm run build -w @agent-system/web",
     "build:cli": "npm run build -w @agent-system/cli",
@@ -40,9 +40,7 @@
     "format": "prettier --write packages",
     "format:check": "prettier --check packages",
     "check": "npm run lint && npm run format:check && npm run test",
-    "clean": "rm -rf packages/*/dist",
-    "trace": "tsx packages/core/src/tracing/simple-tracer.ts",
-    "trace:last": "tsx packages/core/src/tracing/simple-tracer.ts $(ls -t sessions/*.jsonl | head -1 | xargs basename .jsonl)"
+    "clean": "rm -rf packages/*/dist"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.60.0",
@@ -55,7 +53,6 @@
     "uuid": "^11.1.0"
   },
   "devDependencies": {
-    "@types/jest": "^30.0.0",
     "@types/node": "^20.11.30",
     "@typescript-eslint/eslint-plugin": "^8.41.0",
     "@typescript-eslint/parser": "^8.41.0",
@@ -63,9 +60,7 @@
     "eslint": "^9.34.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
-    "jest": "^30.1.3",
     "prettier": "^3.6.2",
-    "ts-jest": "^29.4.2",
     "tsx": "^4.7.1",
     "typescript": "^5.9.2",
     "vitest": "^2.1.8"

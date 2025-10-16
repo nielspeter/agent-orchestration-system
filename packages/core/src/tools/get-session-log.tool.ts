@@ -1,6 +1,6 @@
 import { Tool, ToolResult } from '@/base-types';
 import * as fs from 'fs/promises';
-import * as path from 'path';
+import * as path from 'node:path';
 
 export interface SessionLogEntry {
   uuid: string;

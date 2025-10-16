@@ -1,6 +1,5 @@
-import { AnySessionEvent, SessionStorage, ToolCallEvent } from './types';
+import { AnySessionEvent, SessionStorage, ToolCallEvent, isSessionEvent } from './types';
 import { TodoItem } from '@/tools/todowrite.tool';
-import { isSessionEvent } from '@/utils/type-guards';
 import { Message, ToolCall } from '@/base-types';
 import { formatSanitizationIssues, sanitizeRecoveredMessages } from './message-sanitizer';
 

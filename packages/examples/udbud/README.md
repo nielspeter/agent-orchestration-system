@@ -63,13 +63,13 @@ export ANTHROPIC_API_KEY=your-key-here
 
 ```bash
 # Analyze a public tender
-npx tsx examples/udbud/udbud-tender.ts offentlig ./path/to/tender/docs
+npx tsx examples/udbud.ts offentlig ./path/to/tender/docs
 
 # Analyze a private tender
-npx tsx examples/udbud/udbud-tender.ts privat ./path/to/tender/docs
+npx tsx examples/udbud.ts privat ./path/to/tender/docs
 
 # Use default settings (public tender, ./dokumenter/udbud)
-npx tsx examples/udbud/udbud-tender.ts
+npx tsx examples/udbud.ts
 ```
 
 ## Document Structure

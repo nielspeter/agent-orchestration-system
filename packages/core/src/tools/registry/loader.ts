@@ -1,5 +1,5 @@
 import * as fs from 'fs/promises';
-import * as path from 'path';
+import * as path from 'node:path';
 import { BaseTool, ToolParameter, ToolResult } from '@/base-types';
 import { AgentLogger } from '@/logging';
 import { createShellTool } from '@/tools/shell.tool';
