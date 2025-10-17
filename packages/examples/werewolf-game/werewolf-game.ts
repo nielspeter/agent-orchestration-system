@@ -23,6 +23,7 @@ async function main() {
   const builder = AgentSystemBuilder.default()
     .withAgentsFrom('werewolf-game/agents')
     .withToolsFrom('werewolf-game/tools')
+    .withConsole({ verbosity: 'verbose' }) // Full logging
     .withSafetyLimits({
       maxIterations: 50, // Allow many iterations for complex game
       maxDepth: 10, // Allow deeper delegation chains

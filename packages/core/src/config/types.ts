@@ -321,7 +321,7 @@ export interface ResolvedSystemConfig {
  */
 export const DEFAULT_SYSTEM_CONFIG: ResolvedSystemConfig = {
   model: '', // Will be set to defaultModel if not specified
-  defaultModel: 'anthropic/claude-sonnet-4-5',
+  defaultModel: 'anthropic/claude-haiku-4-5',
   defaultBehavior: 'balanced',
 
   agents: {

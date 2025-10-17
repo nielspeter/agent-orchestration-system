@@ -352,15 +352,61 @@ export class ConsoleLogger implements AgentLogger {
   }
 
   logTodoUpdate(todos: Array<{ content: string; status: string; activeForm?: string }>): void {
-    if (this.verbosity !== 'verbose') return;
+    if (this.verbosity === 'minimal') return;
 
     const timestamp = this.formatTimestamp();
-    const pending = todos.filter((t) => t.status === 'pending').length;
-    const inProgress = todos.filter((t) => t.status === 'in_progress').length;
-    const completed = todos.filter((t) => t.status === 'completed').length;
+    const pending = todos.filter((t) => t.status === 'pending');
+    const inProgress = todos.filter((t) => t.status === 'in_progress');
+    const completed = todos.filter((t) => t.status === 'completed');
 
-    const todoMessage = `# Todos: ${pending} pending, ${inProgress} active, ${completed} done`;
-    console.log(`${timestamp}${this.color(todoMessage, 'dim')}`);
+    // Empty line before todos for visual separation
+    console.log('');
+
+    // Header with green bullet
+    console.log(`${timestamp}${this.color('● Update Todos', 'green')}`);
+
+    // Show in-progress tasks first (most important)
+    if (inProgress.length > 0) {
+      inProgress.forEach((todo, i) => {
+        const isFirst = i === 0 && pending.length === 0 && completed.length === 0;
+        const connector = isFirst ? '└─' : '  ';
+        const checkbox = '⚡'; // Lightning for active task
+        const text = todo.activeForm || todo.content;
+        console.log(
+          `${timestamp.length > 0 ? ' '.repeat(timestamp.length) : ''}  ${connector} ${this.color(checkbox, 'yellow')} ${this.color(text, 'yellow')}`
+        );
+      });
+    }
+
+    // Show pending tasks
+    if (pending.length > 0) {
+      pending.forEach((todo, i) => {
+        const isFirst = i === 0 && inProgress.length === 0;
+        const isLast = i === pending.length - 1 && completed.length === 0;
+        const connector = isFirst && isLast ? '└─' : '  ';
+        const checkbox = '☐';
+        console.log(
+          `${timestamp.length > 0 ? ' '.repeat(timestamp.length) : ''}  ${connector} ${checkbox} ${todo.content}`
+        );
+      });
+    }
+
+    // Show completed tasks (in verbose mode only, or if there are no other tasks)
+    if (this.verbosity === 'verbose' || (inProgress.length === 0 && pending.length === 0)) {
+      if (completed.length > 0) {
+        completed.forEach((todo, i) => {
+          const isFirst = i === 0 && inProgress.length === 0 && pending.length === 0;
+          const isLast = i === completed.length - 1;
+          const connector = isFirst && isLast ? '└─' : '  ';
+          const checkbox = '✓';
+          console.log(
+            `${timestamp.length > 0 ? ' '.repeat(timestamp.length) : ''}  ${connector} ${this.color(checkbox, 'green')} ${this.color(todo.content, 'dim')}`
+          );
+        });
+      }
+    }
+
+    console.log(''); // Empty line after todos
   }
 
   logSafetyLimit(reason: string, agent: string, details?: string): void {

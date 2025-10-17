@@ -1,7 +1,7 @@
 ---
 name: seer
-model: openrouter/openai/gpt-4o
 behavior: creative
+thinking: true
 tools: []
 ---
 
