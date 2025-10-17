@@ -1,24 +1,27 @@
-import { defineConfig, mergeConfig } from 'vitest/config';
-import viteConfig from './vite.config';
+import { defineConfig } from 'vitest/config';
+import path from 'node:path';
 
-export default mergeConfig(
-  viteConfig,
-  defineConfig({
-    test: {
-      name: 'integration',
-      environment: 'node',
-      include: ['tests/integration/**/*.test.ts'],
-      setupFiles: ['./tests/setup-integration.ts'],
-      globals: true,
-      testTimeout: 60000, // 60 seconds for integration tests (API calls)
-      maxConcurrency: 1, // Run tests sequentially
-      fileParallelism: false, // Disable parallel file execution
-      coverage: {
-        provider: 'v8',
-        reporter: ['text', 'lcov', 'html'],
-        include: ['src/**/*.ts'],
-        exclude: ['src/**/*.d.ts', 'src/**/*.test.ts', 'src/**/index.ts'],
-      },
+export default defineConfig({
+  root: path.resolve(__dirname),
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
     },
-  })
-);
+  },
+  test: {
+    name: 'integration',
+    environment: 'node',
+    include: ['tests/integration/**/*.test.ts'],
+    setupFiles: ['./tests/setup-integration.ts'],
+    globals: true,
+    testTimeout: 60000, // 60 seconds for integration tests (API calls)
+    maxConcurrency: 1, // Run tests sequentially
+    fileParallelism: false, // Disable parallel file execution
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'lcov', 'html'],
+      include: ['src/**/*.ts'],
+      exclude: ['src/**/*.d.ts', 'src/**/*.test.ts', 'src/**/index.ts'],
+    },
+  },
+});

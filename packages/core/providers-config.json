@@ -42,37 +42,20 @@
         {
           "id": "claude-opus-4-1",
           "contextLength": 200000,
-          "maxOutputTokens": 4096,
+          "maxOutputTokens": 32000,
           "pricing": { "input": 0.015, "output": 0.075 }
         },
         {
-          "id": "claude-sonnet-4-0",
+          "id": "claude-sonnet-4-5",
           "contextLength": 200000,
-          "maxOutputTokens": 4096,
+          "maxOutputTokens": 64000,
           "pricing": { "input": 0.003, "output": 0.015 }
         },
         {
-          "id": "claude-3-5-haiku-latest",
+          "id": " claude-haiku-4-5",
           "contextLength": 200000,
-          "maxOutputTokens": 4096,
-          "pricing": { "input": 0.0008, "output": 0.004 }
-        }
-      ]
-    },
-    "openai": {
-      "type": "openai-compatible",
-      "baseURL": "https://api.openai.com/v1",
-      "apiKeyEnv": "OPENAI_API_KEY",
-      "models": [
-        {
-          "id": "gpt-4-turbo",
-          "contextLength": 128000,
-          "maxOutputTokens": 4096
-        },
-        {
-          "id": "gpt-3.5-turbo",
-          "contextLength": 16385,
-          "maxOutputTokens": 4096
+          "maxOutputTokens": 64000,
+          "pricing": { "input": 0.001, "output": 0.005 }
         }
       ]
     },
@@ -90,10 +73,9 @@
           "id": "*",
           "description": "OpenRouter supports 200+ models dynamically. Supports :nitro and :floor modifiers.",
           "examples": [
-            "openai/gpt-oss-120b",
+            "openai/gpt-oss-120b:nitro",
             "x-ai/grok-code-fast-1",
-            "meta-llama/llama-3.1-70b-instruct:nitro",
-            "gpt-4:floor"
+            "meta-llama/llama-3.1-70b-instruct:nitro"
           ]
         }
       ]

@@ -1,6 +1,5 @@
 ---
 name: game-master
-model: openrouter/openai/gpt-4o
 behavior: deterministic
 tools: ["delegate", "random_roles"]
 thinking:

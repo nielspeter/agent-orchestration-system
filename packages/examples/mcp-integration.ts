@@ -31,7 +31,14 @@ async function main() {
       })
       .withSessionId('mcp-time-demo');
 
-    const { cleanup, toolRegistry } = await builder.build();
+    const { cleanup, executor, toolRegistry } = await builder.build();
+
+    const result = await executor.execute(
+      'time-demo',
+      'Get the current time in New York and London, then convert 3:00 PM EST to London time.'
+    );
+
+    console.log(result);
 
     console.log('Available tools:');
     toolRegistry.getAllTools().forEach((tool) => {

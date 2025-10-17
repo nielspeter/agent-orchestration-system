@@ -42,74 +42,20 @@
         {
           "id": "claude-opus-4-1",
           "contextLength": 200000,
-          "maxOutputTokens": 4096,
-          "pricing": { "input": 0.015, "output": 0.075 },
-          "capabilities": {
-            "thinking": true,
-            "thinkingMinBudget": 1024,
-            "thinkingMaxBudget": 65536,
-            "thinkingDefaultBudget": 12000,
-            "thinkingNotes": "Supports extended thinking with high token budgets"
-          }
+          "maxOutputTokens": 32000,
+          "pricing": { "input": 0.015, "output": 0.075 }
         },
         {
           "id": "claude-sonnet-4-5",
           "contextLength": 200000,
-          "maxOutputTokens": 8192,
-          "pricing": { "input": 0.003, "output": 0.015 },
-          "capabilities": {
-            "thinking": true,
-            "thinkingMinBudget": 512,
-            "thinkingMaxBudget": 32768,
-            "thinkingDefaultBudget": 8000,
-            "thinkingNotes": "Supports extended thinking with moderate token budgets"
-          }
+          "maxOutputTokens": 64000,
+          "pricing": { "input": 0.003, "output": 0.015 }
         },
         {
-          "id": "claude-3-5-haiku-latest",
+          "id": " claude-haiku-4-5",
           "contextLength": 200000,
-          "maxOutputTokens": 4096,
-          "pricing": { "input": 0.0008, "output": 0.004 },
-          "capabilities": {
-            "thinking": false,
-            "thinkingNotes": "Does not support extended thinking"
-          }
-        }
-      ]
-    },
-    "openai": {
-      "type": "openai-compatible",
-      "baseURL": "https://api.openai.com/v1",
-      "apiKeyEnv": "OPENAI_API_KEY",
-      "models": [
-        {
-          "id": "gpt-4-turbo",
-          "contextLength": 128000,
-          "maxOutputTokens": 4096,
-          "capabilities": {
-            "thinking": false,
-            "thinkingNotes": "Does not support extended thinking"
-          }
-        },
-        {
-          "id": "gpt-3.5-turbo",
-          "contextLength": 16385,
-          "maxOutputTokens": 4096,
-          "capabilities": {
-            "thinking": false,
-            "thinkingNotes": "Does not support extended thinking"
-          }
-        },
-        {
-          "id": "o3",
-          "contextLength": 128000,
-          "maxOutputTokens": 65536,
-          "pricing": { "input": 0.015, "output": 0.060 },
-          "capabilities": {
-            "thinking": "automatic",
-            "thinkingPricing": { "input": 0.060 },
-            "thinkingNotes": "o3 models handle reasoning internally with advanced capabilities. Reasoning tokens cost 4x input price ($60/1M vs $15/1M)."
-          }
+          "maxOutputTokens": 64000,
+          "pricing": { "input": 0.001, "output": 0.005 }
         }
       ]
     },
@@ -127,15 +73,10 @@
           "id": "*",
           "description": "OpenRouter supports 200+ models dynamically. Supports :nitro and :floor modifiers.",
           "examples": [
-            "openai/gpt-oss-120b",
+            "openai/gpt-oss-120b:nitro",
             "x-ai/grok-code-fast-1",
-            "meta-llama/llama-3.1-70b-instruct:nitro",
-            "gpt-4:floor"
-          ],
-          "capabilities": {
-            "thinking": "discovery",
-            "thinkingNotes": "Capabilities discovered at runtime via API testing for each model"
-          }
+            "meta-llama/llama-3.1-70b-instruct:nitro"
+          ]
         }
       ]
     }
