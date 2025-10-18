@@ -34,7 +34,7 @@ const mockProvidersConfig = {
           },
         },
         {
-          id: 'claude-3-5-haiku-latest',
+          id: 'claude-haiku-4-5',
           contextLength: 200000,
           capabilities: {
             thinking: false as const,
@@ -153,7 +153,7 @@ describe('ThinkingMiddleware', () => {
     it('should mark Haiku as non-thinking', async () => {
       const middleware = new ThinkingMiddleware(mockProvidersConfig);
       const ctx = createTestContext({
-        modelName: 'anthropic/claude-3-5-haiku-latest',
+        modelName: 'anthropic/claude-haiku-4-5',
         agent: { name: 'test', prompt: 'test', thinking: true } as Agent,
       });
 
@@ -336,7 +336,7 @@ describe('ThinkingMiddleware', () => {
     it('should warn when thinking enabled on non-supporting model', async () => {
       const middleware = new ThinkingMiddleware(mockProvidersConfig);
       const ctx = createTestContext({
-        modelName: 'anthropic/claude-3-5-haiku-latest',
+        modelName: 'anthropic/claude-haiku-4-5',
         agent: { name: 'test', prompt: 'test', thinking: true } as Agent,
       });
 

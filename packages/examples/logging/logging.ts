@@ -10,7 +10,7 @@ dotenv.config({ path: '../../.env' });
 async function testWithLogging() {
   // Minimal config with verbose logging enabled and example-specific agents
   const { executor, cleanup } = await new AgentSystemBuilder()
-    .withModel(process.env.MODEL || 'anthropic/claude-3-5-haiku-latest')
+    .withModel(process.env.MODEL || 'anthropic/claude-haiku-4-5')
     .withAgentsFrom('logging/agents')
     .withDefaultTools() // read, write, list, task for delegation demos
     .withTodoTool() // Include todo for Test 3

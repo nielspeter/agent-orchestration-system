@@ -35,7 +35,7 @@ describe('Metadata Persistence Integration', () => {
     // Create system with file storage and event logger
     const storage = new FilesystemStorage(sessionDir);
     const builder = AgentSystemBuilder.default()
-      .withModel(process.env.MODEL || 'anthropic/claude-3-5-haiku-latest')
+      .withModel(process.env.MODEL || 'anthropic/claude-haiku-4-5')
       .withStorage(storage)
       .withSessionId(sessionId);
 
@@ -107,7 +107,7 @@ describe('Metadata Persistence Integration', () => {
     // Create system with file storage
     const storage = new FilesystemStorage(sessionDir);
     const builder = AgentSystemBuilder.default()
-      .withModel(process.env.MODEL || 'anthropic/claude-3-5-haiku-latest')
+      .withModel(process.env.MODEL || 'anthropic/claude-haiku-4-5')
       .withStorage(storage)
       .withSessionId(sessionId);
 

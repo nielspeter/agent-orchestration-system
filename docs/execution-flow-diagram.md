@@ -89,7 +89,7 @@ Analyze the AgentExecutor class in agent-executor.ts. Focus on:
 
 #### Code-Analyzer Child Agent - Iteration 1
 
-**System:** "Starting execution with claude-3-5-haiku-latest (delegated from orchestrator)"
+**System:** "Starting execution with claude-haiku-4-5 (delegated from orchestrator)"
 **System:** "Inheriting 6 messages from parent context (filtered out system message)"
 
 **Claude says:**
@@ -187,9 +187,9 @@ Would you like me to elaborate on any part of the analysis?
 
 ### System Messages
 
-- "Starting execution with claude-3-5-haiku-latest"
+- "Starting execution with claude-haiku-4-5"
 - "Agent loaded: orchestrator"
-- "Calling claude-3-5-haiku-latest (iteration N)"
+- "Calling claude-haiku-4-5 (iteration N)"
 - "[PARALLEL] Executing 1 tool(s) in parallel (max 10)"
 - "[SEQUENTIAL] Executing 1 tool(s) sequentially"
 - "[SIDECHAIN] Delegating to code-analyzer with full context"

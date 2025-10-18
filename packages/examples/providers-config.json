@@ -66,13 +66,16 @@
           }
         },
         {
-          "id": "claude-3-5-haiku-latest",
+          "id": "claude-haiku-4-5",
           "contextLength": 200000,
           "maxOutputTokens": 4096,
           "pricing": { "input": 0.0008, "output": 0.004 },
           "capabilities": {
-            "thinking": false,
-            "thinkingNotes": "Does not support extended thinking"
+            "thinking": true,
+            "thinkingMinBudget": 512,
+            "thinkingMaxBudget": 32768,
+            "thinkingDefaultBudget": 8000,
+            "thinkingNotes": "Supports extended thinking with moderate token budgets"
           }
         }
       ]

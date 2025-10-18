@@ -42,7 +42,7 @@ describe('Provider Factory - Essential Tests', () => {
 
     const behaviorSettings = { temperature: 0.3, top_p: 0.7 };
     const result = ProviderFactory.createWithConfig(
-      'anthropic/claude-3-5-haiku-latest',
+      'anthropic/claude-haiku-4-5',
       providersConfig,
       undefined,
       behaviorSettings
@@ -67,7 +67,7 @@ describe('Provider Factory - Essential Tests', () => {
     delete process.env.OPENROUTER_API_KEY;
 
     expect(() => {
-      ProviderFactory.createWithConfig('anthropic/claude-3-5-haiku-latest', providersConfig);
+      ProviderFactory.createWithConfig('anthropic/claude-haiku-4-5', providersConfig);
     }).toThrow(/Missing API key/);
 
     // Restore if they existed
@@ -91,7 +91,7 @@ describe('Provider Factory - Essential Tests', () => {
     process.env.ANTHROPIC_API_KEY = 'test-key';
 
     const result = ProviderFactory.createWithConfig(
-      'anthropic/claude-3-5-haiku-latest',
+      'anthropic/claude-haiku-4-5',
       providersConfig
     );
 
@@ -123,7 +123,7 @@ describe('Provider Factory - Essential Tests', () => {
 
     // This should work but strip the modifier
     const result = ProviderFactory.createWithConfig(
-      'anthropic/claude-3-5-haiku-latest:something',
+      'anthropic/claude-haiku-4-5:something',
       providersConfig
     );
 
@@ -145,7 +145,7 @@ describe('Provider Factory - Essential Tests', () => {
 
   test('throws error on empty provider name', () => {
     expect(() => {
-      ProviderFactory.createWithConfig('/claude-3-5-haiku-latest', providersConfig);
+      ProviderFactory.createWithConfig('/claude-haiku-4-5', providersConfig);
     }).toThrow(/Both provider and model must be specified/);
   });
 

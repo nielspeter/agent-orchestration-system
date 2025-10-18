@@ -16,7 +16,7 @@ Agents are markdown files with three parts:
 ---
 name: agent-name
 tools: ["read", "write", "delegate"]
-model: claude-3-5-haiku-latest  # optional
+model: claude-haiku-4-5  # optional
 ---
 
 # Agent prompt/instructions

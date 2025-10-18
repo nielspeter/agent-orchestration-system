@@ -130,7 +130,7 @@ export class ProviderFactory {
     const firstSlash = modelString.indexOf('/');
     if (firstSlash === -1) {
       throw new Error(
-        'Invalid model format. Use: provider/model (e.g., anthropic/claude-3-5-haiku-latest)'
+        'Invalid model format. Use: provider/model (e.g., anthropic/claude-haiku-4-5)'
       );
     }
 

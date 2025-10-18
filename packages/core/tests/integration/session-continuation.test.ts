@@ -50,7 +50,7 @@ describe('Session Continuation Integration Tests', () => {
   test('should continue session after restart', async () => {
     // First execution - create a session
     firstSystem = await AgentSystemBuilder.default()
-      .withModel(process.env.MODEL || 'anthropic/claude-3-5-haiku-latest')
+      .withModel(process.env.MODEL || 'anthropic/claude-haiku-4-5')
       .withStorage(new FilesystemStorage(storagePath))
       .withSessionId(sessionId)
       .withConsole(false) // Disable console output for tests
@@ -68,7 +68,7 @@ describe('Session Continuation Integration Tests', () => {
 
     // Second execution - continue the session
     secondSystem = await AgentSystemBuilder.default()
-      .withModel(process.env.MODEL || 'anthropic/claude-3-5-haiku-latest')
+      .withModel(process.env.MODEL || 'anthropic/claude-haiku-4-5')
       .withStorage(new FilesystemStorage(storagePath))
       .withSessionId(sessionId)
       .withConsole(false)
@@ -88,7 +88,7 @@ describe('Session Continuation Integration Tests', () => {
 
   test('should handle new session when no previous exists', async () => {
     firstSystem = await AgentSystemBuilder.default()
-      .withModel(process.env.MODEL || 'anthropic/claude-3-5-haiku-latest')
+      .withModel(process.env.MODEL || 'anthropic/claude-haiku-4-5')
       .withStorage(new FilesystemStorage(storagePath))
       .withSessionId(sessionId)
       .withConsole(false)
@@ -110,7 +110,7 @@ describe('Session Continuation Integration Tests', () => {
   test('should preserve conversation context across restarts', async () => {
     // First system - have a conversation in a single session
     firstSystem = await AgentSystemBuilder.default()
-      .withModel(process.env.MODEL || 'anthropic/claude-3-5-haiku-latest')
+      .withModel(process.env.MODEL || 'anthropic/claude-haiku-4-5')
       .withStorage(new FilesystemStorage(storagePath))
       .withSessionId(sessionId)
       .withConsole(false)
@@ -130,7 +130,7 @@ describe('Session Continuation Integration Tests', () => {
 
     // Second system - verify context is preserved
     secondSystem = await AgentSystemBuilder.default()
-      .withModel(process.env.MODEL || 'anthropic/claude-3-5-haiku-latest')
+      .withModel(process.env.MODEL || 'anthropic/claude-haiku-4-5')
       .withStorage(new FilesystemStorage(storagePath))
       .withSessionId(sessionId)
       .withConsole(false)
@@ -148,7 +148,7 @@ describe('Session Continuation Integration Tests', () => {
   test('should recognize completed work when resuming', async () => {
     // First system - complete a task fully
     firstSystem = await AgentSystemBuilder.default()
-      .withModel(process.env.MODEL || 'anthropic/claude-3-5-haiku-latest')
+      .withModel(process.env.MODEL || 'anthropic/claude-haiku-4-5')
       .withStorage(new FilesystemStorage(storagePath))
       .withSessionId(sessionId)
       .withConsole(false)
@@ -167,7 +167,7 @@ describe('Session Continuation Integration Tests', () => {
 
     // Second system - resume the same session
     secondSystem = await AgentSystemBuilder.default()
-      .withModel(process.env.MODEL || 'anthropic/claude-3-5-haiku-latest')
+      .withModel(process.env.MODEL || 'anthropic/claude-haiku-4-5')
       .withStorage(new FilesystemStorage(storagePath))
       .withSessionId(sessionId)
       .withConsole(false)

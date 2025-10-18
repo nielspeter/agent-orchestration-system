@@ -196,7 +196,7 @@ interface FixtureMetadata {
 {
   "version": "1.0.0",
   "generatedAt": "2024-01-15T10:00:00Z",
-  "model": "anthropic/claude-3-5-haiku-latest",
+  "model": "anthropic/claude-haiku-4-5",
   "agentVersion": "2.1.0",
   "description": "Happy path for critical illness claim"
 }

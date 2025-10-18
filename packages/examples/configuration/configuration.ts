@@ -92,7 +92,7 @@ async function customConfigExample() {
 
   // Custom configuration with specific settings and example-specific agents
   const { executor, cleanup } = await AgentSystemBuilder.default()
-    .withModel('anthropic/claude-3-5-haiku-latest')
+    .withModel('anthropic/claude-haiku-4-5')
     .withAgentsFrom('configuration/agents')
     .withSafetyLimits({ maxIterations: 50 })
     .withConsole({ verbosity: 'verbose' })

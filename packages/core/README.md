@@ -183,7 +183,7 @@ const providersConfig: ProvidersConfig = {
       apiKeyEnv: 'ANTHROPIC_API_KEY',
       models: [
         {
-          id: 'claude-3-5-haiku-latest',
+          id: 'claude-haiku-4-5',
           contextLength: 200000,
           maxOutputTokens: 8192,
         },
@@ -209,7 +209,7 @@ const apiKeys = {
 
 // Build with code-first configuration
 const system = await AgentSystemBuilder.default()
-  .withModel('anthropic/claude-3-5-haiku-latest')
+  .withModel('anthropic/claude-haiku-4-5')
   .withProvidersConfig(providersConfig)
   .withAPIKeys(apiKeys)
   .build();
@@ -261,7 +261,7 @@ Set system-wide defaults:
 
 ```json
 {
-  "defaultModel": "anthropic/claude-3-5-haiku-latest",
+  "defaultModel": "anthropic/claude-haiku-4-5",
   "defaultBehavior": "balanced"
 }
 ```

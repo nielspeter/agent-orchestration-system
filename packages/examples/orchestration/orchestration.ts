@@ -13,7 +13,7 @@ dotenv.config({ path: '../../.env' });
 async function testTrueOrchestration() {
   // Use full configuration with example-specific agents for complex orchestration
   const { executor, cleanup } = await AgentSystemBuilder.default()
-    .withModel(process.env.MODEL || 'anthropic/claude-3-5-haiku-latest')
+    .withModel(process.env.MODEL || 'anthropic/claude-haiku-4-5')
     .withAgentsFrom('orchestration/agents')
     .withSessionId('true-orchestration-demo')
     .build();

@@ -50,7 +50,7 @@ async function example1_BasicCodeFirst() {
         apiKeyEnv: 'ANTHROPIC_API_KEY',
         models: [
           {
-            id: 'claude-3-5-haiku-latest',
+            id: 'claude-haiku-4-5',
             contextLength: 200000,
             maxOutputTokens: 8192,
           },
@@ -70,7 +70,7 @@ async function example1_BasicCodeFirst() {
 
   console.log('Building system with code-first configuration...');
   const { cleanup, config } = await AgentSystemBuilder.minimal()
-    .withModel('anthropic/claude-3-5-haiku-latest')
+    .withModel('anthropic/claude-haiku-4-5')
     .withProvidersConfig(providersConfig)
     .withAPIKeys(apiKeys)
     .build();
@@ -118,7 +118,7 @@ async function example2_SecretManager() {
 
   console.log('\nBuilding system with secret manager keys...');
   const { cleanup, config } = await AgentSystemBuilder.minimal()
-    .withModel('anthropic/claude-3-5-haiku-latest')
+    .withModel('anthropic/claude-haiku-4-5')
     .withProvidersConfig(providersConfig)
     .withAPIKeys(apiKeys)
     .build();

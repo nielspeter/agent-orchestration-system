@@ -50,7 +50,7 @@ const builder = AgentSystemBuilder.default()
 
 ```json
 {
-  "model": "claude-3-5-haiku-latest",
+  "model": "claude-haiku-4-5",
   "mcpServers": {
     "filesystem": {
       "command": "npx",
