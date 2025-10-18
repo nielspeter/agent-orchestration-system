@@ -3,6 +3,7 @@ import * as path from 'node:path';
 import matter from 'gray-matter';
 import { Agent } from '@/config/types';
 import { AgentLogger } from '@/logging';
+import { validateAgentFrontmatter } from './validation';
 
 export class AgentLoader {
   /**
@@ -104,23 +105,22 @@ you step in to ensure the task gets completed by returning useful results.`,
       const content = await fs.readFile(agentPath, 'utf-8');
       const { data, content: description } = matter(content);
 
-      if (!data.name) {
-        throw new Error(`Agent ${name} missing 'name' in frontmatter`);
-      }
+      // Validate frontmatter with Zod schema
+      const validated = validateAgentFrontmatter(data, name);
 
       return {
-        id: data.name,
-        name: data.name,
+        id: validated.name,
+        name: validated.name,
         description: description.trim(), // For backward compatibility
         prompt: description.trim(),
-        tools: data.tools || [],
-        model: data.model,
-        behavior: data.behavior,
-        temperature: data.temperature,
-        top_p: data.top_p,
-        response_format: data.response_format,
-        json_schema: data.json_schema,
-        thinking: data.thinking,
+        tools: validated.tools || [],
+        model: validated.model,
+        behavior: validated.behavior,
+        temperature: validated.temperature,
+        top_p: validated.top_p,
+        response_format: validated.response_format,
+        json_schema: validated.json_schema,
+        thinking: validated.thinking,
       };
     } catch (error) {
       // Provide more helpful error messages

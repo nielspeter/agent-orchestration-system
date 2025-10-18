@@ -67,7 +67,8 @@
     "dotenv": "^16.4.5",
     "gray-matter": "^4.0.3",
     "openai": "^4.29.2",
-    "uuid": "^11.1.0"
+    "uuid": "^11.1.0",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@types/node": "^20.11.30",
