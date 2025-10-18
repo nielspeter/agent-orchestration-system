@@ -29,7 +29,8 @@ async function runTenderAnalysis() {
 
   // Build the system with tender agents
   const system = await AgentSystemBuilder.default()
-    .withAgentsFrom(path.join(__dirname, 'udbud', 'agents'))
+    .withAgentsFrom(path.join(__dirname, 'agents'))
+    .withConsole({ verbosity: 'verbose' })
     .addBuiltinTools('shell') // Add shell to the default tools
     .with({
       safety: {
