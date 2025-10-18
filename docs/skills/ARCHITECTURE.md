@@ -34,125 +34,112 @@ This document describes the technical architecture for Skills in the agent orche
 ```
 skills/
 ├── danish-tender-guidelines/
-│   ├── SKILL.md                    # Main skill definition
-│   ├── templates/
-│   │   ├── TEKNISK-ANALYSE.md      # Output template
-│   │   └── checklist.md            # Validation checklist
-│   ├── scripts/                    # Optional: executable code
-│   │   ├── calculate_deadline.js
-│   │   └── validate_format.js
-│   ├── schemas/                    # Optional: validation schemas
-│   │   └── tender_schema.json
-│   └── examples/                   # Optional: reference data
-│       └── sample_tender.md
+│   ├── SKILL.md                    # Main skill definition (required)
+│   ├── reference/                  # Docs Claude reads as needed
+│   │   ├── marker-system.md       # Detailed [FAKTA], [ESTIMAT] rules
+│   │   ├── deadline-rules.md      # Danish deadline calculation
+│   │   └── format-validation.md   # Output format requirements
+│   ├── assets/                     # Output resources
+│   │   ├── analysis-template.md   # Template for TEKNISK-ANALYSE.md
+│   │   └── checklist-template.md  # Validation checklist
+│   └── scripts/                    # Optional: executable code
+│       ├── calculate_deadline.js
+│       └── validate_format.js
 │
 ├── complexity-calculator/
 │   ├── SKILL.md
+│   ├── reference/
+│   │   └── complexity-matrix.json  # Scoring methodology
 │   └── scripts/
 │       └── estimate_effort.js
 │
 └── architecture-analyzer/
     ├── SKILL.md
-    └── templates/
-        └── architecture_report.md
+    ├── reference/
+    │   └── architecture-patterns.md  # Reference documentation
+    └── assets/
+        └── architecture-report.md    # Output template
 ```
 
-### SKILL.md Format
+### SKILL.md Format (Anthropic Spec v1.0)
 
 ```yaml
 ---
 name: danish-tender-guidelines
-version: 1.0.0
-description: Danish public tender compliance rules and formatting guidelines
-tags: [tender, danish, compliance, formatting]
-capabilities: [validation, formatting, deadline-calculation]
-author: Niels Peter
-created: 2025-10-18
-updated: 2025-10-18
+description: Danish public tender (offentlig udbud) compliance rules and formatting
+license: MIT
+metadata:
+  version: "1.0.0"
+  author: "Niels Peter"
+  tags: "tender,danish,compliance"
 ---
 
 # Danish Tender Guidelines
 
-This skill provides expertise in Danish public tender (offentlig udbud) requirements.
+Essential compliance rules for analyzing Danish public tenders.
 
-## Required Markers
+## Marker System
 
-All analysis must use these markers for transparency:
+All data must be marked for transparency. See reference/marker-system.md for complete rules.
+
+Quick reference:
 - **[FAKTA]** - Direct from tender material with source
 - **[ESTIMAT]** - Your calculations/assessments
-- **[ANTAGET]** - Assumptions where data is missing
-- **[UKENDT]** - Information not in material
 - **[INTERN VURDERING PÅKRÆVET]** - Requires internal assessment
+
+⚠️ NEVER speculate about bidder's competency! Always mark as [INTERN VURDERING PÅKRÆVET].
 
 ## Output Format
 
-Analysis documents must follow this structure:
-[Template details...]
+Use assets/analysis-template.md as base structure.
 
-## Deadline Calculation
+Validate output with assets/checklist-template.md before finalizing.
 
-Use the provided script for accurate deadline calculation:
-```javascript
-// Available in scripts/calculate_deadline.js
-function calculateDeadline(submissionDate, bufferDays) {
-  // Implementation...
-}
-```
+## Detailed Documentation
 
-## Validation
-
-Before finalizing, validate against:
-- All required sections present
-- All markers properly used
-- Deadline calculations verified
+- Marker system details: reference/marker-system.md
+- Deadline calculation: reference/deadline-rules.md
+- Format validation: reference/format-validation.md
 ```
 
 ## Core Interfaces
 
-### Skill Interface
+### Skill Interface (Anthropic Spec v1.0)
 
 ```typescript
 /**
- * A skill is a domain expertise package
+ * A skill is a domain expertise package following Anthropic's Agent Skills Spec v1.0
  */
 interface Skill {
-  /** Unique skill identifier (from frontmatter) */
+  /** Unique skill identifier (hyphen-case, matches directory name) */
   name: string;
 
-  /** Semantic version (1.0.0) */
-  version: string;
-
-  /** Human-readable description */
+  /** When Claude should use this skill */
   description: string;
 
-  /** Tags for discovery and filtering */
-  tags: string[];
+  /** Optional: License identifier (e.g., "MIT") or filename (e.g., "LICENSE.txt") */
+  license?: string;
 
-  /** Capabilities this skill provides */
-  capabilities: string[];
+  /** Optional: Pre-approved tools for Claude Code (e.g., ["read", "write"]) */
+  allowedTools?: string[];
 
-  /** Main instructions (markdown content from SKILL.md) */
+  /** Optional: Free-form key-value pairs for custom properties */
+  metadata?: Record<string, string>;
+
+  /** Main instructions (markdown content from SKILL.md body) */
   instructions: string;
 
-  /** Optional: Templates loaded from templates/ directory */
-  templates?: Record<string, string>;
+  /** Optional: Reference docs loaded from reference/ directory */
+  reference?: Record<string, string>;
 
   /** Optional: Scripts loaded from scripts/ directory */
   scripts?: Record<string, string>;
 
-  /** Optional: Schemas loaded from schemas/ directory */
-  schemas?: Record<string, unknown>;
+  /** Optional: Assets loaded from assets/ directory */
+  assets?: Record<string, string>;
 
-  /** Optional: Examples loaded from examples/ directory */
-  examples?: Record<string, string>;
-
-  /** Metadata for tracking */
-  metadata: {
-    author?: string;
-    created?: string;
-    updated?: string;
-    path: string;  // Filesystem path to skill directory
-  };
+  /** Internal: Filesystem path to skill directory */
+  path: string;
 }
 
 /**
@@ -286,53 +273,46 @@ export class SkillLoader {
     const validated = validateSkillFrontmatter(parsed.data);
 
     // 4. Load resources
-    const templates = await this.loadTemplates(skillPath);
+    const reference = await this.loadReference(skillPath);
     const scripts = await this.loadScripts(skillPath);
-    const schemas = await this.loadSchemas(skillPath);
-    const examples = await this.loadExamples(skillPath);
+    const assets = await this.loadAssets(skillPath);
 
     // 5. Construct Skill object
     return {
       name: validated.name,
-      version: validated.version,
       description: validated.description,
-      tags: validated.tags || [],
-      capabilities: validated.capabilities || [],
+      license: validated.license,
+      allowedTools: validated['allowed-tools'],
+      metadata: validated.metadata,
       instructions: parsed.content,
-      templates,
+      reference,
       scripts,
-      schemas,
-      examples,
-      metadata: {
-        author: validated.author,
-        created: validated.created,
-        updated: validated.updated,
-        path: skillPath,
-      },
+      assets,
+      path: skillPath,
     };
   }
 
   /**
-   * Load template files from templates/ subdirectory
+   * Load reference docs from reference/ subdirectory
    */
-  private async loadTemplates(skillPath: string): Promise<Record<string, string>> {
-    const templatesDir = path.join(skillPath, 'templates');
-    if (!fs.existsSync(templatesDir)) {
+  private async loadReference(skillPath: string): Promise<Record<string, string>> {
+    const referenceDir = path.join(skillPath, 'reference');
+    if (!fs.existsSync(referenceDir)) {
       return {};
     }
 
-    const templates: Record<string, string> = {};
-    const files = await fs.promises.readdir(templatesDir);
+    const reference: Record<string, string> = {};
+    const files = await fs.promises.readdir(referenceDir);
 
     for (const file of files) {
       const content = await fs.promises.readFile(
-        path.join(templatesDir, file),
+        path.join(referenceDir, file),
         'utf-8'
       );
-      templates[file] = content;
+      reference[file] = content;
     }
 
-    return templates;
+    return reference;
   }
 
   /**
@@ -358,7 +338,28 @@ export class SkillLoader {
     return scripts;
   }
 
-  // Similar methods for schemas, examples...
+  /**
+   * Load asset files from assets/ subdirectory
+   */
+  private async loadAssets(skillPath: string): Promise<Record<string, string>> {
+    const assetsDir = path.join(skillPath, 'assets');
+    if (!fs.existsSync(assetsDir)) {
+      return {};
+    }
+
+    const assets: Record<string, string> = {};
+    const files = await fs.promises.readdir(assetsDir);
+
+    for (const file of files) {
+      const content = await fs.promises.readFile(
+        path.join(assetsDir, file),
+        'utf-8'
+      );
+      assets[file] = content;
+    }
+
+    return assets;
+  }
 }
 ```
 
@@ -424,9 +425,9 @@ async execute(ctx: MiddlewareContext, next: () => Promise<void>): Promise<void> 
       systemPrompt += skill.instructions;
       systemPrompt += '\n\n';
 
-      // Add available templates
-      if (skill.templates && Object.keys(skill.templates).length > 0) {
-        systemPrompt += `**Available templates:** ${Object.keys(skill.templates).join(', ')}\n\n`;
+      // Add available assets
+      if (skill.assets && Object.keys(skill.assets).length > 0) {
+        systemPrompt += `**Available assets:** ${Object.keys(skill.assets).join(', ')}\n\n`;
       }
     }
   }
@@ -451,12 +452,12 @@ async execute(ctx: MiddlewareContext, next: () => Promise<void>): Promise<void> 
 }
 ```
 
-## Backward Compatibility
+## Agent Skills Integration
 
-**Critical:** Skills are 100% backward compatible. Existing agents work unchanged.
+Skills integrate seamlessly into the existing agent system. The `skills` field is optional in agent frontmatter.
 
 ```yaml
-# Old agent (no skills) - still works
+# Agent without skills
 ---
 name: my-agent
 tools: [read, write]
@@ -466,7 +467,7 @@ You are an agent...
 ```
 
 ```yaml
-# New agent (with skills) - enhanced
+# Agent with skills
 ---
 name: my-agent
 tools: [read, write]
@@ -476,7 +477,7 @@ skills: [domain-expertise]
 You are an agent...
 ```
 
-If `skills` field is missing or empty, agent behaves exactly as before.
+If `skills` field is missing or empty, the agent loads without skill enhancements.
 
 ## Resource Loading Strategy
 
@@ -485,13 +486,14 @@ If `skills` field is missing or empty, agent behaves exactly as before.
 All skill resources loaded at agent startup:
 - ✅ Simple implementation
 - ✅ No additional logic needed
-- ❌ Loads all templates/scripts even if unused
+- ❌ Loads all reference/assets/scripts even if unused
 - ❌ Slower agent startup
 
 ```typescript
 // Load everything upfront
 const skill = await skillLoader.loadSkill(skillPath);
-// skill.templates already populated
+// skill.reference already populated
+// skill.assets already populated
 // skill.scripts already populated
 ```
 
@@ -555,20 +557,23 @@ child.send({ script: skill.scripts['calculate.js'], input: skillInput });
 
 ## Validation
 
-### Skill Frontmatter Schema
+### Skill Frontmatter Schema (Anthropic Spec v1.0)
 
 ```typescript
 import { z } from 'zod';
 
 export const SkillFrontmatterSchema = z.object({
-  name: z.string().min(1, 'Skill name is required'),
-  version: z.string().regex(/^\d+\.\d+\.\d+$/, 'Version must be semver (e.g., 1.0.0)'),
+  // Required fields
+  name: z.string().min(1, 'Skill name is required').regex(
+    /^[a-z0-9-]+$/,
+    'Name must be hyphen-case (e.g., my-skill-name)'
+  ),
   description: z.string().min(1, 'Description is required'),
-  tags: z.array(z.string()).optional(),
-  capabilities: z.array(z.string()).optional(),
-  author: z.string().optional(),
-  created: z.string().optional(),
-  updated: z.string().optional(),
+
+  // Optional fields
+  license: z.string().optional(),
+  'allowed-tools': z.array(z.string()).optional(),
+  metadata: z.record(z.string()).optional(),
 });
 
 export function validateSkillFrontmatter(data: unknown): z.infer<typeof SkillFrontmatterSchema> {
@@ -792,9 +797,15 @@ You analyze tender materials...
 # New (skills/danish-tender-guidelines/SKILL.md)
 ---
 name: danish-tender-guidelines
-version: 1.0.0
-description: Danish public tender compliance
+description: Danish public tender (offentlig udbud) compliance rules and formatting
+license: MIT
+metadata:
+  version: "1.0.0"
 ---
+
+# Danish Tender Guidelines
+
+Essential compliance rules for analyzing Danish public tenders.
 
 ## Danish Tender Requirements
 [60 lines of Danish rules]

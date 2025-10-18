@@ -46,11 +46,10 @@ Skills are domain expertise packages that agents can load dynamically to handle 
 ### What Are Skills?
 
 **Skills** are domain expertise packages containing:
-- **Instructions**: How to handle this domain
-- **Templates**: Output formats, checklists
+- **Instructions**: How to handle this domain (SKILL.md)
+- **Reference**: Documentation Claude reads as needed (API docs, schemas, detailed guides)
+- **Assets**: Output resources (templates, checklists, boilerplate)
 - **Scripts**: Executable code (optional, for deterministic logic)
-- **Schemas**: Validation rules, data structures
-- **Examples**: Reference data, sample outputs
 
 ### Conceptual Model
 
@@ -74,12 +73,12 @@ Skills are domain expertise packages that agents can load dynamically to handle 
 
 ### Design Principles
 
-1. **Portable** - Same format across agents, API, CLI
-2. **Composable** - Multiple skills active simultaneously
-3. **Lazy** - Load only when relevant to task
-4. **Versioned** - Track skill versions for reproducibility
-5. **Secure** - Code execution properly sandboxed
-6. **Discoverable** - Agents can scan available skills
+1. **Anthropic-Compatible** - Follows official Agent Skills Spec v1.0 (2025-10-16)
+2. **Portable** - Skills work across Claude apps, API, CLI, and our system
+3. **Composable** - Multiple skills active simultaneously
+4. **Progressive** - Load metadata always, instructions when relevant, resources as needed
+5. **Minimal** - Simple frontmatter (name + description), complex logic in resources
+6. **Discoverable** - Agents can scan available skills by metadata
 
 ## Value Proposition
 
@@ -357,10 +356,10 @@ These may be added in future versions based on user feedback.
 
 ## Technical Constraints
 
-1. **Backward Compatibility** - Existing agents must work without skills
+1. **Anthropic Spec Compliance** - Must follow Agent Skills Spec v1.0 exactly for shareability
 2. **Performance** - Skill loading adds <100ms latency per agent invocation
 3. **Storage** - Skills stored in filesystem (like agents), no database required
-4. **Portability** - Skills use same markdown format as agents (easy to share)
+4. **Portability** - Skills compatible with Claude apps, API, and CLI (standard format)
 
 ## Open Questions
 
