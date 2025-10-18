@@ -31,7 +31,7 @@ export function createSafetyChecksMiddleware(safetyLimits: SafetyConfig): Middle
       // Throw error to stop execution and propagate to parent agents
       throw new Error(
         `Safety limit reached: Maximum iterations (${safetyLimits.maxIterations}) exceeded. ` +
-        `Task may be too complex or requires human intervention.`
+          'Task may be too complex or requires human intervention.'
       );
     }
 
@@ -57,7 +57,7 @@ export function createSafetyChecksMiddleware(safetyLimits: SafetyConfig): Middle
       // Throw error to stop execution and propagate to parent agents
       throw new Error(
         `Safety limit reached: Token estimate (~${Math.round(estimatedTokens)}) exceeds limit (${maxTokens}). ` +
-        `Task requires too much context.`
+          'Task requires too much context.'
       );
     }
 
