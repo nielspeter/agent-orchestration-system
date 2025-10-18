@@ -42,25 +42,27 @@ describe('SafetyChecksMiddleware - Execution Limits', () => {
 
       // Test iteration 1 - should continue
       context.iteration = 1;
+      let nextCalled = false;
       await middleware(context, async () => {
-        expect(context.shouldContinue).toBe(true);
+        nextCalled = true;
       });
+      expect(nextCalled).toBe(true);
+      expect(context.shouldContinue).toBe(true);
 
-      // Test iteration 3 - should continue (at limit)
+      // Test iteration 2 - should continue (below limit)
+      context.iteration = 2;
+      nextCalled = false;
+      await middleware(context, async () => {
+        nextCalled = true;
+      });
+      expect(nextCalled).toBe(true);
+      expect(context.shouldContinue).toBe(true);
+
+      // Test iteration 3 - should throw error (at limit: 3 >= 3)
       context.iteration = 3;
-      await middleware(context, async () => {
-        expect(context.shouldContinue).toBe(true);
-      });
-
-      // Test iteration 4 - should stop
-      context.iteration = 4;
-      await middleware(context, async () => {
-        // Should not reach here
-        expect(true).toBe(false);
-      });
-
-      expect(context.shouldContinue).toBe(false);
-      expect(context.result).toContain('iterations (safety limit)');
+      await expect(middleware(context, async () => {})).rejects.toThrow(
+        'Safety limit reached: Maximum iterations (3) exceeded'
+      );
     });
 
     it('should warn at warnAtIteration threshold', async () => {
@@ -121,7 +123,7 @@ describe('SafetyChecksMiddleware - Execution Limits', () => {
   });
 
   describe('Token Limits', () => {
-    it('should estimate tokens and stop if over limit', async () => {
+    it('should estimate tokens and throw error if over limit', async () => {
       const safetyConfig: SafetyConfig = {
         maxIterations: 10,
         warnAtIteration: 5,
@@ -140,15 +142,13 @@ describe('SafetyChecksMiddleware - Execution Limits', () => {
         });
       }
 
-      await middleware(context, async () => {
-        // Should not reach here if token limit is exceeded
-        expect(context.messages.length).toBeLessThan(100);
-      });
-
-      // If it stopped due to token limit
-      if (!context.shouldContinue) {
-        expect(context.result).toContain('Token limit estimate exceeded');
-      }
+      // Should throw error when token limit is exceeded
+      await expect(
+        middleware(context, async () => {
+          // Should not reach here
+          expect(true).toBe(false);
+        })
+      ).rejects.toThrow(/Safety limit reached: Token estimate .* exceeds limit/);
     });
   });
 
@@ -168,12 +168,12 @@ describe('SafetyChecksMiddleware - Execution Limits', () => {
       context.executionContext.maxDepth = 10; // Set higher to avoid min() issue
       context.iteration = 3; // Over iteration limit
 
-      await middleware(context, async () => {
-        expect(true).toBe(false); // Should not reach
-      });
-
-      expect(context.shouldContinue).toBe(false);
-      expect(context.result).toContain('iterations'); // Should mention iterations, not depth
+      // Should throw error for iteration limit (checked first)
+      await expect(
+        middleware(context, async () => {
+          expect(true).toBe(false); // Should not reach
+        })
+      ).rejects.toThrow(/Safety limit reached: Maximum iterations/);
     });
   });
 });
