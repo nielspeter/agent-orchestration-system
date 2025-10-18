@@ -888,32 +888,42 @@ Following the existing event pattern, skills emit:
 
 ## Session Scope & Lifecycle
 
-**Important:** Skills are **agent-scoped**, NOT session-scoped.
+**Important:** Skills metadata MUST be logged to sessions for reproducibility, testing, and audit logging.
 
-### Agent-Scoped Design
+### Skills in Session Events
 
-Skills are part of an agent's **immutable capability definition**:
+Skills are logged as **configuration metadata** at session start:
 
-```yaml
-# Agent frontmatter
----
-name: technical-analyst
-skills: [danish-tender-guidelines, complexity-calculator]
----
+```typescript
+// New session event type for agent configuration
+interface AgentStartEvent extends SessionEvent {
+  type: 'agent:start';
+  data: {
+    agent: string;
+    depth: number;
+    skills?: string[];  // Skills loaded for this agent
+    skillVersions?: Record<string, string>;  // skill name → version
+    task?: string;
+  };
+}
 ```
 
-**Lifecycle:**
-1. **Load Time**: Skills loaded when agent is loaded via `AgentLoader`
-2. **Scope**: Skills attached to `Agent` definition
-3. **Reuse**: Same skills available for all executions of that agent
-4. **Not Persisted**: Skills NOT stored in session events
+**Logged via:**
+```typescript
+logger.logAgentStart(agentName, depth, task);
+// Plus skills metadata:
+logger.logSystemMessage(
+  `Agent started with skills: ${skills.map(s => s.name).join(', ')}`
+);
+```
 
-### Why NOT Session-Scoped?
+### Why Log Skills to Sessions?
 
-1. **Different Lifecycle**: Sessions track conversation state; skills define capabilities
-2. **Pull Architecture**: Child agents don't inherit parent's skills (load their own)
-3. **Immutable**: Skills are knowledge, not state
-4. **Performance**: Load once per agent, not per session
+1. **Reproducibility**: Replay exact agent execution with same skills
+2. **Unit Testing**: Test recordings include skill configuration
+3. **Audit Logging**: Track what capabilities agent had during execution
+4. **Debugging**: Understand skill context when analyzing failures
+5. **Versioning**: Track skill version changes over time
 
 ### What Gets Stored in Sessions?
 
@@ -923,23 +933,72 @@ skills: [danish-tender-guidelines, complexity-calculator]
 - Tool calls (including skill-provided tools)
 - Tool results
 - Todos
+- **Agent start with skills metadata** ← NEW
+- **Skill names and versions** ← NEW
 
-**NOT Stored**:
-- Which skills are loaded (part of agent definition)
-- Skill definitions themselves
-- Skill metadata
+**NOT Stored** (too large):
+- Full skill instructions (can be re-loaded from skill files)
+- Skill reference/ and assets/ content
+- Skill scripts
 
 ### Session Recovery
 
 When recovering from session:
 ```typescript
-// Session recovery loads conversation history
+// 1. Recover conversation history
 const messages = await sessionManager.recoverSession(sessionId);
 
-// Skills are re-loaded from agent definition (NOT session)
+// 2. Recover agent configuration (including skills)
+const agentStartEvent = events.find(e => e.type === 'agent:start');
+const skillNames = agentStartEvent?.data?.skills || [];
+
+// 3. Re-load agent and verify skills match
 const agent = await agentLoader.loadAgent(agentName);
-const skills = await skillRegistry.getSkillsForAgent(agent);
+const skills = await skillRegistry.getSkills(skillNames);
+
+// 4. Verify skill versions match (for reproducibility)
+if (agentStartEvent?.data?.skillVersions) {
+  for (const [name, expectedVersion] of Object.entries(
+    agentStartEvent.data.skillVersions
+  )) {
+    const skill = skills.find(s => s.name === name);
+    if (skill?.metadata?.version !== expectedVersion) {
+      logger.logSystemMessage(
+        `Warning: Skill '${name}' version mismatch. Expected ${expectedVersion}, got ${skill?.metadata?.version}`
+      );
+    }
+  }
+}
 ```
+
+### Testing & Reproducibility
+
+**Unit Test Example:**
+```typescript
+// Record session with skills
+const session = await executeAgent('technical-analyst', 'Analyze tender');
+// Session includes: skills loaded, versions, all tool calls
+
+// Replay in test
+const events = await storage.readEvents(sessionId);
+const skillsUsed = events
+  .filter(e => e.type === 'agent:start')
+  .map(e => e.data.skills);
+
+expect(skillsUsed).toEqual([
+  'danish-tender-guidelines',
+  'complexity-calculator'
+]);
+```
+
+### Audit Trail
+
+Sessions provide complete audit trail:
+- What agent was used
+- What skills were loaded (and versions)
+- What tools were called
+- What results were returned
+- Complete conversation flow
 
 ---
 
