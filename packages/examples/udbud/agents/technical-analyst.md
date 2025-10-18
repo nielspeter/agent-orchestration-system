@@ -3,7 +3,7 @@ name: technical-analyst
 tools: ["read", "write", "list", "grep"]
 behavior: precise
 thinking:
-  type: enabled
+  enabled: true
   budget_tokens: 16000  # Critical: Deep technical analysis, architecture assessment, complexity calculation, and resource planning for development teams
 ---
 
