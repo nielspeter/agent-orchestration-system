@@ -54,7 +54,13 @@ export class SimpleSessionManager {
         }
 
         case 'assistant': {
-          // Check if this is a text response or tool call based on content
+          // Skip system messages (metadata/logging) - they're not part of the LLM conversation
+          // System messages are persisted for audit trail but excluded from recovery
+          if (typedEvent.data.agent === 'system') {
+            break; // Skip system messages
+          }
+
+          // Real assistant messages (LLM responses)
           const content = typedEvent.data.content;
           messages.push({
             role: 'assistant',

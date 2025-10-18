@@ -110,10 +110,9 @@ export class EventLogger implements AgentLogger {
   }
 
   logSystemMessage(message: string): void {
-    // System messages are metadata/logging, not part of the LLM conversation
-    // Don't persist them to the session to avoid false session recovery
-    // Just ignore them - they're displayed by ConsoleLogger if enabled
-    void message; // Explicitly mark as intentionally unused
+    // System messages are logged for audit trail and testing purposes
+    // They're persisted but filtered out during session recovery (not part of LLM conversation)
+    this.logAssistantMessage('system', message);
   }
 
   logToolCall(
