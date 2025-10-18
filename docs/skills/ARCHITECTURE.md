@@ -813,6 +813,183 @@ Essential compliance rules for analyzing Danish public tenders.
 
 **Result:** Same behavior, but rules in one place.
 
+---
+
+## Logging & Events Integration
+
+Skills integrate with the existing logging and event system.
+
+### Logger Integration
+
+Skills receive `AgentLogger` through constructor for observability:
+
+```typescript
+export class SkillLoader {
+  constructor(private readonly logger?: AgentLogger) {}
+
+  async loadSkill(skillPath: string): Promise<Skill> {
+    this.logger?.logSystemMessage(`Loading skill from ${skillPath}`);
+    // ... load skill
+    this.logger?.logSystemMessage(`Loaded skill: ${skill.name}`);
+    return skill;
+  }
+}
+
+export class SkillRegistry {
+  constructor(
+    private readonly skillsDir: string,
+    private readonly logger?: AgentLogger
+  ) {}
+
+  async loadSkills(): Promise<void> {
+    this.logger?.logSystemMessage(`Loading skills from ${this.skillsDir}`);
+    // ... load all skills
+    this.logger?.logSystemMessage(
+      `Loaded ${this.skills.size} skills`
+    );
+  }
+}
+```
+
+### Event Emission
+
+Skills emit events through the logger for real-time monitoring:
+
+**Skill Loading:**
+```typescript
+// When skill is loaded
+logger.logSystemMessage(`Skill loaded: ${skillName} (${skillDescription})`);
+```
+
+**Skill Usage:**
+```typescript
+// Skill instructions are part of system prompt, no explicit "skill execution" event
+// Tools within skills use standard tool events:
+logger.logToolCall(agent, toolName, toolId, params);
+logger.logToolResult(agent, toolName, toolId, result);
+```
+
+### Log Messages
+
+Skills use `logSystemMessage()` for lifecycle events:
+- Skill registry initialization
+- Individual skill loading
+- Skill validation errors
+- Missing skill warnings
+
+### Event Names
+
+Following the existing event pattern, skills emit:
+- No custom events (skills are loaded capabilities, not executed actions)
+- Tool usage within skills emits standard `tool:call`, `tool:result` events
+- System messages appear in logs/console
+
+---
+
+## Session Scope & Lifecycle
+
+**Important:** Skills are **agent-scoped**, NOT session-scoped.
+
+### Agent-Scoped Design
+
+Skills are part of an agent's **immutable capability definition**:
+
+```yaml
+# Agent frontmatter
+---
+name: technical-analyst
+skills: [danish-tender-guidelines, complexity-calculator]
+---
+```
+
+**Lifecycle:**
+1. **Load Time**: Skills loaded when agent is loaded via `AgentLoader`
+2. **Scope**: Skills attached to `Agent` definition
+3. **Reuse**: Same skills available for all executions of that agent
+4. **Not Persisted**: Skills NOT stored in session events
+
+### Why NOT Session-Scoped?
+
+1. **Different Lifecycle**: Sessions track conversation state; skills define capabilities
+2. **Pull Architecture**: Child agents don't inherit parent's skills (load their own)
+3. **Immutable**: Skills are knowledge, not state
+4. **Performance**: Load once per agent, not per session
+
+### What Gets Stored in Sessions?
+
+**Stored** (via EventLogger):
+- User messages
+- Assistant responses
+- Tool calls (including skill-provided tools)
+- Tool results
+- Todos
+
+**NOT Stored**:
+- Which skills are loaded (part of agent definition)
+- Skill definitions themselves
+- Skill metadata
+
+### Session Recovery
+
+When recovering from session:
+```typescript
+// Session recovery loads conversation history
+const messages = await sessionManager.recoverSession(sessionId);
+
+// Skills are re-loaded from agent definition (NOT session)
+const agent = await agentLoader.loadAgent(agentName);
+const skills = await skillRegistry.getSkillsForAgent(agent);
+```
+
+---
+
+## Observability & Metrics
+
+Skills integrate with the existing metrics collection system.
+
+### Performance Tracking
+
+Track skill loading performance:
+
+```typescript
+const startTime = Date.now();
+await skillRegistry.loadSkills();
+const loadTimeMs = Date.now() - startTime;
+
+logger.logSystemMessage(
+  `Skills loaded in ${loadTimeMs}ms (${skillRegistry.listSkills().length} skills)`
+);
+```
+
+### Usage Metrics
+
+Skills usage tracked indirectly through system prompts:
+
+**Context Size Impact:**
+- Before: Agent prompt only
+- After: Agent prompt + skill instructions
+- Measure: Token count increase per skill
+
+**Example Metrics:**
+```typescript
+interface SkillMetrics {
+  skillName: string;
+  averageInstructionsLength: number;  // Characters
+  estimatedTokens: number;            // ~length/4
+  usageCount: number;                 // How many agents use it
+  loadTimeMs: number;                 // Load performance
+}
+```
+
+### Monitoring
+
+Monitor skill health:
+- **Load Failures**: Track skills that fail validation
+- **Missing Skills**: Track agent references to non-existent skills
+- **Context Bloat**: Track total tokens added by skills
+
+---
+
 ## Appendix: File Locations
 
 ```
