@@ -104,10 +104,10 @@
           "id": "o3",
           "contextLength": 128000,
           "maxOutputTokens": 65536,
-          "pricing": { "input": 0.015, "output": 0.060 },
+          "pricing": { "input": 0.015, "output": 0.06 },
           "capabilities": {
             "thinking": "automatic",
-            "thinkingPricing": { "input": 0.060 },
+            "thinkingPricing": { "input": 0.06 },
             "thinkingNotes": "o3 models handle reasoning internally with advanced capabilities. Reasoning tokens cost 4x input price ($60/1M vs $15/1M)."
           }
         }

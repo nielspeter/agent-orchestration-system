@@ -87,8 +87,7 @@ export function validateThinkingCompatibility(
   providersConfig: ProvidersConfig | undefined
 ): { valid: boolean; message?: string } {
   // If thinking is not enabled, no validation needed
-  const thinkingEnabled =
-    typeof thinking === 'boolean' ? thinking : thinking?.enabled === true;
+  const thinkingEnabled = typeof thinking === 'boolean' ? thinking : thinking?.enabled === true;
   if (!thinkingEnabled) {
     return { valid: true };
   }

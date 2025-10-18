@@ -90,10 +90,7 @@ describe('Provider Factory - Essential Tests', () => {
     const originalKey = process.env.ANTHROPIC_API_KEY;
     process.env.ANTHROPIC_API_KEY = 'test-key';
 
-    const result = ProviderFactory.createWithConfig(
-      'anthropic/claude-haiku-4-5',
-      providersConfig
-    );
+    const result = ProviderFactory.createWithConfig('anthropic/claude-haiku-4-5', providersConfig);
 
     expect(result).toBeDefined();
     expect(result.provider).toBeDefined();

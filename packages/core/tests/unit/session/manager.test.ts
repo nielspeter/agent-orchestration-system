@@ -257,8 +257,7 @@ describe('SimpleSessionManager - Session Recovery', () => {
       // Verify system messages are still in storage (audit trail)
       const allEvents = await storage.readEvents(sessionId);
       const systemEvents = allEvents.filter(
-        (e) =>
-          e.type === 'assistant' && e.data && 'agent' in e.data && e.data.agent === 'system'
+        (e) => e.type === 'assistant' && e.data && 'agent' in e.data && e.data.agent === 'system'
       );
       expect(systemEvents).toHaveLength(2);
     });
