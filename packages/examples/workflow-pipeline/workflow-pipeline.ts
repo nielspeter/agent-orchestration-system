@@ -59,7 +59,7 @@ async function processTransaction(transaction: Transaction) {
   // previous agents' responses in the conversation history. This eliminates
   // the need to re-pass all data while maintaining the orchestrated flow.
   const { executor, cleanup } = await AgentSystemBuilder.minimal()
-    .withModel('anthropic/claude-3-5-haiku-latest')
+    .withModel('anthropic/claude-haiku-4-5')
     .withAgentsFrom('workflow-pipeline/agents')
     .withConsole(false) // Disable console for clean output
     .withSessionId(`transaction-${transaction.id}`)

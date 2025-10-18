@@ -365,7 +365,7 @@ Models must be specified with their provider prefix:
 // Format: provider/model[:modifier]
 
 // Direct to provider APIs
-.withModel('anthropic/claude-3-5-haiku-latest')
+.withModel('anthropic/claude-haiku-4-5')
 .withModel('openai/gpt-4-turbo')
 
 // Via OpenRouter (supports :nitro and :floor modifiers)
@@ -412,7 +412,7 @@ const minimal = await AgentSystemBuilder.minimal().build();
 
 // Default with file tools
 const withTools = await AgentSystemBuilder.default()
-  .withModel('anthropic/claude-3-5-haiku-latest')
+  .withModel('anthropic/claude-haiku-4-5')
   .withSessionId('my-session')
   .build();
 
@@ -457,7 +457,7 @@ const providersConfig: ProvidersConfig = {
       apiKeyEnv: 'ANTHROPIC_API_KEY',
       models: [
         {
-          id: 'claude-3-5-haiku-latest',
+          id: 'claude-haiku-4-5',
           contextLength: 200000,
           maxOutputTokens: 8192,
         },
@@ -483,7 +483,7 @@ const apiKeys = {
 
 // Build the system with programmatic configuration
 const { executor, cleanup } = await AgentSystemBuilder.default()
-  .withModel('anthropic/claude-3-5-haiku-latest')
+  .withModel('anthropic/claude-haiku-4-5')
   .withProvidersConfig(providersConfig)
   .withAPIKeys(apiKeys)
   .build();
@@ -587,7 +587,7 @@ npm run test:integration
 Create `.env.test` for test-specific settings:
 ```bash
 ANTHROPIC_API_KEY=your-test-key
-MODEL=claude-3-5-haiku-latest
+MODEL=claude-haiku-4-5
 LOG_DIR=./test-logs
 MAX_ITERATIONS=10
 MAX_DEPTH=3

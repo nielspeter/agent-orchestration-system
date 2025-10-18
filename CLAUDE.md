@@ -251,7 +251,7 @@ Multi-Provider Configuration:
 cp providers-config.example.json providers-config.json
 
 # Models must use provider prefix format:
-# - Anthropic: "anthropic/claude-3-5-haiku-latest"
+# - Anthropic: "anthropic/claude-haiku-4-5"
 # - OpenAI: "openai/gpt-4-turbo"
 # - OpenRouter: "openrouter/meta-llama/llama-3.1-70b"
 # - With modifiers: "openrouter/gpt-4:nitro"
@@ -335,7 +335,7 @@ const apiKeys = {
 };
 
 const { executor, cleanup } = await AgentSystemBuilder.default()
-  .withModel('anthropic/claude-3-5-haiku-latest')
+  .withModel('anthropic/claude-haiku-4-5')
   .withProvidersConfig(providersConfig)
   .withAPIKeys(apiKeys)
   .build();

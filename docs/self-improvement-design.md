@@ -108,7 +108,7 @@ ImprovePrompt({
 ```yaml
 ---
 name: researcher
-model: anthropic/claude-3-5-haiku-latest
+model: anthropic/claude-haiku-4-5
 behavior: balanced
 tools:
   - Read

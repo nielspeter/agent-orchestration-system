@@ -30,7 +30,7 @@ export OPENROUTER_API_KEY=sk-or-...
 
 ```typescript
 const system = await AgentSystemBuilder.default()
-  .withModel('anthropic/claude-3-5-haiku-latest')
+  .withModel('anthropic/claude-haiku-4-5')
   .build();
 
 // Or in agent frontmatter:
@@ -39,7 +39,7 @@ const system = await AgentSystemBuilder.default()
 ```yaml
 ---
 name: my-agent
-model: anthropic/claude-3-5-haiku-latest
+model: anthropic/claude-haiku-4-5
 ---
 ```
 
@@ -52,7 +52,7 @@ provider/model[:modifier]
 ```
 
 Examples:
-- `anthropic/claude-3-5-haiku-latest`
+- `anthropic/claude-haiku-4-5`
 - `openai/gpt-4-turbo`
 - `openrouter/meta-llama/llama-3.1-70b-instruct`
 - `openrouter/gpt-4:nitro` (with modifier)
@@ -100,7 +100,7 @@ In agent frontmatter:
 ```yaml
 ---
 name: validator
-model: anthropic/claude-3-5-haiku-latest
+model: anthropic/claude-haiku-4-5
 behavior: deterministic  # Use preset
 ---
 ```
@@ -243,7 +243,7 @@ Most providers use OpenAI-compatible API:
         "pricing": { "input": 0.003, "output": 0.015 }
       },
       {
-        "id": "claude-3-5-haiku-latest",
+        "id": "claude-haiku-4-5",
         "contextLength": 200000,
         "maxOutputTokens": 4096,
         "pricing": { "input": 0.0008, "output": 0.004 }
@@ -480,7 +480,7 @@ model: local/llama2
 
 ```yaml
 # Fast and cheap for development
-model: anthropic/claude-3-5-haiku-latest
+model: anthropic/claude-haiku-4-5
 behavior: balanced
 ```
 
@@ -496,7 +496,7 @@ behavior: precise
 
 ```yaml
 # Cheapest option
-model: anthropic/claude-3-5-haiku-latest
+model: anthropic/claude-haiku-4-5
 behavior: deterministic
 
 # Or via OpenRouter floor
@@ -550,7 +550,7 @@ Based on `providers-config.json` pricing (per 1M tokens):
 
 | Model | Input | Output | Best For |
 |-------|--------|--------|----------|
-| claude-3-5-haiku-latest | $0.80 | $4.00 | Development, high volume |
+| claude-haiku-4-5 | $0.80 | $4.00 | Development, high volume |
 | claude-sonnet-4-0 | $3.00 | $15.00 | Production, quality |
 | claude-opus-4-1 | $15.00 | $75.00 | Complex reasoning |
 
@@ -563,7 +563,7 @@ Based on `providers-config.json` pricing (per 1M tokens):
 ```typescript
 const model = process.env.NODE_ENV === 'production'
   ? 'anthropic/claude-sonnet-4-0'
-  : 'anthropic/claude-3-5-haiku-latest';
+  : 'anthropic/claude-haiku-4-5';
 
 const system = await AgentSystemBuilder.default()
   .withModel(model)
@@ -575,7 +575,7 @@ const system = await AgentSystemBuilder.default()
 ```typescript
 const system = await AgentSystemBuilder.default()
   .withAgents([
-    { path: 'agents/validator.md', model: 'anthropic/claude-3-5-haiku-latest' },
+    { path: 'agents/validator.md', model: 'anthropic/claude-haiku-4-5' },
     { path: 'agents/analyzer.md', model: 'anthropic/claude-sonnet-4-0' }
   ])
   .build();
@@ -585,7 +585,7 @@ const system = await AgentSystemBuilder.default()
 
 ```typescript
 const providers = [
-  'anthropic/claude-3-5-haiku-latest',
+  'anthropic/claude-haiku-4-5',
   'openai/gpt-4-turbo',
   'openrouter/meta-llama/llama-3.1-70b-instruct'
 ];
@@ -629,7 +629,7 @@ export ANTHROPIC_API_KEY=your-key-here
 // Error: Invalid model format. Use: provider/model
 ```
 
-**Fix**: Use format `provider/model`, e.g., `anthropic/claude-3-5-haiku-latest`
+**Fix**: Use format `provider/model`, e.g., `anthropic/claude-haiku-4-5`
 
 ## Best Practices
 
@@ -647,17 +647,17 @@ const apiKey = "sk-ant-..."; // Never do this!
 
 ```yaml
 # ✅ DO: Be explicit about provider
-model: anthropic/claude-3-5-haiku-latest
+model: anthropic/claude-haiku-4-5
 
 # ❌ DON'T: Assume default provider
-model: claude-3-5-haiku-latest  # Won't work!
+model: claude-haiku-4-5  # Won't work!
 ```
 
 ### Cost Awareness
 
 ```yaml
 # ✅ DO: Use cheap models for development
-model: anthropic/claude-3-5-haiku-latest
+model: anthropic/claude-haiku-4-5
 
 # ✅ DO: Use quality models for production
 model: anthropic/claude-sonnet-4-0

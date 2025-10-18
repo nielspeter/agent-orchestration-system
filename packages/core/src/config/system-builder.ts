@@ -791,9 +791,17 @@ export class AgentSystemBuilder {
       return recoveredMessages;
     }
 
-    if (await storage.sessionExists(config.session.sessionId)) {
+    // Try to recover session messages - don't check sessionExists() first
+    // because logging creates the session directory, leading to false positives
+    try {
       recoveredMessages = await sessionManager.recoverSession(config.session.sessionId);
+    } catch {
+      // Session doesn't exist or failed to recover - start fresh
+      return recoveredMessages;
+    }
 
+    // Only log recovery if we actually recovered conversation messages
+    if (recoveredMessages.length > 0) {
       // Recover todos if TodoWrite tool is enabled
       let todoCount = 0;
       if (todoManager) {
@@ -867,7 +875,13 @@ export class AgentSystemBuilder {
     const primaryDir = allAgentDirs[0] || 'agents';
     // Pass inline agents directly - they're already in the right format
     const inlineAgents = resolvedConfig.agents.agents;
-    const agentLoader = new AgentLoader(primaryDir, logger, inlineAgents);
+    const agentLoader = new AgentLoader(
+      primaryDir,
+      logger,
+      inlineAgents,
+      resolvedConfig.providersConfig,
+      resolvedConfig.defaultModel
+    );
 
     // Warn if multiple directories were specified but not all used
     if (allAgentDirs.length > 1) {

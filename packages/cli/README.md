@@ -215,7 +215,7 @@ agent -p "Hello" --agents-dir ./my-agents
 
 ```bash
 # Use specific model
-agent -p "Test" -m "anthropic/claude-3-5-haiku-latest"
+agent -p "Test" -m "anthropic/claude-haiku-4-5"
 
 # Use different provider
 agent -p "Test" -m "openrouter/gpt-4-turbo"

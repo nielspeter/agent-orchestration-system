@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { ProvidersConfig, ThinkingConfig } from '../config/types';
 
 /**
  * Thinking configuration schema
@@ -61,4 +62,102 @@ export function validateAgentFrontmatter(data: unknown, agentName: string): Agen
     }
     throw error;
   }
+}
+
+/**
+ * Validate that agent's thinking configuration is compatible with the model
+ * This is "best effort" validation - only validates if model is in providers config
+ *
+ * @param agentName Agent name for error context
+ * @param agentModel Model specified in agent frontmatter (optional)
+ * @param thinking Thinking configuration from agent
+ * @param defaultModel Default model from system config
+ * @param providersConfig Providers configuration
+ * @returns Validation result with error/warning message if incompatible
+ */
+export function validateThinkingCompatibility(
+  agentName: string,
+  agentModel: string | undefined,
+  thinking: boolean | ThinkingConfig | undefined,
+  defaultModel: string | undefined,
+  providersConfig: ProvidersConfig | undefined
+): { valid: boolean; message?: string } {
+  // If thinking is not enabled, no validation needed
+  const thinkingEnabled =
+    typeof thinking === 'boolean' ? thinking : thinking?.enabled === true;
+  if (!thinkingEnabled) {
+    return { valid: true };
+  }
+
+  // Determine which model will be used
+  const modelToUse = agentModel || defaultModel;
+  if (!modelToUse || !providersConfig) {
+    // Can't validate without model or providers config
+    return { valid: true }; // Assume valid, will be checked at runtime
+  }
+
+  // Parse model string: "provider/model-id" or "provider/model-id:modifier"
+  const modelMatch = modelToUse.match(/^([^/]+)\/(.+?)(?::.*)?$/);
+  if (!modelMatch) {
+    // Invalid model format, but that's not this function's concern
+    return { valid: true };
+  }
+
+  const [, providerName, modelId] = modelMatch;
+  const provider = providersConfig.providers[providerName];
+
+  if (!provider || !provider.models) {
+    // Provider not found or no models defined
+    return { valid: true }; // Can't validate
+  }
+
+  // Look up the model in provider's models list
+  const modelConfig = provider.models.find((m) => m.id === modelId || m.id === '*');
+
+  if (!modelConfig) {
+    // Model not found in config (might be dynamic)
+    return { valid: true }; // Can't validate
+  }
+
+  // Check if model supports thinking
+  const modelSupportsThinking = modelConfig.capabilities?.thinking === true;
+
+  if (!modelSupportsThinking) {
+    return {
+      valid: false,
+      message:
+        `Agent '${agentName}' has thinking enabled, but model '${modelToUse}' does not support thinking.\n` +
+        '  Solutions:\n' +
+        '  1. Switch to a thinking-capable model (e.g., claude-sonnet-4-5, claude-opus-4-1, o3)\n' +
+        '  2. Remove thinking configuration from agent frontmatter\n' +
+        '  3. Override model in agent frontmatter with a thinking-capable model',
+    };
+  }
+
+  // Check budget_tokens if specified
+  if (typeof thinking === 'object' && thinking.budget_tokens) {
+    const budget = thinking.budget_tokens;
+    const minBudget = modelConfig.capabilities?.thinkingMinBudget;
+    const maxBudget = modelConfig.capabilities?.thinkingMaxBudget;
+
+    if (minBudget && budget < minBudget) {
+      return {
+        valid: false,
+        message:
+          `Agent '${agentName}' thinking budget (${budget}) is below model minimum (${minBudget}).\n` +
+          `  Set budget_tokens to at least ${minBudget}`,
+      };
+    }
+
+    if (maxBudget && budget > maxBudget) {
+      return {
+        valid: false,
+        message:
+          `Agent '${agentName}' thinking budget (${budget}) exceeds model maximum (${maxBudget}).\n` +
+          `  Set budget_tokens to at most ${maxBudget}`,
+      };
+    }
+  }
+
+  return { valid: true };
 }

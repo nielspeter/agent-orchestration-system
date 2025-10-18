@@ -24,7 +24,7 @@ export const DEFAULTS = {
   SESSION_TIMEOUT: 300000, // 5 minutes
 
   // Execution
-  DEFAULT_MODEL: 'anthropic/claude-3-5-haiku-latest',
+  DEFAULT_MODEL: 'anthropic/claude-haiku-4-5',
   DEFAULT_BEHAVIOR: 'balanced',
 
   // Cache settings

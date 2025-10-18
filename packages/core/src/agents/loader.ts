@@ -1,9 +1,9 @@
 import * as fs from 'fs/promises';
 import * as path from 'node:path';
 import matter from 'gray-matter';
-import { Agent } from '@/config/types';
+import { Agent, ProvidersConfig } from '@/config/types';
 import { AgentLogger } from '@/logging';
-import { validateAgentFrontmatter } from './validation';
+import { validateAgentFrontmatter, validateThinkingCompatibility } from './validation';
 
 export class AgentLoader {
   /**
@@ -67,7 +67,9 @@ you step in to ensure the task gets completed by returning useful results.`,
   constructor(
     private readonly agentsDir: string,
     private readonly logger?: AgentLogger,
-    private readonly inlineAgents?: Agent[]
+    private readonly inlineAgents?: Agent[],
+    private readonly providersConfig?: ProvidersConfig,
+    private readonly defaultModel?: string
   ) {}
 
   async loadAgent(name: string): Promise<Agent> {
@@ -107,6 +109,21 @@ you step in to ensure the task gets completed by returning useful results.`,
 
       // Validate frontmatter with Zod schema
       const validated = validateAgentFrontmatter(data, name);
+
+      // Validate thinking compatibility with model (best effort)
+      if (this.providersConfig && this.defaultModel) {
+        const thinkingValidation = validateThinkingCompatibility(
+          name,
+          validated.model,
+          validated.thinking,
+          this.defaultModel,
+          this.providersConfig
+        );
+
+        if (!thinkingValidation.valid) {
+          throw new Error(thinkingValidation.message);
+        }
+      }
 
       return {
         id: validated.name,

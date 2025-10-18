@@ -17,7 +17,7 @@ Every agent execution creates JSONL audit logs. These aren't just for debugging 
     "content": "I'll process this claim...",
     "tool_calls": [...],
     "metadata": {
-      "model": "anthropic/claude-3-5-haiku-latest",
+      "model": "anthropic/claude-haiku-4-5",
       "temperature": 0.2,
       "tokensUsed": { "input": 1000, "output": 500, "cached": 800 }
     }

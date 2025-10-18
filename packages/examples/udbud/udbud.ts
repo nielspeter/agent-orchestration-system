@@ -16,6 +16,7 @@ import { AgentSystemBuilder } from '@agent-system/core';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as dotenv from 'dotenv';
+import * as fs from 'node:fs';
 
 // Load environment variables from .env file
 dotenv.config({ path: '../../.env' });
@@ -27,8 +28,13 @@ async function runTenderAnalysis() {
   console.log('🏢 Starting Udbud Tender Analysis');
   console.log('='.repeat(50));
 
+  // Load providers config for validation
+  const providersConfigPath = path.join(__dirname, '../providers-config.json');
+  const providersConfig = JSON.parse(fs.readFileSync(providersConfigPath, 'utf-8'));
+
   // Build the system with tender agents
   const system = await AgentSystemBuilder.default()
+    .withProvidersConfig(providersConfig)
     .withAgentsFrom(path.join(__dirname, 'agents'))
     .withConsole({ verbosity: 'verbose' })
     .addBuiltinTools('shell') // Add shell to the default tools

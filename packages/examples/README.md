@@ -221,7 +221,7 @@ Most examples support loading configuration from `agent-config.json`. Example co
 
 ```json
 {
-  "model": "anthropic/claude-3-5-haiku-latest",
+  "model": "anthropic/claude-haiku-4-5",
   "agents": {
     "directories": ["./agents"]
   },

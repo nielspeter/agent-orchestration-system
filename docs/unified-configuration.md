@@ -23,7 +23,7 @@ import {AgentSystemBuilder} from 'agent-orchestration-system';
 
 // Simple setup
 const {executor, cleanup} = await new AgentSystemBuilder()
-  .withModel('anthropic/claude-3-5-haiku-latest')
+  .withModel('anthropic/claude-haiku-4-5')
   .withAgentsFrom('./agents')
   .withDefaultTools()
   .withSessionId('my-session')
@@ -74,7 +74,7 @@ const custom = await AgentSystemBuilder.fromConfigFile('./my-config.json')
 ### Model Configuration
 
 ```typescript
-builder.withModel('anthropic/claude-3-5-haiku-latest')  // Choose AI model
+builder.withModel('anthropic/claude-haiku-4-5')  // Choose AI model
 ```
 
 ### Agent Configuration
@@ -210,7 +210,7 @@ import {AgentSystemBuilder} from 'agent-orchestration-system';
 async function main() {
   // Build a fully configured system
   const {config, executor, cleanup} = await new AgentSystemBuilder()
-    .withModel('anthropic/claude-3-5-haiku-latest')
+    .withModel('anthropic/claude-haiku-4-5')
     .withAgentsFrom('./agents')
     .withDefaultTools()
     .withTodoTool()

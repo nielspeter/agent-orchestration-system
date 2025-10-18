@@ -4,7 +4,7 @@ import { AgentSystemBuilder } from '@/config/system-builder';
 describe('Core Safety - Essential Tests Only', () => {
   test('prevents infinite loops with maxIterations', async () => {
     const builder = AgentSystemBuilder.forTest({
-      model: 'anthropic/claude-3-5-haiku-latest',
+      model: 'anthropic/claude-haiku-4-5',
       safety: {
         maxIterations: 2,
         maxDepth: 5,
@@ -20,7 +20,7 @@ describe('Core Safety - Essential Tests Only', () => {
 
   test('prevents infinite recursion with maxDepth', async () => {
     const builder = AgentSystemBuilder.forTest({
-      model: 'anthropic/claude-3-5-haiku-latest',
+      model: 'anthropic/claude-haiku-4-5',
       safety: {
         maxIterations: 10,
         maxDepth: 2,
@@ -54,7 +54,7 @@ describe('Core Safety - Essential Tests Only', () => {
 
   test('warns before hitting limits', async () => {
     const builder = AgentSystemBuilder.forTest({
-      model: 'anthropic/claude-3-5-haiku-latest',
+      model: 'anthropic/claude-haiku-4-5',
       safety: {
         maxIterations: 5,
         maxDepth: 3,

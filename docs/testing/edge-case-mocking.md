@@ -175,7 +175,7 @@ test('works with Claude 3.5', async () => {
 // RIGHT: Use real model
 test('works with Claude 3.5', async () => {
   const system = await AgentSystemBuilder.default()
-    .withModel('anthropic/claude-3-5-haiku-latest')
+    .withModel('anthropic/claude-haiku-4-5')
     .build();
   // Actually tests with Claude
 });

@@ -33,7 +33,7 @@ npx tsx packages/examples/configuration/configuration.ts
 ### `agent-config.json`
 ```json
 {
-  "defaultModel": "anthropic/claude-3-5-haiku-latest",
+  "defaultModel": "anthropic/claude-haiku-4-5",
   "defaultBehavior": "balanced"
 }
 ```
