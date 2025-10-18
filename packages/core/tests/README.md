@@ -2,7 +2,9 @@
 
 ## Overview
 
-This directory contains a comprehensive testing framework for agent-based systems, featuring:
+This directory contains a comprehensive testing framework for agent-based
+systems, featuring:
+
 - **Fixture-based testing** for deterministic, fast test execution
 - **Generic utilities** for parsing and asserting on event streams
 - **Custom matchers** for semantic test assertions
@@ -32,6 +34,7 @@ tests/
 ## Running Tests
 
 ### All Tests
+
 ```bash
 npm test                       # Run all unit tests
 npm run test:integration       # Run integration tests
@@ -39,6 +42,7 @@ npm run test:all              # Run both unit and integration
 ```
 
 ### Specific Tests
+
 ```bash
 # Run specific test file
 npx vitest run tests/integration/werewolf-game/werewolf-game.test.ts
@@ -68,7 +72,10 @@ const toolCalls = EventStreamParser.extractToolCalls(messages, 'Read');
 const agentsCalled = EventStreamParser.extractAgentCalls(messages);
 
 // Check conditions
-const hasCompleted = EventStreamParser.hasKeywords(messages, ['done', 'complete']);
+const hasCompleted = EventStreamParser.hasKeywords(messages, [
+  'done',
+  'complete',
+]);
 
 // Get full execution summary
 const execution = EventStreamParser.parseExecution(messages);
@@ -114,7 +121,7 @@ describeWithFixtures(
       // Generate fixture if it doesn't exist
       const system = await buildMySystem(sessionId);
       await system.execute();
-    }
+    },
   },
   ({ messages }) => {
     // Your tests here
@@ -139,7 +146,7 @@ import '../matchers/agent-matchers';
 describe('My Agent', () => {
   it('should delegate tasks', async () => {
     const messages = await executeAgent('my-agent', 'Do something');
-    
+
     expect(messages).toHaveDelegatedToAgents(['sub-agent']);
     expect(messages).toHaveCompleted();
   });
@@ -151,6 +158,7 @@ describe('My Agent', () => {
 Create a self-contained test directory:
 
 1. Create directory structure:
+
 ```
 tests/integration/my-system/
 ├── fixtures/           # Your fixtures
@@ -160,6 +168,7 @@ tests/integration/my-system/
 ```
 
 2. Extend generic utilities if needed:
+
 ```typescript
 // my-system/parser.ts
 import { EventStreamParser } from '../../utils/event-stream-parser';
@@ -172,6 +181,7 @@ export class MySystemParser extends EventStreamParser {
 ```
 
 3. Write tests using fixture runner:
+
 ```typescript
 // my-system/my-system.test.ts
 import { describeWithFixtures } from '../../utils/fixture-runner';
@@ -186,6 +196,7 @@ describeWithFixtures(config, ({ messages }) => {
 Configure test behavior with environment variables:
 
 ### Test Configuration
+
 - `WEREWOLF_FIXTURE_COUNT`: Number of fixtures to generate (default: 5)
 - `WEREWOLF_TEST_MODEL`: Model for werewolf game generation
 - `WEREWOLF_MAX_ITERATIONS`: Max iterations per game
@@ -193,12 +204,15 @@ Configure test behavior with environment variables:
 - `WEREWOLF_MAX_DEPTH`: Max delegation depth
 
 ### API Configuration
+
 Tests use the following environment files in priority order:
+
 1. `.env.test.local` - Local test configuration (gitignored)
 2. `.env.test` - Default test configuration
 3. `.env` - Main environment file
 
 Example `.env.test`:
+
 ```bash
 # For unit tests - use a mock key
 ANTHROPIC_API_KEY=mock-api-key-for-unit-tests
@@ -248,6 +262,7 @@ Integration tests may hit API rate limits. To mitigate:
 4. **Monitor usage**: Check your API dashboard
 
 If you encounter rate limit errors:
+
 - Wait a few minutes before retrying
 - Use fixture-based tests to avoid repeated API calls
 - Consider using a different API key for testing
@@ -265,12 +280,14 @@ npm run test:integration -- --coverage
 ```
 
 Coverage reports are generated in:
+
 - `coverage/` - Unit test coverage
 - `coverage-integration/` - Integration test coverage
 
 ## CI/CD Considerations
 
 For CI/CD pipelines:
+
 - Run unit tests on every commit
 - Run integration tests on main branch only
 - Use fixture-based tests to avoid API costs
@@ -278,10 +295,11 @@ For CI/CD pipelines:
 - Use secrets management for API keys
 
 Example GitHub Actions:
+
 ```yaml
 - name: Run Unit Tests
   run: npm run test:unit
-  
+
 - name: Run Integration Tests
   if: github.ref == 'refs/heads/main'
   env:
@@ -298,6 +316,7 @@ To add support for new event types:
 3. Add matchers if new assertions are useful
 
 Example:
+
 ```typescript
 // In event-types.ts
 export interface CustomEventMessage extends BaseEventMessage {
@@ -308,7 +327,7 @@ export interface CustomEventMessage extends BaseEventMessage {
 }
 
 // Update the union type
-export type EventMessage = 
+export type EventMessage =
   | AssistantMessage
   | CustomEventMessage  // Add here
   | ...
@@ -317,18 +336,22 @@ export type EventMessage =
 ## Troubleshooting
 
 ### Tests failing with "File not found"
+
 - Ensure fixtures are generated first
 - Check paths are relative to test file location
 
 ### Type errors in tests
+
 - Import types from `tests/types/event-types.ts`
 - Ensure EventMessage type is used consistently
 
 ### Fixture generation takes too long
+
 - Reduce `FIXTURE_COUNT` for development
 - Use smaller/faster models for testing
 - Consider recording fixtures once and committing them
 
 ### Custom matchers not recognized
+
 - Import the matcher file: `import '../matchers/agent-matchers'`
 - Ensure TypeScript module augmentation is correct

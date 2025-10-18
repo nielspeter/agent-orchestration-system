@@ -168,6 +168,15 @@ export class AgentSystemBuilder {
   }
 
   /**
+   * Set skill directories
+   */
+  withSkillsFrom(...directories: string[]): AgentSystemBuilder {
+    return this.with({
+      skills: { directories },
+    });
+  }
+
+  /**
    * Add programmatically defined agents
    */
   withAgents(...agents: Agent[]): AgentSystemBuilder {
@@ -873,6 +882,72 @@ export class AgentSystemBuilder {
     // Use first directory, or default to 'agents' directory
     // If 'agents' doesn't exist, AgentLoader will gracefully fall back to just the default agent
     const primaryDir = allAgentDirs[0] || 'agents';
+
+    // Initialize skills - default to 'skills/' directory if not configured
+    let skillRegistry: import('@/skills/registry').SkillRegistry | undefined;
+    const allSkillDirs = resolvedConfig.skills?.directories || [];
+    const primarySkillsDir = allSkillDirs[0] || 'skills';
+
+    // Try to load skills from primary directory
+    const { SkillRegistry } = await import('@/skills/registry');
+    const { SkillLoader } = await import('@/skills/loader');
+
+    skillRegistry = new SkillRegistry(primarySkillsDir, logger);
+
+    try {
+      await skillRegistry.loadSkills();
+      // Successfully loaded - log if using default
+      if (allSkillDirs.length === 0) {
+        logger.logSystemMessage(`Using default skills directory: ${primarySkillsDir}`);
+      }
+    } catch (error) {
+      // Skills directory doesn't exist or failed to load
+      if (allSkillDirs.length === 0) {
+        // Using default directory - it's OK if it doesn't exist
+        logger.logSystemMessage(
+          `No skills directory found at ${primarySkillsDir} (this is OK - skills are optional)`
+        );
+        skillRegistry = undefined; // Don't pass registry if no skills loaded
+      } else {
+        // Explicitly configured directory failed - warn user
+        logger.logSystemMessage(
+          `Warning: Failed to load skills from ${primarySkillsDir}: ${error instanceof Error ? error.message : String(error)}`
+        );
+        skillRegistry = undefined;
+      }
+    }
+
+    // Load from additional directories if any (and if primary succeeded)
+    if (skillRegistry && allSkillDirs.length > 1) {
+      const skillLoader = new SkillLoader(logger);
+      for (let i = 1; i < allSkillDirs.length; i++) {
+        const skillDir = allSkillDirs[i];
+        try {
+          // Manually scan and load from additional directories
+          const fs = await import('fs/promises');
+          const path = await import('path');
+          const entries = await fs.readdir(skillDir, { withFileTypes: true });
+          const skillDirs = entries.filter((entry) => entry.isDirectory());
+
+          for (const entry of skillDirs) {
+            const skillPath = path.join(skillDir, entry.name);
+            try {
+              const skill = await skillLoader.loadSkill(skillPath);
+              skillRegistry.registerSkill(skill);
+            } catch (error) {
+              logger.logSystemMessage(
+                `Warning: Failed to load skill from ${skillPath}: ${error instanceof Error ? error.message : String(error)}`
+              );
+            }
+          }
+        } catch (error) {
+          logger.logSystemMessage(
+            `Warning: Failed to scan directory ${skillDir}: ${error instanceof Error ? error.message : String(error)}`
+          );
+        }
+      }
+    }
+
     // Pass inline agents directly - they're already in the right format
     const inlineAgents = resolvedConfig.agents.agents;
     const agentLoader = new AgentLoader(
@@ -880,7 +955,8 @@ export class AgentSystemBuilder {
       logger,
       inlineAgents,
       resolvedConfig.providersConfig,
-      resolvedConfig.defaultModel
+      resolvedConfig.defaultModel,
+      skillRegistry
     );
 
     // Warn if multiple directories were specified but not all used

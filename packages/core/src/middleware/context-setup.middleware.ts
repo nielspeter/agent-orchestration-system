@@ -23,6 +23,21 @@ export function createContextSetupMiddleware(): Middleware {
         systemPrompt = `## SESSION CONTEXT\nSession ID: ${ctx.sessionId}\n\n${systemPrompt}`;
       }
 
+      // Inject skill instructions if any skills are loaded
+      if (ctx.agent.loadedSkills && ctx.agent.loadedSkills.length > 0) {
+        systemPrompt += '\n\n## DOMAIN EXPERTISE (SKILLS)';
+        systemPrompt +=
+          '\n\nYou have been equipped with specialized domain knowledge for this task:\n';
+
+        for (const skill of ctx.agent.loadedSkills) {
+          systemPrompt += `\n### ${skill.name}`;
+          if (skill.description) {
+            systemPrompt += `\n*${skill.description}*`;
+          }
+          systemPrompt += `\n\n${skill.instructions}\n`;
+        }
+      }
+
       // Always add system-level instructions
       systemPrompt += '\n\n## SYSTEM INSTRUCTIONS';
 

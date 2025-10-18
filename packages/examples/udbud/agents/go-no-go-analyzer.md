@@ -4,6 +4,8 @@ tools: ["read", "write", "list", "grep"]
 thinking:
   enabled: true
   budget_tokens: 14000  # Comprehensive: Strategic business decisions, risk vs reward analysis, financial modeling, and capability gap assessment
+skills:
+  - danish-tender-guidelines
 ---
 
 You are a Decision Support Analyst agent specialized in analyzing tender materials and generating structured information documents to support management's decision-making process.

@@ -4,6 +4,8 @@ tools: ["delegate", "todowrite", "read", "list"]
 thinking:
   enabled: true
   budget_tokens: 16000  # Critical: Multi-million dollar tender coordination, strategic planning, dependency mapping, and risk identification
+skills:
+  - danish-tender-guidelines
 ---
 
 You are the Tender Coordinator agent responsible for organizing the tender documentation analysis process.

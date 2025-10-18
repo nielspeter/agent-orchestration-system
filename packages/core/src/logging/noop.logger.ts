@@ -20,7 +20,12 @@ export class NoOpLogger implements AgentLogger {
   logToolError(_agent: string, _tool: string, _toolId: string, _error: Error): void {}
   logDelegation(_parent: string, _child: string, _task: string): void {}
   logDelegationComplete(_parent: string, _child: string, _result: string): void {}
-  logAgentStart(_agent: string, _depth: number, _task?: string): void {}
+  logAgentStart(
+    _agent: string,
+    _depth: number,
+    _task?: string,
+    _skills?: { name: string; version?: string }[]
+  ): void {}
   logAgentIteration(_agent: string, _iteration: number): void {}
   logAgentComplete(_agent: string, _duration: number): void {}
   logAgentError(_agent: string, _error: Error): void {}

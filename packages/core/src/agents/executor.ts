@@ -132,15 +132,12 @@ export class AgentExecutor {
       parentCallId: undefined,
     };
 
-    // Log execution start (model will be determined after agent is loaded)
+    // Add depth visualization and log execution start
+    const depthIndicator = '│ '.repeat(execContext.depth);
     const delegationInfo = execContext.parentAgent
       ? ` (delegated from ${execContext.parentAgent})`
       : '';
-    this.logger.logAgentStart(agentName, execContext.depth, `Starting execution${delegationInfo}`);
-
-    // Add depth visualization
-    const depthIndicator = '│ '.repeat(execContext.depth);
-    this.logger.logSystemMessage(`${depthIndicator}→ Starting ${agentName}`);
+    this.logger.logSystemMessage(`${depthIndicator}→ Starting ${agentName}${delegationInfo}`);
 
     // Set trace context on logger if it supports it
     if ('setTraceContext' in this.logger && typeof this.logger.setTraceContext === 'function') {

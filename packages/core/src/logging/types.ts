@@ -19,7 +19,12 @@ export interface AgentLogger {
   logDelegation(parent: string, child: string, task: string): void;
   logDelegationComplete(parent: string, child: string, result: string): void;
 
-  logAgentStart(agent: string, depth: number, task?: string): void;
+  logAgentStart(
+    agent: string,
+    depth: number,
+    task?: string,
+    skills?: { name: string; version?: string }[]
+  ): void;
   logAgentIteration(agent: string, iteration: number): void;
   logAgentComplete(agent: string, duration: number): void;
   logAgentError(agent: string, error: Error): void;

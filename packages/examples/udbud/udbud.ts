@@ -32,10 +32,11 @@ async function runTenderAnalysis() {
   const providersConfigPath = path.join(__dirname, '../providers-config.json');
   const providersConfig = JSON.parse(fs.readFileSync(providersConfigPath, 'utf-8'));
 
-  // Build the system with tender agents
+  // Build the system with tender agents and skills
   const system = await AgentSystemBuilder.default()
     .withProvidersConfig(providersConfig)
     .withAgentsFrom(path.join(__dirname, 'agents'))
+    .withSkillsFrom(path.join(__dirname, 'skills'))
     .withConsole({ verbosity: 'verbose' })
     .addBuiltinTools('shell') // Add shell to the default tools
     .with({
