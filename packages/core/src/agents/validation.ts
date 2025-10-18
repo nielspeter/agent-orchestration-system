@@ -22,8 +22,8 @@ export const AgentFrontmatterSchema = z.object({
   behavior: z.enum(['deterministic', 'precise', 'balanced', 'creative', 'exploratory']).optional(),
   temperature: z.number().min(0).max(2).optional(),
   top_p: z.number().min(0).max(1).optional(),
-  response_format: z.string().optional(),
-  json_schema: z.unknown().optional(),
+  response_format: z.enum(['text', 'json', 'json_schema']).optional(),
+  json_schema: z.object({}).passthrough().optional(), // Object with any properties
   thinking: z.union([z.boolean(), ThinkingConfigSchema]).optional(),
 });
 
@@ -43,8 +43,8 @@ export function validateAgentFrontmatter(data: unknown, agentName: string): Agen
   } catch (error) {
     if (error instanceof z.ZodError) {
       // Format validation errors for better DX
-      const errors = error.errors
-        .map((err) => {
+      const errors = error.issues
+        .map((err: z.ZodIssue) => {
           const path = err.path.join('.');
           return `  - ${path || 'root'}: ${err.message}`;
         })
