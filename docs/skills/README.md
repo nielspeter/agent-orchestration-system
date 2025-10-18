@@ -12,11 +12,10 @@
 ## What Are Skills?
 
 Skills are folders containing:
-- **SKILL.md** - Instructions and domain knowledge
-- **templates/** - Output templates, checklists (optional)
+- **SKILL.md** - Instructions and domain knowledge (required)
+- **reference/** - Documentation Claude reads as needed (optional)
+- **assets/** - Output resources like templates, logos (optional)
 - **scripts/** - Executable code for deterministic logic (optional)
-- **schemas/** - Validation schemas, data structures (optional)
-- **examples/** - Reference data, sample outputs (optional)
 
 ## When to Use Skills
 
@@ -42,10 +41,12 @@ mkdir -p skills/my-skill
 cat > skills/my-skill/SKILL.md << 'EOF'
 ---
 name: my-skill
-version: 1.0.0
-description: Brief description of what this skill does
-tags: [tag1, tag2]
-capabilities: [capability1, capability2]
+description: When Claude should use this skill
+license: MIT
+metadata:
+  version: "1.0.0"
+  author: "Your Name"
+  tags: "tag1,tag2"
 ---
 
 # My Skill
@@ -54,7 +55,10 @@ Domain expertise goes here...
 
 ## Section 1
 
-Instructions, templates, examples...
+Instructions and guidance...
+
+For detailed documentation, see reference/details.md
+For output templates, use assets/template.md
 EOF
 ```
 
@@ -220,17 +224,21 @@ your-project/
 ├── skills/
 │   ├── danish-tender-guidelines/
 │   │   ├── SKILL.md
-│   │   └── templates/
+│   │   ├── reference/
+│   │   │   └── marker-system.md
+│   │   └── assets/
 │   │       └── checklist.md
 │   │
 │   ├── complexity-calculator/
 │   │   ├── SKILL.md
-│   │   └── schemas/
+│   │   └── reference/
 │   │       └── scoring-matrix.json
 │   │
 │   └── architecture-analyzer/
 │       ├── SKILL.md
-│       └── templates/
+│       ├── reference/
+│       │   └── architecture-patterns.md
+│       └── assets/
 │           └── report-template.md
 │
 └── main.ts
@@ -267,9 +275,10 @@ v2+: Dynamic (loaded based on task analysis)
 
 ### Q: How do I version skills?
 
-Use semantic versioning in frontmatter:
+Use semantic versioning in metadata:
 ```yaml
-version: 1.2.0  # major.minor.patch
+metadata:
+  version: "1.2.0"  # major.minor.patch
 ```
 
 ### Q: Can I share skills publicly?
