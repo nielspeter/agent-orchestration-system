@@ -3,7 +3,7 @@ name: contract-risk-analyst
 tools: ["read", "write", "list", "grep"]
 behavior: precise
 thinking:
-  type: enabled
+  enabled: true
   budget_tokens: 12000  # Critical: Complex legal analysis, risk identification, liability assessment, financial impact calculation
 ---
 

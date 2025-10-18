@@ -3,7 +3,7 @@ name: compliance-checker
 tools: ["read", "write", "list", "grep"]
 behavior: precise
 thinking:
-  type: enabled
+  enabled: true
   budget_tokens: 12000  # Critical: Comprehensive requirement extraction, cross-document validation, compliance gap detection, checklist generation
 ---
 

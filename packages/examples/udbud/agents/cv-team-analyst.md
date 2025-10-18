@@ -3,7 +3,7 @@ name: cv-team-analyst
 tools: ["read", "write", "list", "grep"]
 behavior: precise
 thinking:
-  type: enabled
+  enabled: true
   budget_tokens: 10000  # Moderate: CV requirements extraction, team composition analysis, format validation, reference project criteria
 ---
 

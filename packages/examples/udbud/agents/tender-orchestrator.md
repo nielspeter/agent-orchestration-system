@@ -3,7 +3,7 @@ name: tender-orchestrator
 tools: ["delegate", "todowrite", "read", "list"]
 behavior: balanced
 thinking:
-  type: enabled
+  enabled: true
   budget_tokens: 16000  # Critical: Multi-million dollar tender coordination, strategic planning, dependency mapping, and risk identification
 ---
 
