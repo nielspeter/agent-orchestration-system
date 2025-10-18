@@ -116,6 +116,8 @@ you step in to ensure the task gets completed by returning useful results.`,
           name,
           validated.model,
           validated.thinking,
+          validated.temperature,
+          validated.top_p,
           this.defaultModel,
           this.providersConfig
         );

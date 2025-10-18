@@ -1,7 +1,6 @@
 ---
 name: question-clarifier
 tools: ["read", "write", "list", "grep"]
-behavior: precise
 thinking:
   enabled: true
   budget_tokens: 10000  # Moderate: Ambiguity detection, cross-document validation, risk-based prioritization, and strategic question formulation

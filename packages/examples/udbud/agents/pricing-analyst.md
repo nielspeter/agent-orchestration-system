@@ -1,7 +1,6 @@
 ---
 name: pricing-analyst
 tools: ["read", "write", "list", "grep"]
-behavior: precise
 thinking:
   enabled: true
   budget_tokens: 12000  # Critical: Complex pricing model analysis, evaluation formula extraction, risk identification, commercial term analysis

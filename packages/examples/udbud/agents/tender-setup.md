@@ -1,8 +1,6 @@
 ---
 name: tender-setup
 tools: ["read", "write", "list", "grep", "todowrite"]
-behavior: balanced
-temperature: 0.4
 thinking:
   enabled: true
   budget_tokens: 8000  # Moderate: Document analysis, structure planning, information extraction, gap identification
