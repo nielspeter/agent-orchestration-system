@@ -205,6 +205,79 @@ describe('SimpleSessionManager - Session Recovery', () => {
       expect(messages[0].role).toBe('user');
       expect(messages[1].role).toBe('assistant');
     });
+
+    it('should filter system messages during recovery (audit trail only)', async () => {
+      // System messages are persisted for audit purposes
+      await storage.appendEvent(sessionId, {
+        type: 'assistant',
+        timestamp: 1000,
+        data: {
+          role: 'assistant',
+          content: 'Using built-in default agent',
+          agent: 'system', // System message marker
+        },
+      });
+
+      await storage.appendEvent(sessionId, {
+        type: 'user',
+        timestamp: 2000,
+        data: { role: 'user', content: 'Hello' },
+      });
+
+      await storage.appendEvent(sessionId, {
+        type: 'assistant',
+        timestamp: 3000,
+        data: {
+          role: 'assistant',
+          content: 'Model selected: claude-3-5-haiku-latest',
+          agent: 'system', // Another system message
+        },
+      });
+
+      await storage.appendEvent(sessionId, {
+        type: 'assistant',
+        timestamp: 4000,
+        data: {
+          role: 'assistant',
+          content: 'Hi, how can I help?',
+          agent: 'default', // Real assistant message
+        },
+      });
+
+      const messages = await sessionManager.recoverSession(sessionId);
+
+      // Should only have user message and real assistant message
+      // System messages are filtered out for LLM conversation recovery
+      expect(messages).toHaveLength(2);
+      expect(messages[0].role).toBe('user');
+      expect(messages[0].content).toBe('Hello');
+      expect(messages[1].role).toBe('assistant');
+      expect(messages[1].content).toBe('Hi, how can I help?');
+
+      // Verify system messages are still in storage (audit trail)
+      const allEvents = await storage.readEvents(sessionId);
+      const systemEvents = allEvents.filter(
+        (e) =>
+          e.type === 'assistant' && e.data && 'agent' in e.data && e.data.agent === 'system'
+      );
+      expect(systemEvents).toHaveLength(2);
+    });
+
+    it('should not create session recovery if only system messages exist', async () => {
+      // When only system messages exist, recovery should return empty
+      await storage.appendEvent(sessionId, {
+        type: 'assistant',
+        timestamp: 1000,
+        data: {
+          role: 'assistant',
+          content: 'Agent loaded: test-agent',
+          agent: 'system',
+        },
+      });
+
+      const messages = await sessionManager.recoverSession(sessionId);
+      expect(messages).toHaveLength(0);
+    });
   });
 
   describe('hasIncompleteToolCall', () => {
