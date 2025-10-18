@@ -12,10 +12,10 @@ This document outlines the phased implementation plan for Skills in the agent or
 ## Success Criteria
 
 At completion:
-- ✅ SkillRegistry and SkillLoader implemented
+- ✅ SkillRegistry and SkillLoader implemented (Anthropic Spec v1.0 compliant)
 - ✅ 3+ skills migrated (danish-tender-guidelines, complexity-calculator, architecture-analyzer)
 - ✅ 4+ agents use skills (tender-orchestrator, technical-analyst, go-no-go, response-prep)
-- ✅ 100% backward compatibility (all existing tests pass)
+- ✅ All existing tests pass (no regressions)
 - ✅ Documentation complete
 - ✅ 20-30% context reduction measured
 
@@ -32,32 +32,23 @@ At completion:
 ```typescript
 export interface Skill {
   name: string;
-  version: string;
   description: string;
-  tags: string[];
-  capabilities: string[];
+  license?: string;
+  allowedTools?: string[];
+  metadata?: Record<string, string>;
   instructions: string;
-  templates?: Record<string, string>;
+  reference?: Record<string, string>;
   scripts?: Record<string, string>;
-  schemas?: Record<string, unknown>;
-  examples?: Record<string, string>;
-  metadata: {
-    author?: string;
-    created?: string;
-    updated?: string;
-    path: string;
-  };
+  assets?: Record<string, string>;
+  path: string;
 }
 
 export interface SkillFrontmatter {
   name: string;
-  version: string;
   description: string;
-  tags?: string[];
-  capabilities?: string[];
-  author?: string;
-  created?: string;
-  updated?: string;
+  license?: string;
+  'allowed-tools'?: string[];
+  metadata?: Record<string, string>;
 }
 ```
 
@@ -78,14 +69,17 @@ export interface SkillFrontmatter {
 import { z } from 'zod';
 
 export const SkillFrontmatterSchema = z.object({
-  name: z.string().min(1, 'Skill name is required'),
-  version: z.string().regex(/^\d+\.\d+\.\d+$/, 'Version must be semver'),
+  // Required fields (Anthropic Spec v1.0)
+  name: z.string().min(1, 'Skill name is required').regex(
+    /^[a-z0-9-]+$/,
+    'Name must be hyphen-case (e.g., my-skill-name)'
+  ),
   description: z.string().min(1, 'Description is required'),
-  tags: z.array(z.string()).optional(),
-  capabilities: z.array(z.string()).optional(),
-  author: z.string().optional(),
-  created: z.string().optional(),
-  updated: z.string().optional(),
+
+  // Optional fields
+  license: z.string().optional(),
+  'allowed-tools': z.array(z.string()).optional(),
+  metadata: z.record(z.string()).optional(),
 });
 
 export function validateSkillFrontmatter(
@@ -103,8 +97,9 @@ export function validateSkillFrontmatter(
 ```
 
 **Acceptance Criteria:**
-- [ ] Zod schema validates all required fields
-- [ ] Semver validation for version field
+- [ ] Zod schema validates required fields (name, description)
+- [ ] Hyphen-case validation for skill name
+- [ ] Optional fields validated when present
 - [ ] Clear error messages with field names
 - [ ] Unit tests cover all validation cases
 
@@ -124,15 +119,21 @@ export class SkillLoader {
     // 1. Check for SKILL.md
     // 2. Parse frontmatter + content
     // 3. Validate frontmatter
-    // 4. Load resources (templates, scripts, schemas, examples)
+    // 4. Load resources (reference, scripts, assets)
     // 5. Return Skill object
   }
 
-  private async loadTemplates(skillPath: string): Promise<Record<string, string>> {
-    // Load all .md files from templates/ subdirectory
+  private async loadReference(skillPath: string): Promise<Record<string, string>> {
+    // Load all files from reference/ subdirectory
   }
 
-  // Similar methods for scripts, schemas, examples
+  private async loadScripts(skillPath: string): Promise<Record<string, string>> {
+    // Load all files from scripts/ subdirectory
+  }
+
+  private async loadAssets(skillPath: string): Promise<Record<string, string>> {
+    // Load all files from assets/ subdirectory
+  }
 }
 ```
 
@@ -534,15 +535,22 @@ Create structure:
 packages/examples/udbud/skills/
 ├── danish-tender-guidelines/
 │   ├── SKILL.md
-│   └── templates/
-│       └── analysis-checklist.md
+│   ├── reference/
+│   │   ├── marker-system.md
+│   │   ├── deadline-rules.md
+│   │   └── format-validation.md
+│   └── assets/
+│       ├── analysis-template.md
+│       └── checklist-template.md
 ├── complexity-calculator/
 │   ├── SKILL.md
-│   └── schemas/
+│   └── reference/
 │       └── complexity-matrix.json
 └── architecture-analyzer/
     ├── SKILL.md
-    └── templates/
+    ├── reference/
+    │   └── architecture-patterns.md
+    └── assets/
         └── architecture-report.md
 ```
 
@@ -565,48 +573,40 @@ packages/examples/udbud/skills/
 ```yaml
 ---
 name: danish-tender-guidelines
-version: 1.0.0
 description: Danish public tender (offentlig udbud) compliance rules and formatting
-tags: [tender, danish, compliance, formatting, public-procurement]
-capabilities: [validation, formatting, deadline-calculation, marker-system]
-author: Niels Peter
-created: 2025-10-18
-updated: 2025-10-18
+license: MIT
+metadata:
+  version: "1.0.0"
+  author: "Niels Peter"
+  tags: "tender,danish,compliance,formatting"
 ---
 
 # Danish Tender Guidelines
 
-Expertise for analyzing Danish public tenders (offentlig udbud).
+Essential compliance rules for analyzing Danish public tenders.
 
-## Critical Guidelines
+## Marker System
 
-**ALL data in analysis MUST be marked:**
+All data must be marked for transparency. See reference/marker-system.md for complete rules.
+
+Quick reference:
 - **[FAKTA]** - Direct from tender material with source
 - **[ESTIMAT]** - Your calculations/assessments
-- **[ANTAGET]** - Assumptions where data is missing
-- **[UKENDT]** - Information not in material
-- **[INTERN VURDERING PÅKRÆVET]** - Requires internal competency assessment
+- **[INTERN VURDERING PÅKRÆVET]** - Requires internal assessment
 
-⚠️ **IMPORTANT**: NEVER speculate about bidder's competency! Always use **[INTERN VURDERING PÅKRÆVET]**
+⚠️ NEVER speculate about bidder's competency! Always mark as [INTERN VURDERING PÅKRÆVET].
 
-## Required Output Sections
+## Output Format
 
-All Danish tender analyses must include:
-1. Executive summary with key facts
-2. Project overview ([FAKTA] markers with sources)
-3. Requirements breakdown
-4. Risks and unknowns
-5. Internal assessment requirements
+Use assets/analysis-template.md as base structure.
 
-## Fact-Checking Protocol
+Validate output with assets/checklist-template.md before finalizing.
 
-Before outputting analysis, verify:
-- [ ] All requirements sourced from tender documents
-- [ ] NO speculation about bidder's capabilities
-- [ ] All estimates marked [ESTIMAT] with justification
-- [ ] Capability needs marked [INTERN VURDERING PÅKRÆVET]
+## Detailed Documentation
 
-[Rest of Danish-specific guidelines...]
+- Marker system details: reference/marker-system.md
+- Deadline calculation: reference/deadline-rules.md
+- Format validation: reference/format-validation.md
 ```
 
 **Acceptance Criteria:**
@@ -626,10 +626,11 @@ Before outputting analysis, verify:
 ```yaml
 ---
 name: complexity-calculator
-version: 1.0.0
 description: Software project complexity estimation methodology
-tags: [estimation, complexity, function-points, effort]
-capabilities: [complexity-scoring, effort-estimation, resource-planning]
+license: MIT
+metadata:
+  version: "1.0.0"
+  tags: "estimation,complexity,effort"
 ---
 
 # Complexity Calculator
@@ -645,6 +646,10 @@ Evaluate on 1-10 scale:
 4. Performance requirements
 5. Technical debt
 
+## Detailed Methodology
+
+For complete complexity matrix and scoring methodology, see reference/complexity-matrix.json.
+
 ## Estimation Formula
 
 [Include complexity calculation method]
@@ -652,7 +657,7 @@ Evaluate on 1-10 scale:
 
 **Acceptance Criteria:**
 - [ ] Complexity methodology documented
-- [ ] Schema for complexity matrix (JSON)
+- [ ] Complexity matrix in reference/ directory (JSON)
 - [ ] Reusable across tender types
 
 **Estimated Time:** 4 hours
@@ -666,10 +671,11 @@ Evaluate on 1-10 scale:
 ```yaml
 ---
 name: architecture-analyzer
-version: 1.0.0
 description: Software architecture assessment methodology
-tags: [architecture, design, patterns, scalability]
-capabilities: [architecture-assessment, pattern-recognition, scalability-analysis]
+license: MIT
+metadata:
+  version: "1.0.0"
+  tags: "architecture,design,patterns"
 ---
 
 # Architecture Analyzer
@@ -688,12 +694,17 @@ Systematic approach to analyzing software architecture.
    - Migration path
    - Risks and dependencies
 
-[Include architecture analysis framework]
+## Output Template
+
+Use assets/architecture-report.md for standardized output format.
+
+For detailed architecture patterns, see reference/architecture-patterns.md.
 ```
 
 **Acceptance Criteria:**
 - [ ] Architecture assessment framework
-- [ ] Template for architecture report
+- [ ] Template in assets/ directory
+- [ ] Reference patterns in reference/ directory
 - [ ] Reusable across domains
 
 **Estimated Time:** 4 hours
@@ -921,17 +932,17 @@ Include:
 
 ## Risk Mitigation
 
-### Risk 1: Backward Compatibility Breaks
+### Risk 1: Integration Issues
 
 **Mitigation:**
-- Skills are 100% optional
-- Existing agents work unchanged
-- Comprehensive regression testing
+- Skills are optional in agent frontmatter
+- Graceful degradation if skill not found
+- Comprehensive unit and integration testing
 
 **Validation:**
 - All existing unit tests must pass
-- No changes to test fixtures required
-- Integration tests verify both with/without skills
+- Integration tests verify agents with and without skills
+- Error handling tested for missing skills
 
 ---
 
@@ -1021,7 +1032,7 @@ At Phase 3 completion, measure:
 
 ### After Phase 2:
 - [ ] Integration tests pass
-- [ ] All existing tests pass (backward compatibility)
+- [ ] All existing tests pass (no regressions)
 - [ ] Performance acceptable (<100ms overhead)
 - **Decision:** Proceed to Phase 3?
 
@@ -1125,7 +1136,7 @@ At Phase 3 completion, measure:
 ### Integration Tests (Phase 2)
 - [ ] Agent with skills loads correctly
 - [ ] Skills injected into system prompt
-- [ ] Agent without skills works (backward compat)
+- [ ] Agent without skills field works normally
 - [ ] Missing skill handled gracefully
 
 ### Validation Tests (Phase 3)
