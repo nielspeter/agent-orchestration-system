@@ -3,7 +3,7 @@ name: deadline-coordinator
 tools: ["read", "write", "list", "grep"]
 behavior: precise
 thinking:
-  type: enabled
+  enabled: true
   budget_tokens: 8000  # Moderate: Timeline extraction, critical path analysis, dependency mapping, internal preparation timeline
 ---
 
