@@ -71,6 +71,8 @@ export function validateAgentFrontmatter(data: unknown, agentName: string): Agen
  * @param agentName Agent name for error context
  * @param agentModel Model specified in agent frontmatter (optional)
  * @param thinking Thinking configuration from agent
+ * @param temperature Temperature setting from agent (optional)
+ * @param topP Top-p setting from agent (optional)
  * @param defaultModel Default model from system config
  * @param providersConfig Providers configuration
  * @returns Validation result with error/warning message if incompatible
@@ -79,6 +81,8 @@ export function validateThinkingCompatibility(
   agentName: string,
   agentModel: string | undefined,
   thinking: boolean | ThinkingConfig | undefined,
+  temperature: number | undefined,
+  topP: number | undefined,
   defaultModel: string | undefined,
   providersConfig: ProvidersConfig | undefined
 ): { valid: boolean; message?: string } {
@@ -87,6 +91,34 @@ export function validateThinkingCompatibility(
     typeof thinking === 'boolean' ? thinking : thinking?.enabled === true;
   if (!thinkingEnabled) {
     return { valid: true };
+  }
+
+  // Check for incompatible temperature/top_p settings
+  // Extended thinking requires temperature=1.0 (model controls its own sampling)
+  if (temperature !== undefined) {
+    return {
+      valid: false,
+      message:
+        `Agent '${agentName}' has both thinking enabled AND temperature configured.\n` +
+        '  Extended thinking is incompatible with custom temperature settings.\n' +
+        '  Solutions:\n' +
+        '  1. Remove "temperature" from agent frontmatter (recommended)\n' +
+        '  2. Remove thinking configuration if you need custom temperature\n' +
+        '  Note: When thinking is enabled, the model controls its own sampling parameters.',
+    };
+  }
+
+  if (topP !== undefined) {
+    return {
+      valid: false,
+      message:
+        `Agent '${agentName}' has both thinking enabled AND top_p configured.\n` +
+        '  Extended thinking is incompatible with custom top_p settings.\n' +
+        '  Solutions:\n' +
+        '  1. Remove "top_p" from agent frontmatter (recommended)\n' +
+        '  2. Remove thinking configuration if you need custom top_p\n' +
+        '  Note: When thinking is enabled, the model controls its own sampling parameters.',
+    };
   }
 
   // Determine which model will be used

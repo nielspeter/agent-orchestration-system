@@ -1,8 +1,6 @@
 ---
 name: document-converter
 tools: ["read", "write", "shell", "list"]
-behavior: precise
-temperature: 0.3
 thinking:
   enabled: true
   budget_tokens: 6000  # Complex: File conversion strategy, error handling, batch processing decisions

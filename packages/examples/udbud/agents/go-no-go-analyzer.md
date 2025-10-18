@@ -1,7 +1,6 @@
 ---
 name: go-no-go-analyzer
 tools: ["read", "write", "list", "grep"]
-behavior: precise
 thinking:
   enabled: true
   budget_tokens: 14000  # Comprehensive: Strategic business decisions, risk vs reward analysis, financial modeling, and capability gap assessment

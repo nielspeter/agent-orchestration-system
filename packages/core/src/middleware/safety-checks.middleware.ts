@@ -23,15 +23,16 @@ export function createSafetyChecksMiddleware(safetyLimits: SafetyConfig): Middle
 
     // Check iteration count
     if (ctx.iteration >= safetyLimits.maxIterations) {
-      const msg = `Stopped at ${safetyLimits.maxIterations} iterations (safety limit). Task may be too complex.`;
       ctx.logger.logSafetyLimit(
         'max_iterations',
         ctx.agentName,
         `iteration: ${ctx.iteration}/${safetyLimits.maxIterations}`
       );
-      ctx.result = msg;
-      ctx.shouldContinue = false;
-      return; // Don't call next
+      // Throw error to stop execution and propagate to parent agents
+      throw new Error(
+        `Safety limit reached: Maximum iterations (${safetyLimits.maxIterations}) exceeded. ` +
+        `Task may be too complex or requires human intervention.`
+      );
     }
 
     // Warn at high iteration count
@@ -48,16 +49,16 @@ export function createSafetyChecksMiddleware(safetyLimits: SafetyConfig): Middle
       safetyLimits.maxTokens ||
       DEFAULTS.TOKEN_ESTIMATE_FALLBACK;
     if (estimatedTokens > maxTokens) {
-      const msg = `Token limit estimate exceeded: ~${Math.round(estimatedTokens)} tokens (limit: ${maxTokens})`;
-      console.warn(`⚠️ ${msg}`);
       ctx.logger.logSafetyLimit(
         'max_tokens',
         ctx.agentName,
         `~${Math.round(estimatedTokens)}/${maxTokens} tokens`
       );
-      ctx.result = `Task stopped: ${msg} (safety limit)`;
-      ctx.shouldContinue = false;
-      return; // Don't call next
+      // Throw error to stop execution and propagate to parent agents
+      throw new Error(
+        `Safety limit reached: Token estimate (~${Math.round(estimatedTokens)}) exceeds limit (${maxTokens}). ` +
+        `Task requires too much context.`
+      );
     }
 
     await next();
