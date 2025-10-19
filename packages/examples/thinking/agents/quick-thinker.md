@@ -1,6 +1,6 @@
 ---
 name: quick-thinker
-model: anthropic/claude-sonnet-4-0
+model: anthropic/claude-sonnet-4-5
 thinking:
   enabled: true
   budget_tokens: 4000

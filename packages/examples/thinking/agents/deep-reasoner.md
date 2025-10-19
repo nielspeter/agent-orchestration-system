@@ -1,6 +1,6 @@
 ---
 name: deep-reasoner
-model: anthropic/claude-sonnet-4-0
+model: anthropic/claude-sonnet-4-5
 thinking: true
 tools:
   - Read

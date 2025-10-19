@@ -43,19 +43,40 @@
           "id": "claude-opus-4-1",
           "contextLength": 200000,
           "maxOutputTokens": 32000,
-          "pricing": { "input": 0.015, "output": 0.075 }
+          "pricing": { "input": 0.015, "output": 0.075 },
+          "capabilities": {
+            "thinking": true,
+            "thinkingMinBudget": 1024,
+            "thinkingMaxBudget": 65536,
+            "thinkingDefaultBudget": 12000,
+            "thinkingNotes": "Supports extended thinking with high token budgets"
+          }
         },
         {
           "id": "claude-sonnet-4-5",
           "contextLength": 200000,
           "maxOutputTokens": 64000,
-          "pricing": { "input": 0.003, "output": 0.015 }
+          "pricing": { "input": 0.003, "output": 0.015 },
+          "capabilities": {
+            "thinking": true,
+            "thinkingMinBudget": 512,
+            "thinkingMaxBudget": 32768,
+            "thinkingDefaultBudget": 8000,
+            "thinkingNotes": "Supports extended thinking with moderate token budgets"
+          }
         },
         {
-          "id": " claude-haiku-4-5",
+          "id": "claude-haiku-4-5",
           "contextLength": 200000,
           "maxOutputTokens": 64000,
-          "pricing": { "input": 0.001, "output": 0.005 }
+          "pricing": { "input": 0.001, "output": 0.005 },
+          "capabilities": {
+            "thinking": true,
+            "thinkingMinBudget": 512,
+            "thinkingMaxBudget": 32768,
+            "thinkingDefaultBudget": 8000,
+            "thinkingNotes": "Supports extended thinking with moderate token budgets"
+          }
         }
       ]
     },
