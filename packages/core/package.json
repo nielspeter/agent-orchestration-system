@@ -1,5 +1,5 @@
 {
-  "name": "@agent-system/core",
+  "name": "@nielspeter/agent-orchestration-core",
   "version": "1.1.0",
   "type": "module",
   "description": "Core agent orchestration system - autonomous agents with LLM providers",

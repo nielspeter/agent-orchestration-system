@@ -4,9 +4,9 @@ This document explains how to publish and install packages from GitHub Packages.
 
 ## Overview
 
-This repository publishes private npm packages to GitHub Packages:
-- `@agent-system/core` - Core agent orchestration system
-- `@agent-system/cli` - CLI tool for running agents
+This repository publishes npm packages to GitHub Packages:
+- `@nielspeter/agent-orchestration-core` - Core agent orchestration system
+- `@nielspeter/agent-orchestration-cli` - CLI tool for running agents
 
 ## For Package Consumers (Installing Packages)
 
@@ -38,17 +38,17 @@ Replace `YOUR_GITHUB_TOKEN` with the PAT you created.
 
 ### 3. Configure Package Scope
 
-Tell npm to use GitHub Packages for the `@agent-system` scope:
+Tell npm to use GitHub Packages for the `@nielspeter` scope:
 
 ```bash
 # Add to ~/.npmrc
-@agent-system:registry=https://npm.pkg.github.com
+@nielspeter:registry=https://npm.pkg.github.com
 ```
 
 Or use npm config:
 
 ```bash
-npm config set @agent-system:registry https://npm.pkg.github.com
+npm config set @nielspeter:registry https://npm.pkg.github.com
 ```
 
 ### 4. Install Packages
@@ -56,8 +56,8 @@ npm config set @agent-system:registry https://npm.pkg.github.com
 Now you can install the packages:
 
 ```bash
-npm install @agent-system/core
-npm install @agent-system/cli
+npm install @nielspeter/agent-orchestration-core
+npm install @nielspeter/agent-orchestration-cli
 ```
 
 ### Quick Setup Script
@@ -68,10 +68,10 @@ GITHUB_TOKEN="ghp_your_token_here"
 
 # 2. Configure npm
 echo "//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}" >> ~/.npmrc
-echo "@agent-system:registry=https://npm.pkg.github.com" >> ~/.npmrc
+echo "@nielspeter:registry=https://npm.pkg.github.com" >> ~/.npmrc
 
 # 3. Install packages
-npm install @agent-system/core @agent-system/cli
+npm install @nielspeter/agent-orchestration-core @nielspeter/agent-orchestration-cli
 ```
 
 ## For Package Publishers (Releasing New Versions)
