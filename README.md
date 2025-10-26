@@ -5,7 +5,7 @@
 Key capabilities:
 
 - **Autonomous Agents**: Agents gather information via tools, making independent decisions without massive context dumps
-- **Deep Reasoning**: Multi-provider thinking support (Claude, OpenAI o1/o3, OpenRouter) for complex planning and problem-solving
+- **Deep Reasoning**: Multi-provider thinking support (Claude, OpenAI, OpenRouter) for complex planning and problem-solving
 - **Agent Collaboration**: Agents delegate to specialized sub-agents, forming dynamic teams for complex tasks
 - **Multi-Provider Support**: Switch between Anthropic, OpenAI, OpenRouter, or custom providers with simple configuration
 - **Production-Ready**: Built-in security, retry logic, session persistence, and comprehensive monitoring
