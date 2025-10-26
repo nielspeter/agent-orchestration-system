@@ -32,7 +32,7 @@ async function main() {
   // Build agent system with skills registry
   const { executor, cleanup } = await AgentSystemBuilder.default()
     .withAgentsFrom(path.join(__dirname, 'agents'))
-    .withSkillsFrom(path.join(__dirname, '../udbud/skills')) // Load real udbud skills
+    .withSkillsFrom(path.join(__dirname, 'skills')) // Load skills (self-contained demo)
     .withModel(process.env.MODEL || 'anthropic/claude-haiku-4-5')
     .withConsole({ enabled: true, color: true })
     .build();
