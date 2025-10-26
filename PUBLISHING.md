@@ -1,169 +1,142 @@
-# Publishing to GitHub Packages
+# Publishing to npm
 
-This document explains how to publish and install packages from GitHub Packages.
+This document explains how to publish and install packages from the npm registry.
 
 ## Overview
 
-This repository publishes npm packages to GitHub Packages:
+This repository publishes public npm packages:
 - `@nielspeter/agent-orchestration-core` - Core agent orchestration system
 - `@nielspeter/agent-orchestration-cli` - CLI tool for running agents
 
 ## For Package Consumers (Installing Packages)
 
-### 1. Create a GitHub Personal Access Token (PAT)
+### Installation
 
-You need a PAT with `read:packages` scope to install packages from GitHub Packages.
-
-1. Go to GitHub Settings → Developer settings → Personal access tokens → Tokens (classic)
-   - Or visit: https://github.com/settings/tokens
-2. Click "Generate new token" → "Generate new token (classic)"
-3. Give it a descriptive name (e.g., "npm-github-packages")
-4. Select scopes:
-   - ✅ `read:packages` (required for installing)
-   - ✅ `write:packages` (only if you need to publish)
-5. Click "Generate token" and **copy the token immediately** (you won't see it again)
-
-### 2. Configure npm Authentication
-
-Create or edit `~/.npmrc` in your home directory:
-
-```bash
-# Add this line to ~/.npmrc
-//npm.pkg.github.com/:_authToken=YOUR_GITHUB_TOKEN
-```
-
-Replace `YOUR_GITHUB_TOKEN` with the PAT you created.
-
-**Important**: Never commit `.npmrc` with tokens to git!
-
-### 3. Configure Package Scope
-
-Tell npm to use GitHub Packages for the `@nielspeter` scope:
-
-```bash
-# Add to ~/.npmrc
-@nielspeter:registry=https://npm.pkg.github.com
-```
-
-Or use npm config:
-
-```bash
-npm config set @nielspeter:registry https://npm.pkg.github.com
-```
-
-### 4. Install Packages
-
-Now you can install the packages:
+Simply install the packages from npm - no authentication required for public packages:
 
 ```bash
 npm install @nielspeter/agent-orchestration-core
 npm install @nielspeter/agent-orchestration-cli
 ```
 
-### Quick Setup Script
+Or install the CLI globally:
 
 ```bash
-# 1. Set your GitHub token (replace with your actual token)
-GITHUB_TOKEN="ghp_your_token_here"
-
-# 2. Configure npm
-echo "//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}" >> ~/.npmrc
-echo "@nielspeter:registry=https://npm.pkg.github.com" >> ~/.npmrc
-
-# 3. Install packages
-npm install @nielspeter/agent-orchestration-core @nielspeter/agent-orchestration-cli
+npm install -g @nielspeter/agent-orchestration-cli
 ```
+
+That's it! Public npm packages work out of the box.
 
 ## For Package Publishers (Releasing New Versions)
 
-### Automated Publishing (Recommended)
+### Prerequisites
+
+1. **npm Account**: Create an account at https://www.npmjs.com/signup
+2. **Two-Factor Authentication**: Enable 2FA on your npm account (required for publishing)
+3. **Access**: You must be added as a maintainer to publish these packages
+
+### One-Time Setup
+
+#### 1. Login to npm
+
+```bash
+npm login
+# Enter your npm username, password, and OTP (if 2FA enabled)
+```
+
+Verify you're logged in:
+
+```bash
+npm whoami
+# Should output: nielspeter
+```
+
+#### 2. Setup NPM_TOKEN for GitHub Actions
+
+To enable automated publishing via GitHub Actions:
+
+1. Generate an npm automation token:
+   ```bash
+   npm token create --type automation
+   ```
+
+2. Copy the token (starts with `npm_`)
+
+3. Add it to GitHub repository secrets:
+   - Go to: https://github.com/nielspeter/agent-orchestration-system/settings/secrets/actions
+   - Click "New repository secret"
+   - Name: `NPM_TOKEN`
+   - Value: Paste the automation token
+   - Click "Add secret"
+
+### Publishing New Versions
+
+#### Automated Publishing (Recommended)
 
 The repository uses GitHub Actions for automated publishing on version tags:
 
-1. Update version in package.json:
+1. **Update version in package.json:**
    ```bash
    cd packages/core
    npm version patch  # or minor, major
+
+   cd ../cli
+   npm version patch  # or minor, major
    ```
 
-2. Commit and push the version bump:
+2. **Commit and push the version bump:**
    ```bash
-   git add packages/core/package.json
-   git commit -m "chore: bump core version to X.Y.Z"
+   git add packages/core/package.json packages/cli/package.json package-lock.json
+   git commit -m "chore: bump packages to vX.Y.Z"
    git push
    ```
 
-3. Create and push a git tag:
+3. **Create and push a git tag:**
    ```bash
-   git tag v1.0.0
-   git push origin v1.0.0
+   git tag vX.Y.Z
+   git push origin vX.Y.Z
    ```
 
-4. GitHub Actions will automatically:
+4. **GitHub Actions will automatically:**
    - Build the packages
    - Run tests
-   - Publish to GitHub Packages
+   - Publish to npm registry
 
-### Manual Publishing
+5. **Monitor the workflow:**
+   - Check: https://github.com/nielspeter/agent-orchestration-system/actions
+   - Look for the "Publish Packages to npm" workflow
+
+#### Manual Publishing
 
 If you need to publish manually:
 
-1. Ensure you have a PAT with `write:packages` scope
-
-2. Authenticate:
+1. **Build and test:**
    ```bash
-   npm login --registry=https://npm.pkg.github.com
-   # Username: your-github-username
-   # Password: your-github-token (PAT)
-   # Email: your-email
+   # Build core
+   cd packages/core
+   npm run build
+   npm test
+
+   # Build CLI
+   cd ../cli
+   npm run build
+   npm test
    ```
 
-3. Build and publish:
+2. **Publish:**
    ```bash
    # Publish core
    cd packages/core
-   npm run prepublishOnly  # Builds and tests
    npm publish
 
    # Publish CLI
    cd ../cli
-   npm run prepublishOnly
    npm publish
    ```
 
-## Troubleshooting
+The `publishConfig.access: "public"` in package.json ensures packages are published as public.
 
-### "Unable to authenticate" or 401 Unauthorized
-
-- Verify your PAT has `read:packages` (or `write:packages` for publishing)
-- Check that `.npmrc` has the correct token
-- Ensure the token hasn't expired
-- Verify the scope configuration: `@agent-system:registry=https://npm.pkg.github.com`
-
-### "Package not found" or 404
-
-- Ensure the package has been published at least once
-- Verify you have access to the repository (private packages)
-- Check the package name matches exactly (case-sensitive)
-
-### "EPERM: operation not permitted" on Windows
-
-- Make sure `.npmrc` uses Unix-style paths
-- Try using Git Bash or WSL instead of Command Prompt
-
-### Publishing fails in GitHub Actions
-
-- Check that the workflow has `packages: write` permission
-- Verify the `GITHUB_TOKEN` secret is available (it's automatic)
-- Ensure tests pass before publishing
-
-## Package Visibility
-
-All packages are **public** and can be installed by anyone.
-
-Note: Authentication is still required to install from GitHub Packages, even for public packages. See the installation instructions above.
-
-## Version Strategy
+### Version Strategy
 
 We follow [Semantic Versioning](https://semver.org/):
 - **MAJOR** (1.0.0): Breaking changes
@@ -172,13 +145,58 @@ We follow [Semantic Versioning](https://semver.org/):
 
 Use npm version commands:
 ```bash
-npm version patch  # 0.1.0 → 0.1.1
-npm version minor  # 0.1.1 → 0.2.0
-npm version major  # 0.2.0 → 1.0.0
+npm version patch  # 1.1.0 → 1.1.1
+npm version minor  # 1.1.1 → 1.2.0
+npm version major  # 1.2.0 → 2.0.0
 ```
+
+**Important:** Keep both packages at the same version number for consistency.
+
+## Troubleshooting
+
+### "You must be logged in to publish packages"
+
+```bash
+npm login
+npm whoami  # Verify you're logged in
+```
+
+### "You do not have permission to publish"
+
+You need to be added as a maintainer. Contact the package owner.
+
+### "Cannot publish over existing version"
+
+Each version can only be published once. Bump the version:
+
+```bash
+npm version patch
+```
+
+### "Missing or invalid OTP"
+
+If 2FA is enabled, you'll need to provide a one-time password:
+
+```bash
+npm publish --otp=123456
+```
+
+### GitHub Actions publishing fails
+
+1. Verify `NPM_TOKEN` secret is set in repository settings
+2. Check the token hasn't expired
+3. Ensure the token has publish permissions
+4. View workflow logs for specific error
+
+## Package URLs
+
+After publishing, packages will be available at:
+- https://www.npmjs.com/package/@nielspeter/agent-orchestration-core
+- https://www.npmjs.com/package/@nielspeter/agent-orchestration-cli
 
 ## Additional Resources
 
-- [GitHub Packages Documentation](https://docs.github.com/en/packages)
-- [Working with npm registry](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-npm-registry)
-- [About PATs](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens)
+- [npm Documentation](https://docs.npmjs.com/)
+- [Publishing npm packages](https://docs.npmjs.com/packages-and-modules/contributing-packages-to-the-registry)
+- [Semantic Versioning](https://semver.org/)
+- [npm tokens](https://docs.npmjs.com/about-access-tokens)
