@@ -185,3 +185,52 @@ describe('SkillTool', () => {
     expect(emptySkillTool.description).toContain('No skills currently available');
   });
 });
+
+describe('Skill Tool - Argument Validation', () => {
+  let skillTool: BaseTool;
+
+  beforeEach(() => {
+    const mockRegistry = {
+      getSkill: vi.fn(),
+      listSkills: vi.fn().mockReturnValue([{ name: 'test-skill', description: 'Test skill' }]),
+    };
+    skillTool = createSkillTool(mockRegistry as unknown as SkillRegistry);
+  });
+
+  test('rejects null arguments', async () => {
+    const result = await skillTool.execute(null);
+    expect(result.error).toBe('Invalid arguments: expected an object');
+  });
+
+  test('rejects undefined arguments', async () => {
+    const result = await skillTool.execute(undefined);
+    expect(result.error).toBe('Invalid arguments: expected an object');
+  });
+
+  test('rejects array arguments', async () => {
+    const result = await skillTool.execute(['test-skill']);
+    expect(result.error).toBe('Invalid arguments: expected an object');
+  });
+
+  test('rejects string arguments', async () => {
+    const result = await skillTool.execute('test-skill');
+    expect(result.error).toBe('Invalid arguments: expected an object');
+  });
+
+  test('rejects number arguments', async () => {
+    const result = await skillTool.execute(123);
+    expect(result.error).toBe('Invalid arguments: expected an object');
+  });
+
+  test('accepts empty object (will fail later with missing name)', async () => {
+    const result = await skillTool.execute({});
+    expect(result.error).toContain('name is required');
+  });
+
+  test('accepts valid object with name', async () => {
+    // This will fail because skill doesn't exist, but argument validation passes
+    const result = await skillTool.execute({ name: 'nonexistent' });
+    expect(result.error).toContain('not found');
+    expect(result.error).not.toContain('Invalid arguments');
+  });
+});

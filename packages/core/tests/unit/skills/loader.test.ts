@@ -242,4 +242,45 @@ describe('SkillLoader', () => {
       expect(assets['template.txt']).toContain('Output Template');
     });
   });
+
+  describe('Security - Path Traversal Protection', () => {
+    it('should safely handle path traversal attempts (returns undefined for non-listed files)', async () => {
+      const skillPath = path.join(fixturesDir, 'valid-skill');
+      const skill = await loader.loadSkill(skillPath);
+
+      // Files not in the scanned list return undefined (safe behavior)
+      // This prevents traversal attempts from even reaching the filesystem
+      const result1 = await skill.getReference('../../etc/passwd');
+      expect(result1).toBeUndefined();
+
+      const result2 = await skill.getScript('../../../sensitive.py');
+      expect(result2).toBeUndefined();
+
+      const result3 = await skill.getAsset('../../.env');
+      expect(result3).toBeUndefined();
+    });
+
+    it('should reject path traversal in loadResource function', async () => {
+      const skillPath = path.join(fixturesDir, 'skill-with-resources');
+      const skill = await loader.loadSkill(skillPath);
+
+      // Access the private loadResource function through an existing resource
+      // but modify the path to attempt traversal
+      // @ts-expect-error - accessing private method for testing
+      const loadResource = skill._loadResource;
+
+      // Direct call to loadResource should reject path traversal
+      await expect(loadResource('../../../etc/passwd')).rejects.toThrow('Path traversal detected');
+    });
+
+    it('should allow legitimate resource paths', async () => {
+      const skillPath = path.join(fixturesDir, 'skill-with-resources');
+      const skill = await loader.loadSkill(skillPath);
+
+      // This should work fine - it's a legitimate file in the skill directory
+      const content = await skill.getReference('api-docs.md');
+      expect(content).toBeDefined();
+      expect(content).toContain('API Documentation');
+    });
+  });
 });
