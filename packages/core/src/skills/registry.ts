@@ -96,11 +96,14 @@ export class SkillRegistry {
   /**
    * Get a skill by name
    *
+   * Normalizes the name (lowercase, trimmed) for case-insensitive lookup.
+   *
    * @param name - Skill name
    * @returns Skill if found, undefined otherwise
    */
   getSkill(name: string): Skill | undefined {
-    return this.skills.get(name);
+    const normalized = name.trim().toLowerCase();
+    return this.skills.get(normalized);
   }
 
   /**

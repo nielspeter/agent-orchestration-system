@@ -19,6 +19,7 @@
     "quickstart": "tsx quickstart/quickstart.ts",
     "script-tools": "tsx script-tools/script-tools.ts",
     "session-analyzer": "tsx session-analyzer/session-analyzer.ts",
+    "skills-demo": "tsx skills-demo/skills-demo.ts",
     "thinking": "tsx thinking/thinking.ts",
     "udbud": "tsx udbud/udbud.ts",
     "werewolf": "tsx werewolf-game/werewolf-game.ts",

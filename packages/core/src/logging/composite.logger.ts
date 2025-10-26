@@ -92,14 +92,9 @@ export class CompositeLogger implements AgentLogger {
     );
   }
 
-  logAgentStart(
-    agent: string,
-    depth: number,
-    task?: string,
-    skills?: { name: string; version?: string }[]
-  ): void {
+  logAgentStart(agent: string, depth: number, task?: string): void {
     this.executeWithErrorIsolation(
-      (logger) => logger.logAgentStart(agent, depth, task, skills),
+      (logger) => logger.logAgentStart(agent, depth, task),
       'logAgentStart'
     );
   }

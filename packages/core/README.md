@@ -11,7 +11,8 @@ agent delegation, and session management.
 - **🤖 Multi-Provider Support**: Anthropic Claude, OpenAI, OpenRouter with
   automatic routing
 - **🔧 Built-in Tools**: File operations, grep, shell execution, agent
-  delegation
+  delegation, dynamic skills
+- **🧠 Dynamic Skills**: Load domain expertise on-demand via skill tool
 - **💾 Session Management**: Persistent sessions with automatic recovery
 - **📊 Event Logging**: Real-time event streaming for monitoring and debugging
 - **🎯 Pull Architecture**: Agents gather their own context via tools (efficient
@@ -131,6 +132,65 @@ You are an expert code reviewer. Review code for:
 - **TodoWrite**: Task tracking for complex workflows
 - **Shell**: Execute shell commands (with security restrictions)
 - **GetSessionLog**: Retrieve conversation history
+- **Skill**: Load domain expertise dynamically from skills registry
+
+## Dynamic Skills
+
+Skills are domain expertise packages that agents load on-demand using the `skill` tool:
+
+```typescript
+// Configure system with skills directory
+const system = await AgentSystemBuilder.default()
+  .withAgentsFrom('./agents')
+  .withSkillsFrom('./skills')  // Load skills registry
+  .build();
+```
+
+Create a skill in `skills/my-domain/SKILL.md`:
+
+```markdown
+---
+name: my-domain
+description: Expert knowledge about my domain
+---
+
+# My Domain Expertise
+
+## Key Concepts
+
+Your domain knowledge here...
+
+## Guidelines
+
+- Rule 1: Important guideline
+- Rule 2: Another guideline
+```
+
+Agents load skills dynamically:
+
+```markdown
+---
+name: my-agent
+tools: [read, write, skill]
+---
+
+You are an expert agent.
+
+## Available Skills
+
+Load domain knowledge as needed:
+- skill({name: "my-domain"})
+
+The skill content will be added to the conversation for your use.
+```
+
+**Key Benefits:**
+- ✅ Load skills only when needed
+- ✅ Conversation history serves as cache
+- ✅ Share knowledge across multiple agents
+- ✅ Update domain expertise in one place
+
+For complete documentation, see [Skills System Guide](../../docs/skills.md).
 
 ## Event Logging
 

@@ -1,6 +1,52 @@
 import { Middleware } from './middleware-types';
 
 /**
+ * Adds skill loading hints based on prompt patterns
+ *
+ * Analyzes the user prompt and suggests relevant skills to load.
+ * This guides the agent to load domain knowledge before starting work.
+ */
+function addSkillHints(prompt: string, systemPrompt: string, hasSkillTool: boolean): string {
+  // Skip hints if skill tool is not available
+  if (!hasSkillTool) {
+    return systemPrompt;
+  }
+
+  const hints: string[] = [];
+
+  // Pattern matching for common tasks
+  if (prompt.match(/danish|dansk|udbud|tender/i)) {
+    hints.push('danish-tender-guidelines');
+  }
+
+  if (prompt.match(/complexity|estimate|effort/i)) {
+    hints.push('complexity-calculator');
+  }
+
+  if (prompt.match(/architect|design|structure/i)) {
+    hints.push('architecture-analyzer');
+  }
+
+  // No hints needed
+  if (hints.length === 0) {
+    return systemPrompt;
+  }
+
+  // Add prominent hints
+  systemPrompt += '\n\n' + '═'.repeat(60) + '\n';
+  systemPrompt += '⚠️  **RECOMMENDED SKILLS FOR THIS TASK**\n\n';
+  systemPrompt += 'Consider loading these skills FIRST:\n\n';
+
+  hints.forEach((skill, i) => {
+    systemPrompt += `${i + 1}. skill({name: "${skill}"})\n`;
+  });
+
+  systemPrompt += '\n' + '═'.repeat(60) + '\n';
+
+  return systemPrompt;
+}
+
+/**
  * Sets up initial context and conversation messages
  */
 export function createContextSetupMiddleware(): Middleware {
@@ -16,26 +62,19 @@ export function createContextSetupMiddleware(): Middleware {
     // Add agent's system prompt and user prompt (only on first iteration)
     if (ctx.agent && ctx.iteration === 1) {
       // Build enhanced system prompt with system-level instructions
-      let systemPrompt = ctx.agent.description;
+      let systemPrompt = ctx.agent.description || '';
 
       // Add session context if available
       if (ctx.sessionId) {
         systemPrompt = `## SESSION CONTEXT\nSession ID: ${ctx.sessionId}\n\n${systemPrompt}`;
       }
 
-      // Inject skill instructions if any skills are loaded
-      if (ctx.agent.loadedSkills && ctx.agent.loadedSkills.length > 0) {
-        systemPrompt += '\n\n## DOMAIN EXPERTISE (SKILLS)';
-        systemPrompt +=
-          '\n\nYou have been equipped with specialized domain knowledge for this task:\n';
+      // Add skill hints if skill tool is available
+      const hasSkillTool = ctx.tools?.some((t) => t.name === 'skill') || false;
 
-        for (const skill of ctx.agent.loadedSkills) {
-          systemPrompt += `\n### ${skill.name}`;
-          if (skill.description) {
-            systemPrompt += `\n*${skill.description}*`;
-          }
-          systemPrompt += `\n\n${skill.instructions}\n`;
-        }
+      if (hasSkillTool) {
+        const userPrompt = ctx.prompt || '';
+        systemPrompt = addSkillHints(userPrompt, systemPrompt, hasSkillTool);
       }
 
       // Always add system-level instructions

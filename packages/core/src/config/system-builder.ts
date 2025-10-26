@@ -22,6 +22,7 @@ import { createDelegateTool } from '@/tools/delegate.tool';
 import { createTodoWriteTool } from '@/tools/todowrite.tool';
 import { createShellTool } from '@/tools/shell.tool';
 import { createGetSessionLogTool } from '@/tools/get-session-log.tool';
+import { createSkillTool } from '@/tools/skill.tool';
 import { BaseTool, Message, ToolParameter, ToolResult, ToolSchema } from '@/base-types';
 import {
   Agent,
@@ -554,7 +555,8 @@ export class AgentSystemBuilder {
   private async registerBuiltinTools(
     toolRegistry: ToolRegistry,
     config: ResolvedSystemConfig,
-    agentLoader: AgentLoader
+    agentLoader: AgentLoader,
+    skillRegistry?: import('@/skills/registry').SkillRegistry
   ): Promise<TodoManager | undefined> {
     // TodoManager instance (if todowrite tool is enabled)
     let todoManager: TodoManager | undefined;
@@ -586,6 +588,11 @@ export class AgentSystemBuilder {
         }
         case 'shell':
           toolRegistry.register(createShellTool());
+          break;
+        case 'skill':
+          if (skillRegistry) {
+            toolRegistry.register(createSkillTool(skillRegistry));
+          }
           break;
       }
     }
@@ -955,8 +962,7 @@ export class AgentSystemBuilder {
       logger,
       inlineAgents,
       resolvedConfig.providersConfig,
-      resolvedConfig.defaultModel,
-      skillRegistry
+      resolvedConfig.defaultModel
     );
 
     // Warn if multiple directories were specified but not all used
@@ -969,7 +975,12 @@ export class AgentSystemBuilder {
 
     // Setup tools
     const toolRegistry = new ToolRegistry();
-    const todoManager = await this.registerBuiltinTools(toolRegistry, resolvedConfig, agentLoader);
+    const todoManager = await this.registerBuiltinTools(
+      toolRegistry,
+      resolvedConfig,
+      agentLoader,
+      skillRegistry
+    );
     await this.registerCustomTools(toolRegistry, logger);
 
     // Initialize MCP if configured
@@ -1141,7 +1152,7 @@ export class AgentSystemBuilder {
       agents: isTest
         ? { directories: ['tests/unit/test-agents'], agents: [] }
         : { directories: [] }, // Empty directories - rely on built-in default agent
-      tools: { builtin: ['read', 'write', 'list', 'grep', 'delegate', 'todowrite'] },
+      tools: { builtin: ['read', 'write', 'list', 'grep', 'delegate', 'todowrite', 'skill'] },
       caching: { enabled: true, maxCacheBlocks: 4, cacheTTLMinutes: 5 },
       storage: { type: 'filesystem' }, // Implies event logging
       console: true, // Enable console with normal verbosity

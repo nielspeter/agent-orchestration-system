@@ -126,10 +126,6 @@ export interface Agent {
   json_schema?: object;
   /** Optional thinking configuration - simplified to just boolean or detailed config */
   thinking?: boolean | ThinkingConfig;
-  /** Optional skills to load for this agent */
-  skills?: string[];
-  /** Loaded skill instances (populated by AgentLoader, not from frontmatter) */
-  loadedSkills?: import('../skills/types.js').Skill[];
 }
 
 /**

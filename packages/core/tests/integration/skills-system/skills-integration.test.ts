@@ -3,13 +3,13 @@ import * as dotenv from 'dotenv';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { AgentSystemBuilder, BuildResult } from '@/config/system-builder';
-import type { AgentStartEvent } from '@/session/types';
+import type { ToolCallEvent, ToolResultEvent } from '@/session/types';
 
 dotenv.config();
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-describe('Skills System Integration Tests', () => {
+describe('Dynamic Skills System Integration Tests', () => {
   let buildResult: BuildResult;
 
   beforeAll(async () => {
@@ -30,58 +30,122 @@ describe('Skills System Integration Tests', () => {
     }
   });
 
-  test('agent can load skills', async () => {
+  test('agent can call skill tool to load a skill', async () => {
     const result = await buildResult.executor.execute(
       'skill-user',
-      'List the skills you have available'
+      'Load the valid-skill and tell me what it contains'
     );
 
     expect(result).toBeDefined();
-    expect(result.toLowerCase()).toContain('skill');
-  }, 15000);
+    // Agent should have loaded the skill and can describe it
+    expect(result.toLowerCase()).toMatch(/skill|valid|loaded|instructions/);
 
-  test('skills are logged to session events', async () => {
-    // Execute agent with skills
-    await buildResult.executor.execute('skill-user', 'Say hello');
+    // Check that skill tool was called
+    const events = await buildResult.logger.getSessionEvents();
+    const skillToolCall = events.find(
+      (e) => e.type === 'tool_call' && (e.data as any).name === 'skill'
+    ) as ToolCallEvent | undefined;
+
+    expect(skillToolCall).toBeDefined();
+    expect((skillToolCall?.data as any).arguments).toContain('valid-skill');
+  }, 20000);
+
+  test('skill tool returns formatted content with instructions', async () => {
+    await buildResult.executor.execute('skill-user', 'Load the valid-skill skill');
 
     // Get session events
     const events = await buildResult.logger.getSessionEvents();
 
-    // Find agent_start event
-    const agentStartEvent = events.find(
-      (e) => e.type === 'agent_start' && e.data.agent === 'skill-user'
-    ) as AgentStartEvent | undefined;
+    // Find skill tool result
+    const toolResultEvent = events.find(
+      (e) => e.type === 'tool_result' && (e.data as any).name === 'skill'
+    ) as ToolResultEvent | undefined;
 
-    expect(agentStartEvent).toBeDefined();
-    expect(agentStartEvent?.data.skills).toBeDefined();
-    expect(agentStartEvent?.data.skills).toContain('valid-skill');
-    expect(agentStartEvent?.data.skills).toContain('skill-with-resources');
+    expect(toolResultEvent).toBeDefined();
+    const result = (toolResultEvent?.data as any).result;
 
-    // Check skill versions are logged
-    expect(agentStartEvent?.data.skillVersions).toBeDefined();
-    expect(agentStartEvent?.data.skillVersions?.['valid-skill']).toBe('1.0.0');
-    expect(agentStartEvent?.data.skillVersions?.['skill-with-resources']).toBe('2.1.0');
-  }, 15000);
+    // Verify formatted content structure
+    expect(result).toContain('# Skill Loaded: valid-skill');
+    expect(result).toContain('Valid Skill Instructions');
+    expect(result).toContain('This knowledge is now available for your task');
+  }, 20000);
 
-  test('skill instructions are injected into agent prompt', async () => {
+  test('agent can load skill with resources', async () => {
     const result = await buildResult.executor.execute(
       'skill-user',
-      'What instructions do you have for testing skill loading?'
+      'Load the skill-with-resources skill and list its reference documentation'
     );
 
     expect(result).toBeDefined();
-    // The agent should mention something about skill loading since that's in valid-skill's instructions
-    expect(result.toLowerCase()).toMatch(/skill|loading|testing/);
-  }, 15000);
 
-  test('agent can access skill with resources', async () => {
+    // Get tool result to verify resources are listed
+    const events = await buildResult.logger.getSessionEvents();
+    const toolResults = events.filter(
+      (e) => e.type === 'tool_result' && (e.data as any).name === 'skill'
+    ) as ToolResultEvent[];
+
+    // Find the skill-with-resources result
+    const resourceSkillResult = toolResults.find((e) => {
+      const result = (e.data as any).result;
+      return result.includes('skill-with-resources');
+    });
+
+    expect(resourceSkillResult).toBeDefined();
+    const resultContent = (resourceSkillResult?.data as any).result;
+
+    // Verify resource sections are present
+    expect(resultContent).toContain('Available Resources');
+    expect(resultContent).toContain('Reference docs:');
+    expect(resultContent).toContain('api-docs.md');
+  }, 20000);
+
+  test('skill tool handles non-existent skill with helpful error', async () => {
+    await buildResult.executor.execute(
+      'skill-user',
+      'Try to load a skill called "nonexistent-skill"'
+    );
+
+    // Get session events
+    const events = await buildResult.logger.getSessionEvents();
+
+    // Find skill tool result with error
+    const toolResults = events.filter(
+      (e) => e.type === 'tool_result' && (e.data as any).name === 'skill'
+    ) as ToolResultEvent[];
+
+    const errorResult = toolResults.find((e) => {
+      const result = (e.data as any).result;
+      return result && result.includes('not found');
+    });
+
+    expect(errorResult).toBeDefined();
+    const resultContent = (errorResult?.data as any).result;
+
+    // Verify helpful error message with available skills
+    expect(resultContent).toContain('not found');
+    expect(resultContent).toContain('Available skills:');
+    expect(resultContent).toContain('valid-skill');
+    expect(resultContent).toContain('skill-with-resources');
+  }, 20000);
+
+  test('conversation history acts as cache (no need to reload)', async () => {
     const result = await buildResult.executor.execute(
       'skill-user',
-      'Do you have any skills with reference documentation?'
+      'Load valid-skill, then tell me what it says without reloading it'
     );
 
     expect(result).toBeDefined();
-    // Agent should acknowledge having skills with resources
-    expect(result.toLowerCase()).toMatch(/skill.*resource|resource.*skill|reference|documentation/);
-  }, 15000);
+
+    // Get all skill tool calls
+    const events = await buildResult.logger.getSessionEvents();
+    const skillToolCalls = events.filter(
+      (e) => e.type === 'tool_call' && (e.data as any).name === 'skill'
+    );
+
+    // Should only call skill tool once (conversation history serves as cache)
+    expect(skillToolCalls.length).toBe(1);
+
+    // Agent should still be able to reference the skill instructions
+    expect(result.toLowerCase()).toMatch(/skill|valid|instructions/);
+  }, 20000);
 });

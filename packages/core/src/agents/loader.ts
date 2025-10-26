@@ -4,7 +4,6 @@ import matter from 'gray-matter';
 import { Agent, ProvidersConfig } from '@/config/types';
 import { AgentLogger } from '@/logging';
 import { validateAgentFrontmatter, validateThinkingCompatibility } from './validation';
-import type { SkillRegistry } from '@/skills';
 
 export class AgentLoader {
   /**
@@ -70,8 +69,7 @@ you step in to ensure the task gets completed by returning useful results.`,
     private readonly logger?: AgentLogger,
     private readonly inlineAgents?: Agent[],
     private readonly providersConfig?: ProvidersConfig,
-    private readonly defaultModel?: string,
-    private readonly skillRegistry?: SkillRegistry
+    private readonly defaultModel?: string
   ) {}
 
   async loadAgent(name: string): Promise<Agent> {
@@ -129,24 +127,6 @@ you step in to ensure the task gets completed by returning useful results.`,
         }
       }
 
-      // Load skills if specified
-      const loadedSkills =
-        validated.skills && this.skillRegistry
-          ? this.skillRegistry.getSkills(validated.skills)
-          : undefined;
-
-      if (validated.skills && !this.skillRegistry) {
-        this.logger?.logSystemMessage(
-          `Warning: Agent '${validated.name}' specifies skills but no SkillRegistry provided`
-        );
-      }
-
-      if (loadedSkills && loadedSkills.length > 0) {
-        this.logger?.logSystemMessage(
-          `Loaded ${loadedSkills.length} skill(s) for agent '${validated.name}': ${loadedSkills.map((s) => s.name).join(', ')}`
-        );
-      }
-
       return {
         id: validated.name,
         name: validated.name,
@@ -160,8 +140,6 @@ you step in to ensure the task gets completed by returning useful results.`,
         response_format: validated.response_format,
         json_schema: validated.json_schema,
         thinking: validated.thinking,
-        skills: validated.skills,
-        loadedSkills,
       };
     } catch (error) {
       // Provide more helpful error messages

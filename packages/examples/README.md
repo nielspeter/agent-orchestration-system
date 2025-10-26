@@ -99,6 +99,21 @@ Multi-agent system where specialized agents collaborate to implement software fe
 
 ## Advanced Features
 
+### skills-demo
+**Dynamic Skills System**
+```bash
+npm run skills-demo
+# or: npx tsx packages/examples/skills-demo/skills-demo.ts
+```
+Demonstrates dynamic skill loading where agents load domain expertise on-demand:
+- **Dynamic Loading**: Skills loaded at runtime via `skill` tool (not build-time)
+- **Multiple Skills**: Loads 3 real skills (danish-tender-guidelines, architecture-analyzer, complexity-calculator)
+- **Conversation Caching**: Skills cached in conversation history (no separate cache needed)
+- **Resource References**: Skills include reference documentation and assets
+- **Realistic Scenario**: Tender analysis workflow using real domain expertise
+
+See [skills-demo/README.md](skills-demo/README.md) for detailed documentation.
+
 ### thinking
 **Extended Thinking & Reasoning**
 ```bash

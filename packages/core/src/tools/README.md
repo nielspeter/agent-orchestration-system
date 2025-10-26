@@ -19,9 +19,10 @@ agents use to interact with the system.
 - `file.tool.ts` - File operations (Read, Write, List)
 - `grep.tool.ts` - Search functionality
 - `shell.tool.ts` - Shell command execution
-- `task.tool.ts` - Agent delegation
+- `delegate.tool.ts` - Agent delegation
 - `todowrite.tool.ts` - Todo management
 - `get-session-log.tool.ts` - Session log retrieval
+- `skill.tool.ts` - Dynamic skill loading (domain expertise)
 
 ## Key Concepts
 

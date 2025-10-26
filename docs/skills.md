@@ -1,6 +1,6 @@
 # Skills System
 
-**Skills** are domain expertise packages that agents can load dynamically to handle specialized tasks. They enable you to write domain knowledge once and reuse it across all agents.
+**Skills** are domain expertise packages that agents load **on-demand** via the `skill` tool. They enable you to write domain knowledge once and reuse it across all agents.
 
 ## Table of Contents
 
@@ -12,6 +12,9 @@
   - [SKILL.md Format](#skillmd-format)
   - [Resource Directories](#resource-directories)
 - [Using Skills in Agents](#using-skills-in-agents)
+  - [The Skill Tool](#the-skill-tool)
+  - [Conversation History as Cache](#conversation-history-as-cache)
+  - [Hint System](#hint-system)
 - [Migration Guide](#migration-guide)
 - [Real Examples](#real-examples)
 - [Best Practices](#best-practices)
@@ -22,7 +25,7 @@
 
 ## Quick Start
 
-**Create a skill in 2 minutes:**
+**Create and use a skill in 3 minutes:**
 
 ```bash
 # 1. Create skill directory
@@ -55,18 +58,36 @@ EOF
 cat > agents/my-agent.md << 'EOF'
 ---
 name: my-agent
-tools: [read, write]
-skills: [my-domain-expertise]
+tools: [read, write, skill]
 ---
 
-You are an agent that uses my-domain-expertise...
+You are an agent that works with domain expertise.
+
+## Loading Skills
+
+Load domain knowledge when needed using the skill tool:
+
+skill({name: "my-domain-expertise"})
+
+The skill content will be added to the conversation for your use.
 EOF
 
-# 4. Load and run
-npm run agent -- -a my-agent -p "Your task"
+# 4. Configure system with skills directory
 ```
 
-That's it! The skill's knowledge is now available to your agent.
+```typescript
+import { AgentSystemBuilder } from '@agent-system/core';
+
+const system = await AgentSystemBuilder.default()
+  .withAgentsFrom('./agents')
+  .withSkillsFrom('./skills')  // Load skills registry
+  .build();
+
+// Agent can now load skills on-demand
+const result = await system.executor.execute('my-agent', 'Your task');
+```
+
+That's it! The agent loads skills dynamically when needed.
 
 ---
 
@@ -321,63 +342,147 @@ scripts/
 
 ## Using Skills in Agents
 
-### Declaring Skills
+### The Skill Tool
 
-Add `skills` to agent frontmatter:
+Agents load skills on-demand using the **`skill` tool**:
 
 ```yaml
 ---
 name: my-agent
-tools: [read, write, grep]
-skills:
-  - domain-expertise-1
-  - domain-expertise-2
+tools: [read, write, skill]  # Add 'skill' to tools list
 ---
+
+You are an agent that analyzes tender documents.
+
+## Available Skills
+
+Load these skills as needed:
+- `danish-tender-guidelines` - Danish tender compliance rules
+- `complexity-calculator` - Project complexity estimation
+
+## Your Process
+
+1. Load relevant skill: skill({name: "danish-tender-guidelines"})
+2. Follow the guidance provided in the skill
+3. Complete your task
 ```
 
-Multiple skills work together:
+**Key Concepts:**
 
-```yaml
----
-name: technical-analyst
-tools: [read, write, grep]
-skills:
-  - danish-tender-guidelines  # Tender compliance rules
-  - complexity-calculator     # Estimation methodology
----
+- **Dynamic Loading**: Skills loaded at runtime via tool call, not at build time
+- **On-Demand**: Agents load skills only when needed
+- **Conversation Cache**: Once loaded, skill content stays in conversation history
+- **No Reloading**: Agents don't need to reload - content persists in context
+
+### How It Works
+
+**Step 1: Agent Calls Skill Tool**
+
+```typescript
+// Agent makes tool call
+skill({name: "danish-tender-guidelines"})
 ```
 
-### How Skills Are Loaded
+**Step 2: Tool Returns Formatted Content**
 
-**At agent load time:**
-1. System reads agent frontmatter
-2. Loads each declared skill
-3. Validates skill frontmatter
-4. Appends instructions to system prompt
+```markdown
+# Skill Loaded: danish-tender-guidelines
 
-**Format in system prompt:**
+**Purpose:** Danish public tender (offentlig udbud) compliance rules
+
+────────────────────────────────────────────────────────────
+
+[Full skill instructions from SKILL.md...]
+
+────────────────────────────────────────────────────────────
+
+## Available Resources
+
+**Reference docs:**
+  - Read: skills/danish-tender-guidelines/reference/deadline-rules.md
+  - Read: skills/danish-tender-guidelines/reference/format-validation.md
+
+**Templates:**
+  - Read: skills/danish-tender-guidelines/assets/checklist-template.md
+
+**This knowledge is now available for your task.**
+```
+
+**Step 3: Content Stays in Conversation**
+
+The skill content is now in the conversation history. The agent can reference it throughout the session without reloading.
+
+### Conversation History as Cache
+
+**Why no separate cache?**
+
+Conversation history **IS** the cache:
 
 ```
-[Agent's main instructions...]
+Turn 1: Agent calls skill({name: "guidelines"})
+        → Returns 5KB of guidelines
+        → Guidelines now in conversation history
 
-### danish-tender-guidelines
-*Danish public tender (offentlig udbud) compliance rules*
+Turn 2-10: Agent continues working
+           → Guidelines still in context
+           → No need to reload!
+```
 
-[Skill's instructions...]
+This is fundamentally different from Claude Code's approach:
+- **Claude Code**: New conversation each invocation → needs filesystem cache
+- **Agent System**: Persistent conversation → history serves as cache
 
-### complexity-calculator
-*Project complexity estimation methodology*
+**Benefits:**
+- ✅ Zero caching complexity
+- ✅ No TTL management
+- ✅ No cache invalidation
+- ✅ No memory leaks
+- ✅ Skills automatically "expire" when conversation ends
 
-[Skill's instructions...]
+### Hint System
+
+The system can **suggest skills** based on prompt patterns:
+
+```typescript
+// User prompt: "Analyze this Danish tender document"
+// System detects: "danish", "tender"
+// Adds hint to system prompt:
+
+⚠️  **RECOMMENDED SKILLS FOR THIS TASK**
+
+Consider loading these skills FIRST:
+
+1. skill({name: "danish-tender-guidelines"})
+
+════════════════════════════════════════════════════════════
+```
+
+**Hints are:**
+- Pattern-based (keyword matching)
+- Non-invasive (suggestions, not requirements)
+- Prominent (visible in system prompt)
+- Helpful (guide agents to relevant knowledge)
+
+**Configure hints in `context-setup.middleware.ts`:**
+
+```typescript
+// Pattern matching for common tasks
+if (prompt.match(/danish|dansk|udbud|tender/i)) {
+  hints.push('danish-tender-guidelines');
+}
+
+if (prompt.match(/complexity|estimate|effort/i)) {
+  hints.push('complexity-calculator');
+}
 ```
 
 ### System Builder API
 
 ```typescript
-// Automatic skill loading (recommended)
+// Configure system with skills directory
 const system = await AgentSystemBuilder.default()
   .withAgentsFrom('./agents')
-  .withSkillsFrom('./skills')    // Loads all skills from directory
+  .withSkillsFrom('./skills')    // Loads skills into registry
   .build();
 
 // Multiple skill directories
@@ -386,23 +491,100 @@ const system = await AgentSystemBuilder.default()
   .withSkillsFrom('./skills', './shared-skills')
   .build();
 
-// Skills are optional - no error if directory doesn't exist
+// Skills are optional
 const system = await AgentSystemBuilder.default()
   .withAgentsFrom('./agents')
-  // Skills directory not specified - still works
+  // No skills directory - skill tool not available
   .build();
 ```
 
+**What `withSkillsFrom()` does:**
+1. Scans directory for skill subdirectories
+2. Loads each `SKILL.md` into registry
+3. Validates skill frontmatter
+4. Registers `skill` tool with registry reference
+5. Makes skill tool available to agents that request it
+
 **Skill discovery:**
-- Scans `skills/` directory for subdirectories
-- Each subdirectory must contain `SKILL.md`
+- Scans for subdirectories containing `SKILL.md`
 - Invalid skills logged but don't break loading
+- Registry provides `listSkills()` for tool description
 
 ---
 
 ## Migration Guide
 
-### Identifying Extractable Knowledge
+This guide covers two migration scenarios:
+
+1. **Static → Dynamic**: Migrating from static skill loading to dynamic (current system)
+2. **Inline → Skills**: Extracting duplicated knowledge into skills
+
+### Migrating from Static to Dynamic Skills
+
+If you have agents using the old static `skills:` frontmatter, follow these steps:
+
+**Step 1: Update Agent Frontmatter**
+
+**Before (Static):**
+```yaml
+---
+name: my-agent
+tools: [read, write]
+skills: [domain-expertise]  # OLD: Static loading
+---
+
+You are an agent...
+```
+
+**After (Dynamic):**
+```yaml
+---
+name: my-agent
+tools: [read, write, skill]  # NEW: Add skill tool
+---
+
+You are an agent...
+
+## Available Skills
+
+Load domain knowledge as needed:
+- skill({name: "domain-expertise"})
+```
+
+**Step 2: Add Skill Loading Instructions**
+
+Guide the agent on when and how to load skills:
+
+```markdown
+## Your Process
+
+1. **Load domain expertise**: skill({name: "domain-expertise"})
+2. Apply the guidelines provided in the skill
+3. Complete your analysis
+4. Generate output following the skill's format requirements
+```
+
+**Step 3: Test Dynamic Loading**
+
+```bash
+# Run your agent
+npm run agent -- -a my-agent -p "test task"
+
+# Verify skill tool is called in logs
+# Should see: [tool_call] skill {"name": "domain-expertise"}
+```
+
+**Step 4: Remove Old Static References**
+
+The old `skills:` field in frontmatter is no longer used. Remove it from all agents.
+
+---
+
+### Extracting Knowledge into Skills
+
+If you have duplicated knowledge across multiple agents, extract it into a shared skill:
+
+#### Identifying Extractable Knowledge
 
 Look for these patterns in your agents:
 
@@ -424,24 +606,15 @@ Look for these patterns in your agents:
 - **[BØR]** - Recommended
 - **[KAN]** - Optional
 - **[FAKTA]** - Source reference
-- **[UKLAR]** - Unclear requirement
-- **[KONFLIKT]** - Conflicting requirements
-
-## File Locations
-
-**Standard paths:**
-- **Source**: `udbud/dokumenter/udbud/`
-- **Converted**: `udbud/output/converted/`
-- **Output**: `udbud/output/`
 ```
 
 This knowledge appears in multiple agents → Extract to skill!
 
-### Step-by-Step Migration
+#### Step-by-Step Extraction
 
 **Step 1: Identify common knowledge**
 
-Search for duplicated sections across agents:
+Search for duplicated sections:
 
 ```bash
 # Find common text patterns
@@ -457,8 +630,6 @@ mkdir -p skills/domain-name
 
 **Step 3: Create SKILL.md with extracted knowledge**
 
-Move duplicated content to SKILL.md:
-
 ```markdown
 ---
 name: domain-name
@@ -467,10 +638,10 @@ description: Brief description of domain knowledge
 
 # Domain Name
 
-[Extracted knowledge goes here...]
+[Move duplicated knowledge here...]
 ```
 
-**Step 4: Update agents to reference skill**
+**Step 4: Update agents to use skill tool**
 
 **Before:**
 ```yaml
@@ -490,98 +661,70 @@ You are an agent...
 ```yaml
 ---
 name: my-agent
-tools: [read, write]
-skills: [domain-name]
+tools: [read, write, skill]
 ---
 
 You are an agent...
 
-[Domain guidelines now provided by skill]
-```
+## Loading Domain Knowledge
 
-**Step 5: Remove duplicated content from agents**
-
-Delete the sections now in the skill:
-
-```markdown
----
-name: my-agent
-tools: [read, write]
-skills: [domain-name]
----
-
-You are an agent specialized in...
-
-## Your Process
-
-1. Read the documents
-2. Apply domain-name guidelines (from skill)
-3. Generate output
+Load guidelines: skill({name: "domain-name"})
 
 [Agent-specific logic only...]
 ```
 
-**Step 6: Test thoroughly**
+**Step 5: Test thoroughly**
 
 ```bash
 # Run tests
 npm test
 
-# Test agent with skill
+# Test agent with dynamic skill loading
 npm run agent -- -a my-agent -p "test task"
 ```
 
-### Migration Example (Real)
+#### Migration Example (Real)
 
-**Before Migration (compliance-checker.md - 304 lines):**
+**Before (compliance-checker.md - 304 lines with static skills):**
 
 ```markdown
 ---
 name: compliance-checker
 tools: [read, write, grep]
+skills: [danish-tender-guidelines]  # OLD: Static
 ---
 
 You are a Compliance Checker...
-
-## File Locations
-
-**Standard paths:**
-- Source: `udbud/dokumenter/udbud/`
-- Converted: `udbud/output/converted/`
-- Output: `udbud/output/`
-
-## Marker System
-
-**ALL requirements MUST be marked:**
-- **[SKAL]** - Mandatory
-- **[BØR]** - Recommended
-- **[KAN]** - Optional
-...
-
-[140 lines of agent logic...]
 ```
 
-**After Migration (compliance-checker.md - 290 lines, danish-tender-guidelines skill - 228 lines):**
+**After (compliance-checker.md - 234 lines with dynamic loading):**
 
 ```markdown
 ---
 name: compliance-checker
-tools: [read, write, grep]
-skills: [danish-tender-guidelines]
+tools: [read, write, grep, skill]  # NEW: Dynamic
 ---
 
 You are a Compliance Checker...
 
-**Note**: File locations and marker system are defined in the danish-tender-guidelines skill.
+## Domain Knowledge Skills
 
-[140 lines of agent logic...]
+Load specialized knowledge using the `skill` tool:
+
+**Your skills:**
+- `danish-tender-guidelines` - Danish tender compliance rules
+
+**Usage:**
+skill({name: "danish-tender-guidelines"})
+
+**Important:** Load this skill at the start to understand requirements.
 ```
 
 **Result:**
-- Agent is 14 lines shorter (cleaner, more focused)
-- Skill is shared with 3 other agents
-- Total system: 228 lines of shared knowledge vs 240 lines duplicated
-- Maintenance: Update 1 skill vs 4 agents
+- Agent uses dynamic loading (more flexible)
+- Skill loaded only when needed
+- Conversation history caches content automatically
+- Total system: 228 lines of shared knowledge (1 skill, 4 agents)
 
 ---
 
@@ -637,11 +780,26 @@ metadata:
 - ❌ NEVER make GO/NO-GO recommendations
 ```
 
-**Used by 4 agents:**
-- `tender-orchestrator` - Coordinates analysis
-- `technical-analyst` - Technical evaluation
-- `go-no-go-analyzer` - Decision support
-- `compliance-checker` - Compliance verification
+**Used by 4 agents dynamically:**
+
+```yaml
+---
+name: tender-orchestrator
+tools: [delegate, todowrite, read, list, skill]
+---
+
+## Domain Knowledge Skills
+
+Load specialized knowledge using the `skill` tool:
+
+**Your skills:**
+- `danish-tender-guidelines` - Danish tender compliance and formatting
+
+**Usage:**
+skill({name: "danish-tender-guidelines"})
+```
+
+All 4 agents (`tender-orchestrator`, `technical-analyst`, `go-no-go-analyzer`, `compliance-checker`) load the same skill dynamically when needed.
 
 ### Example 2: Complexity Calculator
 
@@ -660,16 +818,28 @@ skills/complexity-calculator/
 ```yaml
 ---
 name: technical-analyst
-tools: [read, write, grep]
-skills:
-  - danish-tender-guidelines
-  - complexity-calculator
+tools: [read, write, grep, skill]
 ---
 
 Analyze technical requirements and estimate complexity...
+
+## Available Skills
+
+Load these skills as needed:
+- `danish-tender-guidelines` - Tender compliance rules
+- `complexity-calculator` - Complexity estimation methodology
+
+## Your Process
+
+1. Load required skills:
+   - skill({name: "danish-tender-guidelines"})
+   - skill({name: "complexity-calculator"})
+2. Analyze requirements following guidelines
+3. Calculate complexity using methodology
+4. Generate report
 ```
 
-The agent gets both Danish tender rules AND complexity methodology.
+The agent loads both skills dynamically and uses them together.
 
 ### Example 3: Simple Skill (No Resources)
 
@@ -870,6 +1040,41 @@ Skills should work with ANY agent that needs that knowledge.
 
 ## API Reference
 
+### Skill Tool
+
+```typescript
+interface SkillToolArgs {
+  name: string;  // Skill name to load
+}
+
+interface SkillToolResult {
+  content: string;  // Formatted skill content
+  error?: string;   // Error message if skill not found
+}
+
+// Usage in agent
+skill({name: "my-skill"})
+```
+
+**Tool Behavior:**
+- Queries SkillRegistry for requested skill
+- Returns formatted content with instructions and resource paths
+- Provides helpful error with available skills if not found
+- Case-insensitive name matching (normalizes to lowercase)
+
+### createSkillTool()
+
+```typescript
+function createSkillTool(skillRegistry: SkillRegistry): BaseTool;
+```
+
+Factory function that creates the skill tool with dynamic skill list in description.
+
+**Returns:**
+- `BaseTool` with name "skill"
+- Description includes all available skills from registry
+- Execute function handles loading and formatting
+
 ### Skill Class
 
 ```typescript
@@ -880,7 +1085,7 @@ class Skill {
   readonly allowedTools?: string[];
   readonly metadata?: Record<string, string>;
   readonly instructions: string;
-  readonly path: string;
+  readonly path: string;  // Absolute filesystem path to skill directory
 
   // Resource access (lazy loaded)
   listReferences(): string[];
@@ -909,14 +1114,18 @@ class SkillRegistry {
   // Register skill programmatically
   registerSkill(skill: Skill): void;
 
-  // Lookup skills
+  // Lookup skills (case-insensitive)
   getSkill(name: string): Skill | undefined;
   getSkills(names: string[]): Skill[];
   hasSkill(name: string): boolean;
 
   // Discovery
-  listSkills(): Skill[];
-  listSkillNames(): string[];
+  listSkills(): Array<{name: string, description: string}>;
+  findByTags(tags: string[]): Skill[];
+
+  // Management
+  clear(): void;
+  get size(): number;
 }
 ```
 
@@ -936,26 +1145,35 @@ class SkillLoader {
 ```typescript
 interface Agent {
   name: string;
-  tools?: string[] | '*';
-  skills?: string[];  // Skill names to load
+  tools?: string[] | '*';  // Include 'skill' to use skill tool
+  // Note: 'skills' field removed in dynamic system
   // ... other fields
 }
 ```
+
+**Migration Note:** The `skills:` frontmatter field from the static system is no longer used. Agents now load skills via the `skill` tool at runtime.
 
 ### System Builder
 
 ```typescript
 class AgentSystemBuilder {
-  // Add skill directories
+  // Add skill directories - loads into registry
   withSkillsFrom(...directories: string[]): AgentSystemBuilder;
 
-  // Skills loaded automatically when agents loaded
+  // Build system with skill tool available
   async build(): Promise<{
     executor: AgentExecutor;
+    logger: EventLogger;
     cleanup: () => Promise<void>;
   }>;
 }
 ```
+
+**What happens:**
+1. `withSkillsFrom()` creates SkillRegistry and loads all skills
+2. Skill tool created with reference to registry
+3. Skill tool registered as built-in tool
+4. Agents that include 'skill' in tools can load skills dynamically
 
 ---
 
@@ -1007,25 +1225,33 @@ Use lowercase with hyphens only:
 
 **❌ Invalid:** `mySkill`, `My_Skill`, `my skill`
 
-### Skill Instructions Not Appearing
+### Agent Not Loading Skills
 
 **Symptoms:** Agent doesn't have skill knowledge
 
 **Checklist:**
-1. ✅ Skill declared in agent frontmatter?
+
+1. ✅ Skill tool added to agent's tools?
    ```yaml
-   skills: [my-skill]
+   tools: [read, write, skill]  # Must include 'skill'
    ```
 
-2. ✅ Skills directory specified in builder?
+2. ✅ Agent instructions mention loading skills?
+   ```markdown
+   ## Available Skills
+
+   Load: skill({name: "my-skill"})
+   ```
+
+3. ✅ Skills directory specified in builder?
    ```typescript
    .withSkillsFrom('./skills')
    ```
 
-3. ✅ Skill loaded without errors?
-   Check logs for skill loading messages
+4. ✅ Agent actually calling skill tool?
+   Check logs for: `[tool_call] skill {"name": "my-skill"}`
 
-4. ✅ SKILL.md has content after frontmatter?
+5. ✅ SKILL.md has content after frontmatter?
    ```markdown
    ---
    name: my-skill
@@ -1033,6 +1259,43 @@ Use lowercase with hyphens only:
 
    [Instructions must be here, not empty]
    ```
+
+### Skill Tool Not Available
+
+**Error in logs:**
+```
+Agent requested unknown tool: skill
+```
+
+**Solution:**
+Skill tool is only available if skills directory specified:
+
+```typescript
+const system = await AgentSystemBuilder.default()
+  .withAgentsFrom('./agents')
+  .withSkillsFrom('./skills')  // Required for skill tool
+  .build();
+```
+
+### Skill Not Loading Dynamically
+
+**Symptoms:** Agent completes task without loading skill
+
+**Possible causes:**
+
+1. **Agent doesn't know about skill** - Add to agent instructions:
+   ```markdown
+   ## Available Skills
+   - skill({name: "domain-expertise"})
+   ```
+
+2. **Agent decided not to load** - Strengthen instructions:
+   ```markdown
+   **IMPORTANT:** Load domain-expertise FIRST:
+   skill({name: "domain-expertise"})
+   ```
+
+3. **Hint not showing** - Check if pattern matches in `context-setup.middleware.ts`
 
 ### Resource Not Loading
 
@@ -1119,29 +1382,54 @@ No skills directory found at skills (this is OK - skills are optional)
 
 ## Summary
 
-**Skills enable you to:**
+**Dynamic Skills enable you to:**
 - ✅ Write domain knowledge once, use everywhere
+- ✅ Load skills on-demand when needed (not at build time)
 - ✅ Compose expertise across agents
 - ✅ Maintain knowledge separately from agent logic
+- ✅ Leverage conversation history as natural cache
 - ✅ Collaborate effectively (agents vs domain experts)
-- ✅ Reduce context size by loading only needed knowledge
 
 **Getting Started:**
 1. Create `skills/my-skill/SKILL.md`
 2. Add frontmatter (name, description)
 3. Write instructions (markdown)
-4. Reference in agent: `skills: [my-skill]`
-5. Build with: `.withSkillsFrom('./skills')`
+4. Add `skill` to agent's tools: `tools: [read, write, skill]`
+5. Instruct agent to load: `skill({name: "my-skill"})`
+6. Build with: `.withSkillsFrom('./skills')`
+
+**Key Concepts:**
+- **Dynamic Loading**: Skills loaded at runtime via tool call
+- **Conversation Cache**: Once loaded, content persists in conversation history
+- **No Reloading**: Agents don't need to reload - already in context
+- **On-Demand**: Load only what's needed, when it's needed
+
+**Architecture:**
+```
+User Prompt → Hint System → Agent Instructions → Skill Tool Call
+                                                      ↓
+                                            SkillRegistry.getSkill()
+                                                      ↓
+                                            Return Formatted Content
+                                                      ↓
+                                          Add to Conversation History
+                                                      ↓
+                                            Agent Uses Knowledge
+```
 
 **Next Steps:**
 - Review [real examples](#real-examples) from the codebase
 - Study `packages/examples/udbud/skills/` for working skills
-- Read [migration guide](#migration-guide) to extract knowledge
+- Read [migration guide](#migration-guide) for static→dynamic migration
 - Check [best practices](#best-practices) before creating skills
+- Explore [hint system](#hint-system) for automatic skill suggestions
 
 For technical details, see the [implementation](../packages/core/src/skills/) or run tests with coverage:
 ```bash
 npm run test:coverage
 ```
 
-Skills system: **97.95% test coverage** - Production ready! ✅
+**Test Coverage:**
+- Unit tests: 79 tests (skill tool, registry, loader, validation)
+- Integration tests: 5 tests (dynamic loading, caching, errors)
+- Coverage: **~95%** - Production ready! ✅

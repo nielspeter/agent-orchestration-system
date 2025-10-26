@@ -25,26 +25,12 @@ export function createAgentLoaderMiddleware(
       `Agent loaded: ${ctx.agent.name} with ${Array.isArray(ctx.agent.tools) ? ctx.agent.tools.length : 'all'} tools`
     );
 
-    // Prepare skills metadata for logging
-    const skillsMetadata = ctx.agent.loadedSkills?.map((s) => ({
-      name: s.name,
-      version: s.metadata?.version,
-    }));
-
-    // Log skills if any are loaded
-    if (skillsMetadata && skillsMetadata.length > 0) {
-      const skillsInfo = skillsMetadata
-        .map((s) => `${s.name}${s.version ? ` (v${s.version})` : ''}`)
-        .join(', ');
-      ctx.logger.logSystemMessage(`Skills loaded: ${skillsInfo}`);
-    }
-
-    // Log agent start with full context (task, skills, depth)
+    // Log agent start with full context (task, depth)
     const delegationInfo = ctx.executionContext.parentAgent
       ? ` (delegated from ${ctx.executionContext.parentAgent})`
       : '';
     const task = `${ctx.prompt.substring(0, 100)}${ctx.prompt.length > 100 ? '...' : ''}${delegationInfo}`;
-    ctx.logger.logAgentStart(ctx.agent.name, ctx.executionContext.depth, task, skillsMetadata);
+    ctx.logger.logAgentStart(ctx.agent.name, ctx.executionContext.depth, task);
 
     await next();
   };
