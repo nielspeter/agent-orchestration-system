@@ -157,12 +157,12 @@ npx tsx packages/examples/coding-team.ts
 
 ## 💻 Command-Line Interface
 
-The `@agent-system/cli` package provides a production-ready CLI tool with dual modes:
+The `@nielspeter/agent-orchestration-cli` package provides a production-ready CLI tool with dual modes:
 
 ### Installation
 ```bash
 # Install globally
-npm install -g @agent-system/cli
+npm install -g @nielspeter/agent-orchestration-cli
 
 # Or use from workspace
 npm run cli
@@ -305,7 +305,7 @@ For complete documentation, see [Extended Thinking Guide](docs/extended-thinking
 ```
 agent-orchestration-system/
 ├── packages/                 # Workspace packages
-│   ├── core/                # Core agent system (@agent-system/core)
+│   ├── core/                # Core agent system (@nielspeter/agent-orchestration-core)
 │   │   ├── src/             # Source code
 │   │   │   ├── config/      # Configuration system
 │   │   │   ├── middleware/  # Middleware pipeline
@@ -447,7 +447,7 @@ The system supports fully programmatic configuration, making config files option
 - **Dynamic Configuration**: Build configuration at runtime
 
 ```typescript
-import { AgentSystemBuilder, type ProvidersConfig } from '@agent-system/core';
+import { AgentSystemBuilder, type ProvidersConfig } from '@nielspeter/agent-orchestration-core';
 
 // Define providers config programmatically
 const providersConfig: ProvidersConfig = {

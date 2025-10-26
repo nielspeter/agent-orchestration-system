@@ -8,7 +8,7 @@
  * - Starting web server
  */
 
-import { AgentSystemBuilder } from '@agent-system/core';
+import { AgentSystemBuilder } from '@nielspeter/agent-orchestration-core';
 import { startServer } from '@agent-system/web/server';
 import { resolve } from 'node:path';
 import open from 'open';

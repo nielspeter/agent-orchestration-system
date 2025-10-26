@@ -1,5 +1,5 @@
 {
-  "name": "@agent-system/cli",
+  "name": "@nielspeter/agent-orchestration-cli",
   "version": "1.1.0",
   "type": "module",
   "description": "CLI tool for agent orchestration system",
@@ -56,10 +56,10 @@
     "@agent-system/web": "*"
   },
   "peerDependencies": {
-    "@agent-system/core": "^1.1.0"
+    "@nielspeter/agent-orchestration-core": "^1.1.0"
   },
   "devDependencies": {
-    "@agent-system/core": "*",
+    "@nielspeter/agent-orchestration-core": "*",
     "@types/node": "^20.11.30",
     "tsx": "^4.7.1",
     "typescript": "^5.9.2",
