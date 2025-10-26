@@ -286,7 +286,12 @@ export class ConsoleLogger implements AgentLogger {
     console.log(''); // Add space after delegation completes
   }
 
-  logAgentStart(agent: string, depth: number, task?: string): void {
+  logAgentStart(
+    agent: string,
+    depth: number,
+    task?: string,
+    _skills?: { name: string; version?: string }[]
+  ): void {
     this.currentDepth.set(agent, depth);
     this.currentAgent.set(depth, agent);
 

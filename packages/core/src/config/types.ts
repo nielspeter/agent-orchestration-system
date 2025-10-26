@@ -141,6 +141,14 @@ export interface AgentConfig {
 }
 
 /**
+ * Skill configuration
+ */
+export interface SkillConfig {
+  /** Directories to load skills from */
+  directories?: string[];
+}
+
+/**
  * Agent definition for tests
  */
 export interface TestAgentConfig {
@@ -277,6 +285,8 @@ export interface SystemConfig {
   apiKeys?: Record<string, string>;
   /** Agent configuration */
   agents?: AgentConfig;
+  /** Skill configuration */
+  skills?: SkillConfig;
   /** Tool configuration */
   tools?: ToolConfig;
   /** Safety limits */
@@ -306,6 +316,7 @@ export interface ResolvedSystemConfig {
   providersConfig?: ProvidersConfig;
   apiKeys?: Record<string, string>;
   agents: AgentConfig;
+  skills?: SkillConfig;
   tools: Required<ToolConfig>;
   safety: SafetyConfig;
   caching: CachingConfig;
@@ -429,6 +440,11 @@ export function mergeConfigs(...configs: Partial<SystemConfig>[]): SystemConfig 
       result.agents = deepMergeObjects<AgentConfig>(result.agents, config.agents);
     }
 
+    // Handle skills config
+    if (config.skills !== undefined) {
+      result.skills = deepMergeObjects<SkillConfig>(result.skills, config.skills);
+    }
+
     // Handle tools config
     if (config.tools !== undefined) {
       result.tools = deepMergeObjects<ToolConfig>(result.tools, config.tools);
@@ -494,6 +510,7 @@ export function resolveConfig(partial: Partial<SystemConfig>): ResolvedSystemCon
   if (!merged.defaultModel) merged.defaultModel = DEFAULT_SYSTEM_CONFIG.defaultModel;
   if (!merged.defaultBehavior) merged.defaultBehavior = DEFAULT_SYSTEM_CONFIG.defaultBehavior;
   merged.agents ??= DEFAULT_SYSTEM_CONFIG.agents;
+  // Skills is optional - no default, keep whatever was merged
   merged.tools ??= DEFAULT_SYSTEM_CONFIG.tools;
   merged.safety ??= DEFAULT_SYSTEM_CONFIG.safety;
   merged.caching ??= DEFAULT_SYSTEM_CONFIG.caching;

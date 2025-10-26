@@ -1,0 +1,6 @@
+Output Template
+===============
+
+Name: {{name}}
+Date: {{date}}
+Status: {{status}}

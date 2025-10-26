@@ -74,7 +74,7 @@ describe('CompositeLogger', () => {
       composite.logAgentComplete('test-agent', 1000);
       composite.logAgentError('test-agent', new Error('Test error'));
 
-      expect(logger.logAgentStart).toHaveBeenCalledWith('test-agent', 1, 'Test task');
+      expect(logger.logAgentStart).toHaveBeenCalledWith('test-agent', 1, 'Test task', undefined);
       expect(logger.logAgentIteration).toHaveBeenCalledWith('test-agent', 5);
       expect(logger.logAgentComplete).toHaveBeenCalledWith('test-agent', 1000);
       expect(logger.logAgentError).toHaveBeenCalledWith('test-agent', expect.any(Error));

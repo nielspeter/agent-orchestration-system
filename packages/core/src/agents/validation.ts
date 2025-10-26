@@ -26,6 +26,7 @@ export const AgentFrontmatterSchema = z.object({
   response_format: z.enum(['text', 'json', 'json_schema']).optional(),
   json_schema: z.object({}).passthrough().optional(), // Object with any properties
   thinking: z.union([z.boolean(), ThinkingConfigSchema]).optional(),
+  skills: z.array(z.string()).optional(),
 });
 
 export type AgentFrontmatter = z.infer<typeof AgentFrontmatterSchema>;

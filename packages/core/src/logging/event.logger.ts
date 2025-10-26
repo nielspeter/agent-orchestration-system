@@ -223,7 +223,12 @@ export class EventLogger implements AgentLogger {
     this.emitEvent('delegation:complete', event);
   }
 
-  logAgentStart(agent: string, depth: number, task?: string): void {
+  logAgentStart(
+    agent: string,
+    depth: number,
+    task?: string,
+    skills?: { name: string; version?: string }[]
+  ): void {
     const event = {
       type: 'agent_start',
       timestamp: Date.now(),
@@ -231,6 +236,16 @@ export class EventLogger implements AgentLogger {
         agent,
         depth,
         task,
+        skills: skills?.map((s) => s.name),
+        skillVersions: skills?.reduce(
+          (acc, s) => {
+            if (s.version) {
+              acc[s.name] = s.version;
+            }
+            return acc;
+          },
+          {} as Record<string, string>
+        ),
       },
     };
 

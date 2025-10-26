@@ -112,11 +112,27 @@ export class AnthropicProvider implements ILLMProvider {
       }
 
       // Add headers separately to enable caching and thinking
-      const response = await this.client.messages.create(params, {
-        headers: {
-          'anthropic-beta': betaHeaders.join(','),
-        },
-      });
+      // Use streaming for thinking-enabled requests to avoid 10-minute timeout
+      let response: Anthropic.Message;
+
+      if (thinkingEnabled) {
+        // Use streaming for thinking to avoid timeout
+        const stream = await this.client.messages.stream(params, {
+          headers: {
+            'anthropic-beta': betaHeaders.join(','),
+          },
+        });
+
+        // Wait for the stream to complete and get final message
+        response = await stream.finalMessage();
+      } else {
+        // Use regular non-streaming for non-thinking requests
+        response = await this.client.messages.create(params, {
+          headers: {
+            'anthropic-beta': betaHeaders.join(','),
+          },
+        });
+      }
 
       // Record detailed cache metrics
       if (response.usage) {

@@ -73,6 +73,7 @@ export default [
       '**/*.spec.ts',
       'tests/**/*.ts',
       '**/tests/**/*.ts',
+      '**/vitest.config.ts',
       '**/vitest.config.*.ts',
       '**/vite.config.ts',
       'packages/web/server/**/*.ts',

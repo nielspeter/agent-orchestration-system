@@ -20,10 +20,17 @@ export function createAgentLoaderMiddleware(
     // Filter tools for this agent
     ctx.tools = toolRegistry.filterForAgent(ctx.agent);
 
-    // Log
+    // Log agent and tools
     ctx.logger.logSystemMessage(
       `Agent loaded: ${ctx.agent.name} with ${Array.isArray(ctx.agent.tools) ? ctx.agent.tools.length : 'all'} tools`
     );
+
+    // Log agent start with full context (task, depth)
+    const delegationInfo = ctx.executionContext.parentAgent
+      ? ` (delegated from ${ctx.executionContext.parentAgent})`
+      : '';
+    const task = `${ctx.prompt.substring(0, 100)}${ctx.prompt.length > 100 ? '...' : ''}${delegationInfo}`;
+    ctx.logger.logAgentStart(ctx.agent.name, ctx.executionContext.depth, task);
 
     await next();
   };

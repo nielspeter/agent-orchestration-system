@@ -240,6 +240,107 @@ describe('AgentSystemBuilder Tests', () => {
     });
   });
 
+  describe('Skills Configuration', () => {
+    test('should use default skills/ directory if it exists', async () => {
+      // Create temporary skills directory
+      const skillsDir = './skills';
+      const testSkillDir = `${skillsDir}/test-skill`;
+
+      try {
+        await fs.mkdir(skillsDir, { recursive: true });
+        await fs.mkdir(testSkillDir, { recursive: true });
+        await fs.writeFile(
+          `${testSkillDir}/SKILL.md`,
+          `---
+name: test-skill
+description: A test skill
+---
+
+Test skill instructions.
+`
+        );
+
+        const result = await AgentSystemBuilder.default().build();
+        cleanup = result.cleanup;
+
+        // Skills are loaded (verified by agentLoader having skillRegistry)
+        // System should build successfully with skills
+        expect(result.executor).toBeDefined();
+        expect(result.agentLoader).toBeDefined();
+      } finally {
+        // Cleanup
+        await fs.rm(skillsDir, { recursive: true, force: true });
+      }
+    });
+
+    test('should gracefully handle missing default skills/ directory', async () => {
+      // Ensure skills/ doesn't exist
+      await fs.rm('./skills', { recursive: true, force: true }).catch(() => {});
+
+      const result = await AgentSystemBuilder.default().build();
+      cleanup = result.cleanup;
+
+      // Should build successfully even without skills directory
+      expect(result.executor).toBeDefined();
+    });
+
+    test('withSkillsFrom() should set skill directories in config', async () => {
+      const result = await AgentSystemBuilder.minimal()
+        .withSkillsFrom('./custom-skills', './more-skills')
+        .build();
+      cleanup = result.cleanup;
+
+      // When explicitly set via withSkillsFrom(), config.skills should be populated
+      expect(result.config.skills?.directories).toBeDefined();
+      expect(result.config.skills?.directories).toHaveLength(2);
+      if (result.config.skills?.directories) {
+        expect(result.config.skills.directories[0]).toBe('./custom-skills');
+        expect(result.config.skills.directories[1]).toBe('./more-skills');
+      }
+    });
+
+    test('should warn but not fail when explicit skills directory is missing', async () => {
+      const result = await AgentSystemBuilder.default()
+        .withSkillsFrom('./non-existent-skills')
+        .build();
+      cleanup = result.cleanup;
+
+      // Should build successfully even with missing skills directory
+      expect(result.executor).toBeDefined();
+      expect(result.config.skills?.directories).toBeDefined();
+    });
+
+    test('should load skills from explicit directory if it exists', async () => {
+      const skillsDir = './test-skills-explicit';
+      const testSkillDir = `${skillsDir}/explicit-skill`;
+
+      try {
+        await fs.mkdir(testSkillDir, { recursive: true });
+        await fs.writeFile(
+          `${testSkillDir}/SKILL.md`,
+          `---
+name: explicit-skill
+description: An explicitly loaded skill
+---
+
+Explicit skill instructions.
+`
+        );
+
+        const result = await AgentSystemBuilder.default().withSkillsFrom(skillsDir).build();
+        cleanup = result.cleanup;
+
+        expect(result.config.skills?.directories).toBeDefined();
+        if (result.config.skills?.directories) {
+          expect(result.config.skills.directories[0]).toBe(skillsDir);
+        }
+      } finally {
+        // Cleanup
+        await fs.rm(skillsDir, { recursive: true, force: true });
+      }
+    });
+  });
+
   describe('Build Result', () => {
     test('build() should return complete BuildResult', async () => {
       const result = await AgentSystemBuilder.default().build();

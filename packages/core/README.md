@@ -2,18 +2,27 @@
 
 > Core agent orchestration system - autonomous agents with LLM providers
 
-A TypeScript library for building autonomous agent systems with support for multiple LLM providers (Anthropic Claude, OpenAI, OpenRouter), tool execution, agent delegation, and session management.
+A TypeScript library for building autonomous agent systems with support for
+multiple LLM providers (Anthropic Claude, OpenAI, OpenRouter), tool execution,
+agent delegation, and session management.
 
 ## Features
 
-- **🤖 Multi-Provider Support**: Anthropic Claude, OpenAI, OpenRouter with automatic routing
-- **🔧 Built-in Tools**: File operations, grep, shell execution, agent delegation
+- **🤖 Multi-Provider Support**: Anthropic Claude, OpenAI, OpenRouter with
+  automatic routing
+- **🔧 Built-in Tools**: File operations, grep, shell execution, agent
+  delegation, dynamic skills
+- **🧠 Dynamic Skills**: Load domain expertise on-demand via skill tool
 - **💾 Session Management**: Persistent sessions with automatic recovery
 - **📊 Event Logging**: Real-time event streaming for monitoring and debugging
-- **🎯 Pull Architecture**: Agents gather their own context via tools (efficient with Anthropic's prompt caching)
-- **🛡️ Security**: Built-in protections for sensitive files and dangerous commands
-- **⚡ Smart Caching**: Anthropic prompt caching for 90% cost savings on repeated context
-- **🔄 MCP Integration**: Model Context Protocol support for external tool servers
+- **🎯 Pull Architecture**: Agents gather their own context via tools (efficient
+  with Anthropic's prompt caching)
+- **🛡️ Security**: Built-in protections for sensitive files and dangerous
+  commands
+- **⚡ Smart Caching**: Anthropic prompt caching for 90% cost savings on
+  repeated context
+- **🔄 MCP Integration**: Model Context Protocol support for external tool
+  servers
 
 ## Installation
 
@@ -32,7 +41,10 @@ const system = await AgentSystemBuilder.default()
   .build();
 
 // Execute an agent
-const result = await system.executor.execute('orchestrator', 'Analyze the codebase');
+const result = await system.executor.execute(
+  'orchestrator',
+  'Analyze the codebase'
+);
 console.log(result);
 
 // Clean up when done
@@ -60,19 +72,17 @@ const myTool = {
   parameters: {
     type: 'object',
     properties: {
-      input: { type: 'string', description: 'Input text' }
+      input: { type: 'string', description: 'Input text' },
     },
-    required: ['input']
+    required: ['input'],
   },
   execute: async (params) => {
     return { content: `Processed: ${params.input}` };
   },
-  isConcurrencySafe: () => true
+  isConcurrencySafe: () => true,
 };
 
-const system = await AgentSystemBuilder.default()
-  .withTools([myTool])
-  .build();
+const system = await AgentSystemBuilder.default().withTools([myTool]).build();
 ```
 
 ### MCP Server Integration
@@ -82,8 +92,8 @@ const system = await AgentSystemBuilder.default()
   .withMCPServers({
     filesystem: {
       command: 'npx',
-      args: ['-y', '@modelcontextprotocol/server-filesystem', '/tmp']
-    }
+      args: ['-y', '@modelcontextprotocol/server-filesystem', '/tmp'],
+    },
   })
   .build();
 ```
@@ -105,6 +115,7 @@ behavior: precise
 ---
 
 You are an expert code reviewer. Review code for:
+
 - Code quality and best practices
 - Security vulnerabilities
 - Performance issues
@@ -121,6 +132,65 @@ You are an expert code reviewer. Review code for:
 - **TodoWrite**: Task tracking for complex workflows
 - **Shell**: Execute shell commands (with security restrictions)
 - **GetSessionLog**: Retrieve conversation history
+- **Skill**: Load domain expertise dynamically from skills registry
+
+## Dynamic Skills
+
+Skills are domain expertise packages that agents load on-demand using the `skill` tool:
+
+```typescript
+// Configure system with skills directory
+const system = await AgentSystemBuilder.default()
+  .withAgentsFrom('./agents')
+  .withSkillsFrom('./skills')  // Load skills registry
+  .build();
+```
+
+Create a skill in `skills/my-domain/SKILL.md`:
+
+```markdown
+---
+name: my-domain
+description: Expert knowledge about my domain
+---
+
+# My Domain Expertise
+
+## Key Concepts
+
+Your domain knowledge here...
+
+## Guidelines
+
+- Rule 1: Important guideline
+- Rule 2: Another guideline
+```
+
+Agents load skills dynamically:
+
+```markdown
+---
+name: my-agent
+tools: [read, write, skill]
+---
+
+You are an expert agent.
+
+## Available Skills
+
+Load domain knowledge as needed:
+- skill({name: "my-domain"})
+
+The skill content will be added to the conversation for your use.
+```
+
+**Key Benefits:**
+- ✅ Load skills only when needed
+- ✅ Conversation history serves as cache
+- ✅ Share knowledge across multiple agents
+- ✅ Update domain expertise in one place
+
+For complete documentation, see [Skills System Guide](../../docs/skills.md).
 
 ## Event Logging
 
@@ -148,12 +218,15 @@ const system = await AgentSystemBuilder.default()
   .withSessionId('my-session')
   .withStorage({
     type: 'filesystem',
-    path: './sessions'
+    path: './sessions',
   })
   .build();
 
 // Continue from previous session
-const result = await system.executor.execute('agent', 'Continue our conversation');
+const result = await system.executor.execute(
+  'agent',
+  'Continue our conversation'
+);
 ```
 
 ## Security
@@ -170,7 +243,8 @@ Built-in security features:
 
 ### Code-First Configuration (Recommended)
 
-Configuration files are optional. You can provide configuration programmatically:
+Configuration files are optional. You can provide configuration
+programmatically:
 
 ```typescript
 import { AgentSystemBuilder, type ProvidersConfig } from '@agent-system/core';
@@ -216,12 +290,14 @@ const system = await AgentSystemBuilder.default()
 ```
 
 **Benefits:**
+
 - No file dependencies - ideal for testing and CI/CD
 - Secret manager integration (AWS Secrets Manager, Vault, etc.)
 - Type-safe configuration with full TypeScript support
 - Dynamic configuration at runtime
 
 **API Key Precedence:**
+
 1. `.withAPIKeys()` - highest priority
 2. `process.env` - fallback
 
@@ -318,8 +394,8 @@ class AgentSystemBuilder {
   withSessionId(id: string): this;
   withConsole(config: ConsoleConfig): this;
   withMCPServers(servers: MCPConfig): this;
-  withProvidersConfig(config: ProvidersConfig): this;  // NEW
-  withAPIKeys(keys: Record<string, string>): this;     // NEW
+  withProvidersConfig(config: ProvidersConfig): this; // NEW
+  withAPIKeys(keys: Record<string, string>): this; // NEW
 
   async build(): Promise<BuildResult>;
 }
@@ -346,7 +422,8 @@ MIT
 
 ## Contributing
 
-Contributions welcome! Please read the contributing guidelines before submitting PRs.
+Contributions welcome! Please read the contributing guidelines before submitting
+PRs.
 
 ## Links
 
