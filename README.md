@@ -1,6 +1,6 @@
 # Agent Orchestration System
 
-**Production-ready TypeScript framework for building autonomous, collaborative AI agents**
+**TypeScript framework for building autonomous, collaborative AI agents**
 
 Key capabilities:
 
