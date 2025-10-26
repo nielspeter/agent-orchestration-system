@@ -36,6 +36,30 @@ Essential compliance rules and formatting standards for analyzing Danish public 
   - Example: `[INTERN VURDERING PÅKRÆVET]`
   - Use for: ANY assessment of bidder's capabilities, competencies, or capacity
 
+### Compliance-Specific Markers
+
+For compliance checking and requirement classification:
+
+- **[SKAL]** - Mandatory requirement (SKAL, MUST, mandatory, obligatorisk, påkrævet)
+  - Use for: Any requirement that must be met or results in disqualification
+  - Example: `[SKAL] Submit 3 reference projects from last 2 years`
+
+- **[BØR]** - Recommended requirement (BØR, SHOULD, anbefalet)
+  - Use for: Recommended but not mandatory requirements
+  - Example: `[BØR] Include ISO 27001 certification`
+
+- **[KAN]** - Optional requirement (KAN, MAY, valgfri)
+  - Use for: Optional elements that may provide advantages
+  - Example: `[KAN] Provide additional case studies`
+
+- **[UKLAR]** - Unclear requirement needing clarification
+  - Use for: Requirements with ambiguous phrasing
+  - Example: `[UKLAR - "relevant experience" not defined] Submit relevant experience`
+
+- **[KONFLIKT]** - Conflicting requirements between documents
+  - Use for: Contradictory requirements that need resolution
+  - Example: `[KONFLIKT - Doc A says PDF, Doc B says Word] File format requirement`
+
 ⚠️ **CRITICAL**: NEVER speculate about the bidder's competency level or capabilities! Always mark as **[INTERN VURDERING PÅKRÆVET]**.
 
 ## Neutrality Requirement
