@@ -10,10 +10,10 @@ interface SkillArgs {
 
 /**
  * Validates skill tool arguments
+ * Type guard ensures args is an object (structure validation done in execute)
  */
 function validateArgs(args: unknown): args is SkillArgs {
-  if (!args || typeof args !== 'object') return false;
-  return true; // name is optional, we'll check it in execute
+  return args !== null && args !== undefined && typeof args === 'object' && !Array.isArray(args);
 }
 
 /**

@@ -63,9 +63,16 @@ export class SkillLoader {
     const scriptFiles = await this.scanResourceFiles(skillPath, 'scripts');
     const assetFiles = await this.scanResourceFiles(skillPath, 'assets');
 
-    // 6. Create resource loader function
+    // 6. Create resource loader function with path traversal protection
     const loadResource = async (resourcePath: string): Promise<string> => {
-      const fullPath = path.join(skillPath, resourcePath);
+      const fullPath = path.resolve(skillPath, resourcePath);
+
+      // Security: Ensure resolved path is still within skill directory
+      const normalizedSkillPath = path.resolve(skillPath);
+      if (!fullPath.startsWith(normalizedSkillPath + path.sep)) {
+        throw new Error(`Path traversal detected: ${resourcePath} escapes skill directory`);
+      }
+
       return await fs.readFile(fullPath, 'utf-8');
     };
 
