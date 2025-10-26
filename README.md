@@ -11,6 +11,25 @@ Key capabilities:
 - **Production-Ready**: Built-in security, retry logic, session persistence, and comprehensive monitoring
 - **Cost Efficient**: Smart caching delivers up to 90% cost savings on multi-agent workflows
 
+## 📦 Installation
+
+Install from npm (no authentication required):
+
+```bash
+# Install core library
+npm install @nielspeter/agent-orchestration-core
+
+# Install CLI globally
+npm install -g @nielspeter/agent-orchestration-cli
+
+# Or install both
+npm install @nielspeter/agent-orchestration-core @nielspeter/agent-orchestration-cli
+```
+
+**Package URLs:**
+- Core: https://www.npmjs.com/package/@nielspeter/agent-orchestration-core
+- CLI: https://www.npmjs.com/package/@nielspeter/agent-orchestration-cli
+
 ## 🎯 Architecture Highlights
 
 ### Clean Middleware Pipeline
