@@ -159,13 +159,9 @@ If you need to publish manually:
 
 ## Package Visibility
 
-All packages are currently **private** and require authentication. Only users with access to the repository can install them.
+All packages are **public** and can be installed by anyone.
 
-To make packages public (optional):
-1. Go to repository Settings → Packages
-2. Select the package
-3. Click "Package settings"
-4. Change visibility to "Public"
+Note: Authentication is still required to install from GitHub Packages, even for public packages. See the installation instructions above.
 
 ## Version Strategy
 
