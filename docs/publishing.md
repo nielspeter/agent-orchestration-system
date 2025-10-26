@@ -31,17 +31,17 @@ That's it! Public npm packages work out of the box.
 
 ### Prerequisites
 
-1. **npm Account**: Create an account at https://www.npmjs.com/signup
-2. **Two-Factor Authentication**: Enable 2FA on your npm account (required for publishing)
-3. **Access**: You must be added as a maintainer to publish these packages
+1. **npm Account**: Must have publish access to the packages
+2. **Two-Factor Authentication**: Required for publishing
+3. **Logged in**: Must be logged in via `npm login`
 
 ### One-Time Setup
 
-#### 1. Login to npm
+#### Login to npm
 
 ```bash
 npm login
-# Enter your npm username, password, and OTP (if 2FA enabled)
+# Enter your npm username, password, and OTP (from authenticator app)
 ```
 
 Verify you're logged in:
@@ -51,90 +51,66 @@ npm whoami
 # Should output: nielspeter
 ```
 
-#### 2. Setup NPM_TOKEN for GitHub Actions
-
-To enable automated publishing via GitHub Actions:
-
-1. Generate an npm automation token:
-   ```bash
-   npm token create --type automation
-   ```
-
-2. Copy the token (starts with `npm_`)
-
-3. Add it to GitHub repository secrets:
-   - Go to: https://github.com/nielspeter/agent-orchestration-system/settings/secrets/actions
-   - Click "New repository secret"
-   - Name: `NPM_TOKEN`
-   - Value: Paste the automation token
-   - Click "Add secret"
-
 ### Publishing New Versions
 
-#### Automated Publishing (Recommended)
+**All publishing is done manually** to ensure security and control.
 
-The repository uses GitHub Actions for automated publishing on version tags:
+#### Step 1: Update Versions
 
-1. **Update version in package.json:**
-   ```bash
-   cd packages/core
-   npm version patch  # or minor, major
+Update version numbers in both packages (keep them synchronized):
 
-   cd ../cli
-   npm version patch  # or minor, major
-   ```
+```bash
+cd packages/core
+npm version patch  # or minor, major
 
-2. **Commit and push the version bump:**
-   ```bash
-   git add packages/core/package.json packages/cli/package.json package-lock.json
-   git commit -m "chore: bump packages to vX.Y.Z"
-   git push
-   ```
+cd ../cli
+npm version patch  # or minor, major
+```
 
-3. **Create and push a git tag:**
-   ```bash
-   git tag vX.Y.Z
-   git push origin vX.Y.Z
-   ```
+#### Step 2: Commit Version Changes
 
-4. **GitHub Actions will automatically:**
-   - Build the packages
-   - Run tests
-   - Publish to npm registry
+```bash
+git add packages/core/package.json packages/cli/package.json package-lock.json
+git commit -m "chore: bump packages to vX.Y.Z"
+git push
+```
 
-5. **Monitor the workflow:**
-   - Check: https://github.com/nielspeter/agent-orchestration-system/actions
-   - Look for the "Publish Packages to npm" workflow
+#### Step 3: Create and Push Git Tag
 
-#### Manual Publishing
+```bash
+git tag vX.Y.Z
+git push origin vX.Y.Z
+```
 
-If you need to publish manually:
+#### Step 4: Build and Test
 
-1. **Build and test:**
-   ```bash
-   # Build core
-   cd packages/core
-   npm run build
-   npm test
+```bash
+# Build core
+cd packages/core
+npm run build
+npm test
 
-   # Build CLI
-   cd ../cli
-   npm run build
-   npm test
-   ```
+# Build CLI
+cd ../cli
+npm run build
+npm test
+```
 
-2. **Publish:**
-   ```bash
-   # Publish core
-   cd packages/core
-   npm publish
+#### Step 5: Publish to npm
 
-   # Publish CLI
-   cd ../cli
-   npm publish
-   ```
+Get your OTP code from your authenticator app, then publish:
 
-The `publishConfig.access: "public"` in package.json ensures packages are published as public.
+```bash
+# Publish core
+cd packages/core
+npm publish --otp=XXXXXX
+
+# Publish CLI
+cd ../cli
+npm publish --otp=XXXXXX
+```
+
+Replace `XXXXXX` with your current 6-digit OTP code.
 
 ### Version Strategy
 
@@ -152,6 +128,16 @@ npm version major  # 1.2.0 → 2.0.0
 
 **Important:** Keep both packages at the same version number for consistency.
 
+### Publishing Checklist
+
+Before publishing, ensure:
+- [ ] All tests pass (`npm test`)
+- [ ] Build succeeds (`npm run build`)
+- [ ] Changes are committed and pushed
+- [ ] Version tag is created and pushed
+- [ ] CHANGELOG is updated (if applicable)
+- [ ] Both packages have same version number
+
 ## Troubleshooting
 
 ### "You must be logged in to publish packages"
@@ -163,7 +149,7 @@ npm whoami  # Verify you're logged in
 
 ### "You do not have permission to publish"
 
-You need to be added as a maintainer. Contact the package owner.
+You need publish access to the packages. Contact the package owner.
 
 ### "Cannot publish over existing version"
 
@@ -175,22 +161,25 @@ npm version patch
 
 ### "Missing or invalid OTP"
 
-If 2FA is enabled, you'll need to provide a one-time password:
+Make sure you're using a fresh OTP code from your authenticator app:
+
+```bash
+npm publish --otp=XXXXXX
+```
+
+If it fails, get a new OTP code and try again (codes expire after 30 seconds).
+
+### "This package requires two-factor authentication"
+
+This is expected. Always use `--otp=XXXXXX` flag when publishing:
 
 ```bash
 npm publish --otp=123456
 ```
 
-### GitHub Actions publishing fails
-
-1. Verify `NPM_TOKEN` secret is set in repository settings
-2. Check the token hasn't expired
-3. Ensure the token has publish permissions
-4. View workflow logs for specific error
-
 ## Package URLs
 
-After publishing, packages will be available at:
+After publishing, packages are available at:
 - https://www.npmjs.com/package/@nielspeter/agent-orchestration-core
 - https://www.npmjs.com/package/@nielspeter/agent-orchestration-cli
 
@@ -199,4 +188,4 @@ After publishing, packages will be available at:
 - [npm Documentation](https://docs.npmjs.com/)
 - [Publishing npm packages](https://docs.npmjs.com/packages-and-modules/contributing-packages-to-the-registry)
 - [Semantic Versioning](https://semver.org/)
-- [npm tokens](https://docs.npmjs.com/about-access-tokens)
+- [Two-Factor Authentication](https://docs.npmjs.com/about-two-factor-authentication)
