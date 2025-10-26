@@ -1,6 +1,6 @@
 {
   "name": "@agent-system/cli",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "type": "module",
   "description": "CLI tool for agent orchestration system",
   "bin": {
@@ -56,7 +56,7 @@
     "@agent-system/web": "*"
   },
   "peerDependencies": {
-    "@agent-system/core": "^0.1.0"
+    "@agent-system/core": "^1.1.0"
   },
   "devDependencies": {
     "@agent-system/core": "*",
